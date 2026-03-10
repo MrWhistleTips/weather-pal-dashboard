@@ -15,8 +15,8 @@
   --border: #1F1F1F;
   --border-light: #2a2a2a;
   --text: #FFFFFF;
-  --text-secondary: #FFFFFF;
-  --text-dim: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.5);
+  --text-dim: rgba(255,255,255,0.3);
   --go: #40BF40;
   --go-bg: rgba(64,191,64,0.5);
   --nogo: #D92626;
@@ -66,7 +66,7 @@ body {
 .nav-brand span { font-size: 14px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
 .nav-center { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; font-size: 10px; color: var(--text-dim); letter-spacing: 0.5px; }
 .nav-center .sol-pair { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
-.nav-center .sol-pl { font-weight: 600; text-transform: uppercase; font-size: 9px; }
+.nav-center .sol-pl { font-weight: 600; text-transform: uppercase; font-size: 9px; opacity: 0.7; }
 .nav-center .sol-pv { font-weight: 700; font-size: 11px; color: var(--text-secondary); }
 .nav-right { display: flex; align-items: center; gap: 14px; }
 .nav-meta { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
@@ -377,7 +377,7 @@ body {
 .sd-groups { display: flex; gap: 8px; flex: 1; }
 .sd-group { display: flex; gap: 2px; justify-content: center; align-items: center; }
 .sd-group-hdr { font-size: 11px; font-weight: 700; color: var(--text-dim); text-align: center; letter-spacing: 0.5px; }
-.sd-sub { font-size: 8px; color: var(--text-dim); text-align: center; }
+.sd-sub { font-size: 8px; color: var(--text-dim); opacity: 0.6; text-align: center; }
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 .dot.go { background: var(--go); box-shadow: 0 0 4px rgba(64,191,64,0.4); }
 .dot.marginal { background: var(--accent); box-shadow: 0 0 4px rgba(229,214,51,0.4); }
@@ -397,10 +397,10 @@ body {
 .drag-section.dragging { opacity: 0.4; transform: scale(0.98); }
 .drag-section.drag-over-top { border-top: 2px solid var(--accent) !important; }
 .drag-section.drag-over-bottom { border-bottom: 2px solid var(--accent) !important; }
-.drag-handle { font-size: 12px; color: var(--text-dim); margin-right: 6px; cursor: grab; letter-spacing: 2px; }
-.drag-section:hover .drag-handle { opacity: 1; }
-.reset-layout { font-size: 10px; color: var(--text-dim); cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: color 0.2s; }
-.reset-layout:hover { color: var(--accent); }
+.drag-handle { font-size: 12px; color: var(--text-dim); opacity: 0.4; margin-right: 6px; cursor: grab; letter-spacing: 2px; }
+.drag-section:hover .drag-handle { opacity: 0.8; }
+.reset-layout { font-size: 10px; color: var(--text-dim); cursor: pointer; letter-spacing: 1px; text-transform: uppercase; opacity: 0.5; transition: opacity 0.2s; }
+.reset-layout:hover { opacity: 1; color: var(--accent); }
 
 /* ── FOOTER ── */
 .footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
@@ -541,8 +541,10 @@ body {
     <!-- METAR -->
     <div class="card drag-section" data-section="metar" draggable="true">
       <div class="card-hdr" onclick="tog('metarBody')">
-        <span style="display:flex;align-items:center;gap:8px"><span id="metarCat"></span> METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
+        <span>METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
         <span style="display:flex;align-items:center;gap:8px">
+          <span id="metarCat"></span>
+          <span id="metarTime" style="font-weight:600"></span>
           <span class="ci" id="metarBody-icon">&#x25BC;</span>
         </span>
       </div>
@@ -598,8 +600,6 @@ body {
     <div class="mascot-go-label">STATIONS GO</div>
     <a href="https://www.army.mil/rucker#org-weather" target="_blank" rel="noopener" style="margin-top:16px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);text-decoration:none;padding:6px 16px;border:1px solid var(--accent-border);border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='var(--accent-dim)'" onmouseout="this.style.background='transparent'">RUCKER WEATHER</a>
     <div id="heroExported" style="margin-top:10px;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase"></div>
-    <div id="liveClock" style="margin-top:12px;font-size:36px;font-weight:800;font-family:'Courier New',monospace;letter-spacing:4px;color:var(--text)"></div>
-    <div id="liveClockLabel" style="font-size:10px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-top:2px">LOCAL / ZULU</div>
   </div>
 </div>
 
@@ -704,37 +704,33 @@ function parseSegments(forecastText){
   return segs;
 }
 
-function parseValidPeriodZ(vp){
-  // Parse "AM 1200Z-1800Z" or "N1 0030Z-0730Z" → {start, end} in minutes
-  if(!vp)return null;
-  const m=vp.match(/(\d{2})(\d{2})Z\s*-\s*(\d{2})(\d{2})Z/);
-  if(!m)return null;
-  return{start:parseInt(m[1])*60+parseInt(m[2]),end:parseInt(m[3])*60+parseInt(m[4])};
-}
-
-function isWithinValidPeriod(vp){
-  const p=parseValidPeriodZ(vp);
-  if(!p)return true; // no valid period info, assume current
-  const now=currentZuluMinutes();
-  if(p.start<=p.end) return now>=p.start&&now<=p.end;
-  // Wraps midnight (e.g. 0030Z-0730Z means start>end won't happen, but 2300Z-0600Z would)
-  return now>=p.start||now<=p.end;
-}
-
-function getActiveSegIndex(segs,validPeriod){
-  if(validPeriod&&!isWithinValidPeriod(validPeriod))return 0;
+function getActiveSegIndex(segs){
   const now=currentZuluMinutes();
   let active=0;
-  for(let i=segs.length-1;i>0;i--){
-    if(now>=segs[i].startMin){active=i;break}
+  // Detect cross-midnight: all timed segments early morning + current time late evening
+  const timed=segs.filter(s=>s.startMin>0).map(s=>s.startMin);
+  const allEarly=timed.length>0&&timed.every(t=>t<360);
+  const crossMid=allEarly&&now>=1080;
+  if(crossMid){
+    // Pre-midnight: no post-midnight segment has started yet, stay on base (index 0)
+    // Post-midnight: use adjusted comparison
+    for(let i=segs.length-1;i>0;i--){
+      const adj=segs[i].startMin<360?segs[i].startMin+1440:segs[i].startMin;
+      const adjNow=now<360?now+1440:now;
+      if(adjNow>=adj){active=i;break}
+    }
+  } else {
+    for(let i=segs.length-1;i>0;i--){
+      if(now>=segs[i].startMin){active=i;break}
+    }
   }
   return active;
 }
 
-function getActiveSegmentCeilVis(forecastText,validPeriod){
+function getActiveSegmentCeilVis(forecastText){
   // Get ceiling and visibility from the currently active segment
   const segs=parseSegments(forecastText);
-  const ai=getActiveSegIndex(segs,validPeriod);
+  const ai=getActiveSegIndex(segs);
   const s=segs[ai].text;
   // Strip ISOLD/TEMPO from the segment
   const clean=s.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|AFT|$))/gi,'');
@@ -751,24 +747,24 @@ function getActiveSegmentCeilVis(forecastText,validPeriod){
   return{ceil:c,vis:v};
 }
 
-function activeAreaColor(forecastText,validPeriod){
-  const cv=getActiveSegmentCeilVis(forecastText,validPeriod);
+function activeAreaColor(forecastText){
+  const cv=getActiveSegmentCeilVis(forecastText);
   if(cv.ceil<500||cv.vis<1)return'var(--lifr)';
   if(cv.ceil<1000||cv.vis<3)return'var(--ifr)';
   if(cv.ceil<=3000||cv.vis<=5)return'var(--mvfr)';
   return'var(--vfr)';
 }
 
-function activeAreaFC(forecastText,validPeriod){
-  const cv=getActiveSegmentCeilVis(forecastText,validPeriod);
+function activeAreaFC(forecastText){
+  const cv=getActiveSegmentCeilVis(forecastText);
   if(cv.ceil<500||cv.vis<1)return'LIFR';
   if(cv.ceil<1000||cv.vis<3)return'IFR';
   if(cv.ceil<=3000||cv.vis<=5)return'MVFR';
   return'VFR';
 }
 
-function areaIsGo(forecastText,validPeriod){
-  const cv=getActiveSegmentCeilVis(forecastText,validPeriod);
+function areaIsGo(forecastText){
+  const cv=getActiveSegmentCeilVis(forecastText);
   return cv.ceil>=700&&cv.vis>=1;
 }
 
@@ -940,10 +936,9 @@ function rTS(fc){
   const m=DATA.metar,advs=fc.mef?.weatherAdvisories||[];
   const areas=fc.mef?.areaForecasts||[];
   // Build area color map using active segment
-  const vp=fc.mef?.validPeriod||'';
   const areaMap={};areas.forEach(a=>{
     const txt=a.amendmentText||a.forecast||'';
-    areaMap[a.name.toUpperCase()]=activeAreaColor(txt,vp);
+    areaMap[a.name.toUpperCase()]=activeAreaColor(txt);
   });
   // Time-aware active advisory filtering (match iOS app)
   const nowMin=currentZuluMinutes();
@@ -995,9 +990,9 @@ function rTS(fc){
     const infoC=tsInfoCol(s.i);
     const icon=tsIcon(s.i);
     // Area name colored by flight category (muted) + training info on same line
-    const areaLine=s.c?'':'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';font-weight:600;letter-spacing:0.5px">'+s.a+'</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>';
+    const areaLine=s.c?'':'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">'+s.a+'</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>';
     // Cairns info line (with KOZR spacer to align with stagefield area names)
-    const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';font-weight:600;letter-spacing:0.5px">KOZR</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>':'';
+    const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">KOZR</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>':'';
     // Landing info
     const lnd=s.land?'<div style="font-size:11px;color:var(--text-dim);margin-top:1px">\uD83D\uDEEC '+s.land.rwy+(s.land.hw!==0||s.land.xw!==0?' <span style="color:'+(s.land.hw>=0?'var(--go)':'var(--nogo)')+'">'+( s.land.hw>=0?'\u2193':'\u2191')+Math.abs(s.land.hw)+'kt</span> <span style="color:'+(s.land.xw>=15?'#e08040':'var(--text-dim)')+'">'+( s.land.fromRight?'\u2190':'\u2192')+s.land.xw+'kt</span>':' CALM')+'</div>':'';
     return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+s.n+'</span>'+allAdvBadges+'</div>'+cairnsInfoLine+areaLine+lnd+'</td><td style="vertical-align:middle;text-align:right;padding:6px 10px"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
@@ -1033,13 +1028,15 @@ function rMETAR(fc){
   const alt=m.altim?(m.altim/33.8639).toFixed(2)+'"':'--',em=wxEmoji(m.wxString);
   // Station name
   document.getElementById('metarStation').textContent=m.name||'Cairns AAF';
+  // Report time
+  document.getElementById('metarTime').textContent=m.reportTime||'';
   // Flight category badge
   document.getElementById('metarCat').innerHTML='<span class="flt-cat '+fcat+'">'+fcat+'</span>';
   // Weather emojis
   document.getElementById('metarEmojis').innerHTML=em?'<span style="font-size:14px">'+em+'</span>':'';
   // Full cloud layers
   const skyStr=m.clouds&&m.clouds.length?m.clouds.map(l=>l.cover+(l.base!=null?String(Math.round(l.base/100)).padStart(3,'0'):'')).join(' '):'CLR';
-  b.innerHTML=(m.rawOb?'<div class="metar-raw" style="color:'+fcColor(fcat)+';border-left-color:'+fcColor(fcat)+'">'+esc(m.rawOb)+'</div>':'')+
+  b.innerHTML=(m.rawOb?'<div class="metar-raw">'+esc(m.rawOb)+'</div>':'')+
     '<div class="metar-grid">'+di('Wind',w)+di('Vis',v+' SM')+di('Ceil',ceil)+di('Sky',skyStr)+di('Temp',t)+di('Dewpt',d)+di('Altim',alt)+(m.wxString?di('Wx',m.wxString+' '+em):'')+'</div>';
 }
 function ceilFromClouds(cl){let c=null;cl.forEach(l=>{if((l.cover==='BKN'||l.cover==='OVC')&&l.base!=null){if(c===null||l.base<c)c=l.base}});return c!=null?c.toLocaleString()+' ft':'CLR'}
@@ -1075,12 +1072,11 @@ function rArea(fc){
   });
   const rmk=fc.mef.remarks;
   const rmkHtml=rmk?'<div style="grid-column:1/-1;padding:10px 14px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:12px;color:var(--accent);text-align:center"><span style="font-weight:800;letter-spacing:1px;margin-right:6px">REMARKS:</span>'+esc(rmk)+'</div>':'';
-  const vpStr=fc.mef.validPeriod||'';
   g.innerHTML=(fc.mef.areaForecasts||[]).map(a=>{
     const txt=a.amendmentText||a.forecast||'';
-    const col=activeAreaColor(txt,vpStr);
+    const col=activeAreaColor(txt);
     // Per-area GO/NO-GO from active segment
-    const go=areaIsGo(txt,vpStr);
+    const go=areaIsGo(txt);
     const goB='<span class="'+(go?'badge go':'badge nogo')+'" style="font-size:10px;padding:2px 8px">'+(go?'GO':'NO-GO')+'</span>';
     // TS coverage with percentage
     const tsCov=a.tsCoverage&&a.tsCoverage.toUpperCase()!=='NONE'?'<div><span class="ts-tag active">TS: '+tsCovPct(a.tsCoverage)+'</span></div>':'';
@@ -1092,7 +1088,7 @@ function rArea(fc){
       const c2=tsInfoCol(sf.info);
       return'<span style="color:'+c2+';margin-right:8px">'+ic+sf.name+'</span>';
     }).join('')+'</div>':'';
-    return'<div class="area-card"><div class="area-hdr"><span class="area-name" style="color:'+col+'">'+a.name+'</span><span style="display:flex;align-items:center;gap:6px">'+amd+goB+'</span></div>'+infoHtml+'<div class="area-text">'+fmtArea(txt,vpStr)+'</div>'+tsCov+'</div>';
+    return'<div class="area-card"><div class="area-hdr"><span class="area-name" style="color:'+col+'">'+a.name+'</span><span style="display:flex;align-items:center;gap:6px">'+amd+goB+'</span></div>'+infoHtml+'<div class="area-text">'+fmtArea(txt)+'</div>'+tsCov+'</div>';
   }).join('')+rmkHtml;
 }
 
@@ -1106,12 +1102,12 @@ function segFC(s){
   if(/P6SM/i.test(m))v=7;
   if(c<500||v<1)return'var(--lifr)';if(c<1000||v<3)return'var(--ifr)';if(c<=3000||v<=5)return'var(--mvfr)';return'var(--vfr)';
 }
-function fmtArea(t,validPeriod){
+function fmtArea(t){
   if(!t)return'';
   var raw=esc(t),segs=raw.split(/(AFT\s+\d{4}Z:)/),html='';
   // Determine active segment index for highlighting
   var parsedSegs=parseSegments(t);
-  var activeIdx=getActiveSegIndex(parsedSegs,validPeriod);
+  var activeIdx=getActiveSegIndex(parsedSegs);
   var segCount=0;
   for(var i=0;i<segs.length;i++){
     var s=segs[i];if(!s.trim())continue;
@@ -1126,7 +1122,7 @@ function fmtArea(t,validPeriod){
     if(isActive){
       html+='<span style="color:'+col+';font-weight:700">'+f+'</span>';
     }else{
-      html+='<span style="color:'+col+'">'+f+'</span>';
+      html+='<span style="color:'+col+';opacity:0.6">'+f+'</span>';
     }
   }
   return html;
@@ -1459,16 +1455,6 @@ async function fetchMETAR(){
 loadData();
 setInterval(()=>{loadData().then(()=>fetchMETAR())},300000);
 setTimeout(()=>{if(DATA)fetchMETAR()},3000);
-
-// Live military clock
-function updateClock(){
-  const now=new Date();
-  const L=String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
-  const Z=String(now.getUTCHours()).padStart(2,'0')+String(now.getUTCMinutes()).padStart(2,'0');
-  document.getElementById('liveClock').textContent=L+'L / '+Z+'Z';
-}
-updateClock();
-setInterval(updateClock,1000);
 </script>
 </body>
 </html>
