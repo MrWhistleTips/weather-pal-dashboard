@@ -572,6 +572,10 @@ body {
         </div>
         <div class="cbd" id="hazBody">
           <div class="haz-grid" id="hazGrid"></div>
+          <div id="spInline" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">
+            <div style="font-size:9px;font-weight:800;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">SPACE WEATHER <span id="spBadge"></span></div>
+            <div id="spGrid"></div>
+          </div>
         </div>
       </div>
       <div class="card" id="enCard" style="display:none">
@@ -606,17 +610,6 @@ body {
   <!-- FWB Header -->
   <div id="fwbHdrCard" style="display:none"></div>
 
-  <!-- Space Weather -->
-  <div class="card" id="spCard" style="display:none">
-    <div class="card-hdr" onclick="tog('spBody')">
-      <span>Space Weather</span>
-      <span style="display:flex;align-items:center;gap:6px">
-        <span id="spBadge"></span>
-        <span class="ci" id="spBody-icon">&#x25BC;</span>
-      </span>
-    </div>
-    <div class="cbd" id="spBody"><div id="spGrid"></div></div>
-  </div>
 
 
 
@@ -1107,7 +1100,7 @@ function cvtLvl(l){if(!l)return l;return l.replace(/(\d{3})/g,m=>cvtAlt(m).repla
 
 /* ── SPACE WEATHER ── */
 function rSp(fc){
-  const c=document.getElementById('spCard'),g=document.getElementById('spGrid'),be=document.getElementById('spBadge'),sw=fc.flightBriefing?.enrouteData?.spaceWeather;
+  const c=document.getElementById('spInline'),g=document.getElementById('spGrid'),be=document.getElementById('spBadge'),sw=fc.flightBriefing?.enrouteData?.spaceWeather;
   if(!sw){c.style.display='none';return}c.style.display='block';
   const items=[{l:'HF Radio',v:sw.frequency},{l:'GPS',v:sw.gps},{l:'Radiation',v:sw.radiation}];
   be.innerHTML=items.some(i=>i.v&&i.v.toUpperCase()!=='NONE')?'<span style="font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(187,102,255,0.15);color:#bb66ff;font-weight:700">CHECK IMPACTS</span>':'';
