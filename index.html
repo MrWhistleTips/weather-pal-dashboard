@@ -629,7 +629,7 @@ body {
 </div>
 
 <script>
-let DATA=null, currentPeriod='AM';
+let DATA=null, currentPeriod=localStorage.getItem('selectedPeriod')||'AM';
 
 async function loadData(){
   try{
@@ -646,7 +646,7 @@ function initTabs(){
     const b=document.createElement('button');
     b.className='tab'+(f.type===currentPeriod?' active':'');
     b.textContent=f.type;
-    b.onclick=()=>{currentPeriod=f.type;render()};
+    b.onclick=()=>{currentPeriod=f.type;localStorage.setItem('selectedPeriod',f.type);render()};
     t.appendChild(b);
   });
 }
