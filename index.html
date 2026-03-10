@@ -304,12 +304,12 @@ body {
 .en-row .v.active { color: var(--accent); }
 
 /* ── SPACE WEATHER ── */
-.sp-compact { display: flex; flex-wrap: wrap; gap: 2px 14px; align-items: baseline; }
-.sp-compact .sp-it { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; }
-.sp-compact .sp-l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-.sp-compact .sp-v { font-size: 13px; font-weight: 700; }
-.sp-compact .sp-v.none { color: var(--text-dim); }
-.sp-compact .sp-v.active { color: #bb66ff; }
+#spInline { display: inline-flex; align-items: center; gap: 8px; }
+#spInline .sp-it { display: inline-flex; align-items: baseline; gap: 3px; white-space: nowrap; }
+#spInline .sp-l { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+#spInline .sp-v { font-size: 11px; font-weight: 700; }
+#spInline .sp-v.none { color: var(--text-dim); }
+#spInline .sp-v.active { color: #bb66ff; }
 
 /* ── WINDS TABLE ── */
 .w-tbl { width: 100%; border-collapse: collapse; font-size: 11px; }
@@ -459,6 +459,7 @@ body {
       <div class="card-hdr" onclick="tog('toBody')">
         <span>Takeoff Data (KOZR)</span>
         <span style="display:flex;align-items:center;gap:6px">
+          <span id="spInline" style="display:none;font-size:0;line-height:0"></span>
           <span class="ci" id="toBody-icon">&#x25BC;</span>
         </span>
       </div>
@@ -573,10 +574,6 @@ body {
         </div>
         <div class="cbd" id="hazBody">
           <div class="haz-grid" id="hazGrid"></div>
-          <div id="spInline" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">
-            <div style="font-size:9px;font-weight:800;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">SPACE WEATHER <span id="spBadge"></span></div>
-            <div id="spGrid"></div>
-          </div>
         </div>
       </div>
       <div class="card" id="enCard" style="display:none">
@@ -1091,11 +1088,12 @@ function cvtLvl(l){if(!l)return l;return l.replace(/(\d{3})/g,m=>cvtAlt(m).repla
 
 /* ── SPACE WEATHER ── */
 function rSp(fc){
-  const c=document.getElementById('spInline'),g=document.getElementById('spGrid'),be=document.getElementById('spBadge'),sw=fc.flightBriefing?.enrouteData?.spaceWeather;
-  if(!sw){c.style.display='none';return}c.style.display='block';
-  const items=[{l:'HF Radio',v:sw.frequency},{l:'GPS',v:sw.gps},{l:'Radiation',v:sw.radiation}];
-  be.innerHTML=items.some(i=>i.v&&i.v.toUpperCase()!=='NONE')?'<span style="font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(187,102,255,0.15);color:#bb66ff;font-weight:700">CHECK IMPACTS</span>':'';
-  g.innerHTML='<div class="sp-compact">'+items.map(i=>{const n=!i.v||i.v.toUpperCase()==='NONE';return'<span class="sp-it"><span class="sp-l">'+i.l+'</span><span class="sp-v '+(n?'none':'active')+'">'+(i.v||'NONE')+'</span></span>'}).join('')+'</div>';
+  const c=document.getElementById('spInline'),sw=fc.flightBriefing?.enrouteData?.spaceWeather;
+  if(!sw){c.style.display='none';return}
+  c.style.display='inline-flex';c.style.fontSize='';c.style.lineHeight='';
+  const items=[{l:'HF',v:sw.frequency},{l:'GPS',v:sw.gps},{l:'RAD',v:sw.radiation}];
+  const hasImpact=items.some(i=>i.v&&i.v.toUpperCase()!=='NONE');
+  c.innerHTML=items.map(i=>{const n=!i.v||i.v.toUpperCase()==='NONE';return'<span class="sp-it"><span class="sp-l">'+i.l+'</span><span class="sp-v '+(n?'none':'active')+'">'+(i.v||'—')+'</span></span>'}).join('')+(hasImpact?'<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(187,102,255,0.15);color:#bb66ff;font-weight:700;white-space:nowrap">⚠️</span>':'');
 }
 
 /* ── FLIGHT LEVEL WINDS ── */
