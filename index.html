@@ -1094,7 +1094,7 @@ function rSp(fc){
   const items=[{l:'HF',v:sw.frequency},{l:'GPS',v:sw.gps},{l:'RAD',v:sw.radiation}];
   function spNone(v){const u=(v||'').toUpperCase();return !v||u==='NONE'||u==='NO IMPACT'}
   const hasImpact=items.some(i=>!spNone(i.v));
-  c.innerHTML=items.map(i=>{const n=spNone(i.v);return'<span class="sp-it"><span class="sp-l">'+i.l+'</span><span class="sp-v '+(n?'none':'active')+'">'+(i.v||'—')+'</span></span>'}).join('')+(hasImpact?'<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(187,102,255,0.15);color:#bb66ff;font-weight:700;white-space:nowrap">⚠️</span>':'');
+  c.innerHTML='<span style="font-size:9px;font-weight:800;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;white-space:nowrap">SPACE WX</span>'+items.map(i=>{const n=spNone(i.v);return'<span class="sp-it"><span class="sp-l">'+i.l+'</span><span class="sp-v '+(n?'none':'active')+'">'+(i.v||'—')+'</span></span>'}).join('')+(hasImpact?'<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(187,102,255,0.15);color:#bb66ff;font-weight:700;white-space:nowrap">⚠️</span>':'');
 }
 
 /* ── FLIGHT LEVEL WINDS ── */
