@@ -1263,8 +1263,8 @@ function rSD(){
   let lowRow='<div class="sd-row"><div class="sd-label" style="color:var(--mvfr)">LOW</div><div class="sd-groups">';
   (sd.highTemps||[]).forEach((t,i)=>{
     const p=ppd[i]||1;
-    highRow+='<div class="sd-group" style="flex:'+p+'"><span class="sd-temp" style="color:var(--nogo)">'+t+'\u00B0</span></div>';
-    lowRow+='<div class="sd-group" style="flex:'+p+'"><span class="sd-temp" style="color:var(--mvfr)">'+((sd.lowTemps||[])[i]||'--')+'\u00B0</span></div>';
+    highRow+='<div class="sd-group" style="flex:'+p+'"><span class="sd-temp" style="color:#fff">'+t+'\u00B0</span></div>';
+    lowRow+='<div class="sd-group" style="flex:'+p+'"><span class="sd-temp" style="color:#fff">'+((sd.lowTemps||[])[i]||'--')+'\u00B0</span></div>';
   });
   highRow+='</div></div>';lowRow+='</div></div>';
   const tid='thr-'+Date.now();
