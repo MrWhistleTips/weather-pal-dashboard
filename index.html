@@ -1283,6 +1283,7 @@ function rSD(){
 function togThr(id,el){const d=document.getElementById(id);if(!d)return;const v=d.style.display!=='none';d.style.display=v?'none':'block';el.textContent=(v?'\u25B6':'\u25BC')+' THRESHOLDS'}
 
 loadData();
+setInterval(()=>{if(DATA)render()},300000);
 </script>
 </body>
 </html>
