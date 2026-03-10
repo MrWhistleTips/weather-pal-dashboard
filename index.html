@@ -250,7 +250,7 @@ body {
 
 /* ── METAR (compact inline) ── */
 .metar-raw { font-size: 12px; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 4px; border-left: 2px solid var(--accent); word-break: break-all; margin-bottom: 8px; }
-.metar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.metar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 4px 6px; }
 .di { display: flex; flex-direction: column; gap: 2px; }
 .dl { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
 .dv { font-size: 15px; font-weight: 700; }
@@ -541,8 +541,6 @@ body {
       <div class="card-hdr" onclick="tog('metarBody')">
         <span>METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
         <span style="display:flex;align-items:center;gap:8px">
-          <span id="metarStale"></span>
-          <span id="metarTsBadge"></span>
           <span id="metarCat"></span>
           <span id="metarTime" style="font-weight:600"></span>
           <span class="ci" id="metarBody-icon">&#x25BC;</span>
@@ -950,7 +948,7 @@ function rAdv(fc){
 /* ── METAR ── */
 function rMETAR(fc){
   const m=DATA.metar,b=document.getElementById('metarBody');
-  if(!m){b.innerHTML='<div class="no-data">No METAR</div>';document.getElementById('metarStation').textContent='';document.getElementById('metarStale').innerHTML='';document.getElementById('metarTsBadge').innerHTML='';return}
+  if(!m){b.innerHTML='<div class="no-data">No METAR</div>';document.getElementById('metarStation').textContent='';return}
   const fcat=m.fltCat||'VFR',ceil=ceilFromClouds(m.clouds),w=fmtWind(m),v=m.visib||'--';
   const t=m.temp!=null?Math.round(m.temp)+'\u00B0C':'--',d=m.dewp!=null?Math.round(m.dewp)+'\u00B0C':'--';
   const alt=m.altim?(m.altim/33.8639).toFixed(2)+'"':'--',em=wxEmoji(m.wxString);
@@ -962,13 +960,6 @@ function rMETAR(fc){
   document.getElementById('metarCat').innerHTML='<span class="flt-cat '+fcat+'">'+fcat+'</span>';
   // Weather emojis
   document.getElementById('metarEmojis').innerHTML=em?'<span style="font-size:14px">'+em+'</span>':'';
-  // Staleness indicator
-  const age=metarAgeMinutes();
-  const fresh=age<90;
-  document.getElementById('metarStale').innerHTML='<span class="stale-dot '+(fresh?'fresh':'stale')+'" title="'+(fresh?'Current':'Stale: '+age+' min old')+'"></span>';
-  // Training badge
-  const cairnsGo=fc.trainingStatus?.cairns||'--';
-  document.getElementById('metarTsBadge').innerHTML=cairnsGo!=='--'?'<span class="'+bc(cairnsGo)+'" style="font-size:10px;padding:2px 8px">'+cairnsGo+'</span>':'';
   // Full cloud layers
   const skyStr=m.clouds&&m.clouds.length?m.clouds.map(l=>l.cover+(l.base!=null?String(Math.round(l.base/100)).padStart(3,'0'):'')).join(' '):'CLR';
   b.innerHTML=(m.rawOb?'<div class="metar-raw">'+esc(m.rawOb)+'</div>':'')+
