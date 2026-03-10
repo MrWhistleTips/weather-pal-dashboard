@@ -709,14 +709,14 @@ function getActiveSegIndex(segs){
   let active=0;
   // Detect cross-midnight: all timed segments early morning + current time late evening
   const timed=segs.filter(s=>s.startMin>0).map(s=>s.startMin);
-  const allEarly=timed.length>0&&timed.every(t=>t<360);
+  const allEarly=timed.length>0&&timed.every(t=>t<720);
   const crossMid=allEarly&&now>=1080;
   if(crossMid){
     // Pre-midnight: no post-midnight segment has started yet, stay on base (index 0)
     // Post-midnight: use adjusted comparison
     for(let i=segs.length-1;i>0;i--){
-      const adj=segs[i].startMin<360?segs[i].startMin+1440:segs[i].startMin;
-      const adjNow=now<360?now+1440:now;
+      const adj=segs[i].startMin<720?segs[i].startMin+1440:segs[i].startMin;
+      const adjNow=now<720?now+1440:now;
       if(adjNow>=adj){active=i;break}
     }
   } else {
