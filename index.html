@@ -6,35 +6,51 @@
 <title>Fort Novosel Training Status</title>
 <style>
 :root {
-  --bg: #0a0e1a;
-  --card: #111827;
-  --card-border: #1e2a3a;
-  --text: #e0e6ed;
-  --text-dim: #6b7b8d;
-  --go: #00ff41;
-  --go-bg: rgba(0,255,65,0.12);
-  --nogo: #ff3333;
-  --nogo-bg: rgba(255,51,51,0.12);
-  --amber: #ffaa00;
-  --amber-bg: rgba(255,170,0,0.12);
-  --vfr: #00cc44;
+  --bg: #0D120D;
+  --bg-card: #141F14;
+  --bg-card-hover: #1a2a1a;
+  --accent: #E5D633;
+  --accent-dim: rgba(229,214,51,0.15);
+  --accent-border: rgba(229,214,51,0.3);
+  --border: #1F2E1F;
+  --border-light: #2a3d2a;
+  --text: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.5);
+  --text-dim: rgba(255,255,255,0.3);
+  --go: #40BF40;
+  --go-bg: rgba(64,191,64,0.12);
+  --nogo: #D92626;
+  --nogo-bg: rgba(217,38,38,0.12);
+  --marginal: #E5D633;
+  --marginal-bg: rgba(229,214,51,0.12);
+  --vfr: #40BF40;
   --mvfr: #4488ff;
-  --ifr: #ff3333;
+  --ifr: #D92626;
   --lifr: #ff44ff;
-  --accent: #3b82f6;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-family: 'SF Mono','Fira Code','Cascadia Code','Courier New',monospace;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  line-height: 1.4;
+  line-height: 1.6;
 }
+
+/* Header */
 .header {
-  background: linear-gradient(180deg, #0f1729 0%, var(--bg) 100%);
-  border-bottom: 1px solid var(--card-border);
+  background: linear-gradient(180deg, #111a11 0%, var(--bg) 100%);
+  border-bottom: 2px solid var(--border);
   padding: 16px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -47,50 +63,58 @@ body {
   gap: 12px;
 }
 .header-title h1 {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 2px;
+  font-size: clamp(13px, 2.5vw, 18px);
+  font-weight: 900;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  color: var(--text);
+  color: var(--accent);
 }
-.header-icon {
-  font-size: 28px;
+.header-logo {
+  font-size: 24px;
+  filter: drop-shadow(0 0 8px rgba(229,214,51,0.3));
 }
-.header-meta {
+.header-right {
   display: flex;
   align-items: center;
   gap: 16px;
-  font-size: 11px;
+}
+.header-meta {
+  font-size: 10px;
   color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 .tabs {
   display: flex;
-  gap: 4px;
-  background: var(--card);
+  gap: 2px;
+  background: rgba(0,0,0,0.3);
   border-radius: 8px;
   padding: 3px;
-  border: 1px solid var(--card-border);
+  border: 1px solid var(--border);
 }
 .tab {
-  padding: 6px 16px;
+  padding: 6px 18px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: inherit;
   color: var(--text-dim);
   background: transparent;
   border: none;
   transition: all 0.2s;
+  letter-spacing: 1px;
 }
 .tab.active {
   background: var(--accent);
-  color: #fff;
+  color: #000;
 }
 .tab:hover:not(.active) {
   color: var(--text);
   background: rgba(255,255,255,0.05);
 }
+
+/* Container */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -99,78 +123,132 @@ body {
   flex-direction: column;
   gap: 16px;
 }
+
+/* Cards */
 .card {
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   overflow: hidden;
 }
+.card.gold-accent { border-top: 2px solid var(--accent); }
 .card-header {
   padding: 12px 16px;
-  border-bottom: 1px solid var(--card-border);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2px;
   text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+.card-header:hover { background: var(--bg-card-hover); }
+.card-header .collapse-icon {
+  font-size: 10px;
+  transition: transform 0.3s;
   color: var(--text-dim);
 }
-.card-body { padding: 16px; }
+.card-header .collapse-icon.collapsed { transform: rotate(-90deg); }
+.card-body {
+  padding: 16px;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  overflow: hidden;
+}
+.card-body.collapsed {
+  max-height: 0 !important;
+  padding-top: 0;
+  padding-bottom: 0;
+}
 
 /* Training Status */
-.training-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.training-grid { display: flex; flex-direction: column; gap: 6px; }
 .station-row {
   display: flex;
   align-items: center;
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 6px;
   background: rgba(255,255,255,0.02);
   gap: 12px;
+  transition: background 0.2s;
 }
+.station-row:hover { background: rgba(255,255,255,0.04); }
 .station-row.cairns {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--card-border);
+  background: rgba(229,214,51,0.05);
+  border: 1px solid var(--accent-border);
 }
 .station-icon { font-size: 18px; width: 28px; text-align: center; }
-.station-name {
-  font-weight: 700;
-  font-size: 14px;
-  min-width: 90px;
-}
-.station-area {
-  font-size: 11px;
-  color: var(--text-dim);
-  min-width: 100px;
-}
-.station-info {
-  font-size: 11px;
-  flex: 1;
-}
+.station-name { font-weight: 700; font-size: 14px; min-width: 100px; }
+.station-area { font-size: 11px; color: var(--text-secondary); min-width: 100px; letter-spacing: 1px; }
+.station-info { font-size: 11px; flex: 1; }
 .badge {
   padding: 4px 14px;
-  border-radius: 20px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 1px;
   text-align: center;
   min-width: 72px;
 }
-.badge.go { background: var(--go-bg); color: var(--go); border: 1px solid rgba(0,255,65,0.3); }
-.badge.nogo { background: var(--nogo-bg); color: var(--nogo); border: 1px solid rgba(255,51,51,0.3); }
-.badge.unknown { background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--card-border); }
-.go-count {
-  font-size: 28px;
-  font-weight: 800;
-  text-align: center;
-  padding: 8px;
+.badge.go { background: var(--go-bg); color: var(--go); border: 1px solid rgba(64,191,64,0.3); }
+.badge.nogo { background: var(--nogo-bg); color: var(--nogo); border: 1px solid rgba(217,38,38,0.3); }
+.badge.unknown { background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border); }
+.go-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-top: 8px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
 }
-.go-count .number { font-size: 36px; }
+.go-summary .count { font-size: 28px; font-weight: 900; }
+.go-summary .legend { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
+
+/* Advisory Banner */
+.advisory-banner {
+  border: 1px solid var(--nogo);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: pulseBorder 2s ease-in-out infinite;
+}
+@keyframes pulseBorder {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217,38,38,0); }
+  50% { box-shadow: 0 0 12px 2px rgba(217,38,38,0.3); }
+}
+.advisory-banner.watch-level {
+  border-color: var(--accent);
+  animation-name: pulseBorderGold;
+}
+@keyframes pulseBorderGold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229,214,51,0); }
+  50% { box-shadow: 0 0 12px 2px rgba(229,214,51,0.3); }
+}
+.advisory-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.advisory-item:last-child { border-bottom: none; }
+.advisory-type-badge {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+.advisory-type-badge.warning { background: var(--nogo-bg); color: var(--nogo); }
+.advisory-type-badge.watch { background: var(--marginal-bg); color: var(--marginal); }
+.advisory-info { font-size: 12px; flex: 1; line-height: 1.5; }
+.advisory-times { font-size: 10px; color: var(--text-secondary); margin-top: 4px; letter-spacing: 1px; }
 
 /* METAR */
 .metar-raw {
@@ -181,24 +259,22 @@ body {
   word-break: break-all;
   margin-bottom: 12px;
   border-left: 3px solid var(--accent);
+  line-height: 1.5;
 }
 .metar-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
 }
-.metar-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.metar-label {
+.data-item { display: flex; flex-direction: column; gap: 3px; }
+.data-label {
   font-size: 10px;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  font-weight: 600;
 }
-.metar-value { font-size: 16px; font-weight: 700; }
+.data-value { font-size: 16px; font-weight: 700; }
 .flt-cat-badge {
   display: inline-block;
   padding: 2px 10px;
@@ -207,10 +283,40 @@ body {
   font-weight: 800;
   letter-spacing: 1px;
 }
-.flt-cat-badge.VFR { background: rgba(0,204,68,0.15); color: var(--vfr); }
+.flt-cat-badge.VFR { background: rgba(64,191,64,0.15); color: var(--vfr); }
 .flt-cat-badge.MVFR { background: rgba(68,136,255,0.15); color: var(--mvfr); }
-.flt-cat-badge.IFR { background: rgba(255,51,51,0.15); color: var(--ifr); }
+.flt-cat-badge.IFR { background: rgba(217,38,38,0.15); color: var(--ifr); }
 .flt-cat-badge.LIFR { background: rgba(255,68,255,0.15); color: var(--lifr); }
+.wx-emoji { font-size: 18px; margin-left: 4px; }
+
+/* Key Weather */
+.key-weather-grid {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 0;
+  font-size: 12px;
+}
+.kw-header {
+  padding: 8px 12px;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+.kw-label {
+  padding: 6px 12px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.kw-value {
+  padding: 6px 12px;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
 
 /* Area Forecasts */
 .area-grid {
@@ -220,345 +326,516 @@ body {
 }
 .area-card {
   background: rgba(0,0,0,0.2);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 12px;
-  border: 1px solid var(--card-border);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s;
 }
+.area-card:hover { border-color: var(--border-light); }
 .area-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
+  gap: 8px;
 }
-.area-name {
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 1px;
+.area-name { font-weight: 800; font-size: 13px; letter-spacing: 1px; }
+.area-forecast { font-size: 11px; white-space: pre-wrap; line-height: 1.6; }
+.area-forecast .segment-dim { color: var(--text-dim); }
+.amendment-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  animation: pulseAmendment 2s ease-in-out infinite;
 }
-.area-forecast {
-  font-size: 11px;
-  color: var(--text);
-  white-space: pre-wrap;
-  line-height: 1.5;
+@keyframes pulseAmendment {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
-.ts-coverage {
+.ts-badge {
   font-size: 10px;
   margin-top: 6px;
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: 4px;
   display: inline-block;
 }
-.ts-coverage.active { background: var(--amber-bg); color: var(--amber); }
-.ts-coverage.none { color: var(--text-dim); }
+.ts-badge.active { background: var(--accent-dim); color: var(--accent); font-weight: 700; }
+.ts-badge.none { color: var(--text-dim); }
 
 /* Hazards */
 .hazard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
 }
 .hazard-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 6px;
   background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
 }
-.hazard-label {
+.hazard-value { font-size: 13px; font-weight: 700; }
+.hazard-value.none { color: var(--text-dim); }
+.hazard-value.active { color: var(--accent); }
+.hazards-badge {
   font-size: 10px;
-  color: var(--text-dim);
-  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 700;
   letter-spacing: 1px;
 }
-.hazard-value {
-  font-size: 13px;
-  font-weight: 700;
-}
-.hazard-value.none { color: var(--text-dim); }
-.hazard-value.active { color: var(--amber); }
 
-/* Advisories */
-.advisory-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px;
+/* Space Weather */
+.space-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.space-item {
+  text-align: center;
+  padding: 16px 12px;
   border-radius: 6px;
   background: rgba(0,0,0,0.2);
-  margin-bottom: 8px;
+  border: 1px solid var(--border);
 }
-.advisory-badge {
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-size: 11px;
+.space-label {
+  font-size: 10px;
   font-weight: 800;
-  white-space: nowrap;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
 }
-.advisory-badge.warning { background: rgba(255,51,51,0.2); color: var(--nogo); }
-.advisory-badge.watch { background: var(--amber-bg); color: var(--amber); }
-.advisory-info { font-size: 12px; flex: 1; }
-.advisory-times { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+.space-value { font-size: 14px; font-weight: 700; }
+.space-value.none { color: var(--text-dim); }
+.space-value.active { color: #bb66ff; }
 
-/* Flight Level Winds */
-.winds-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
+/* Winds Table */
+.winds-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .winds-table th {
   text-align: left;
-  padding: 6px 10px;
+  padding: 8px 12px;
   font-size: 10px;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 1px solid var(--card-border);
+  letter-spacing: 1.5px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
 }
 .winds-table td {
-  padding: 6px 10px;
+  padding: 7px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 .winds-table tr:last-child td { border-bottom: none; }
+.winds-table tr:hover td { background: rgba(255,255,255,0.02); }
 .wind-badge {
   font-size: 9px;
   padding: 1px 6px;
   border-radius: 3px;
-  margin-left: 6px;
+  margin-left: 8px;
   font-weight: 700;
+  letter-spacing: 0.5px;
 }
-.wind-badge.high { background: var(--amber-bg); color: var(--amber); }
+.wind-badge.high { background: var(--accent-dim); color: var(--accent); }
 .wind-badge.icing { background: rgba(68,136,255,0.15); color: var(--mvfr); }
 
-/* 7-Day */
-.seven-day-grid {
-  overflow-x: auto;
+/* Solar/Lunar */
+.solar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
 }
-.seven-day-table {
-  width: 100%;
-  border-collapse: collapse;
+.solar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 6px 0;
+}
+.solar-icon { font-size: 16px; }
+
+/* Takeoff Data */
+.takeoff-section { margin-bottom: 12px; }
+.takeoff-section-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.takeoff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.fog-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(128,128,128,0.2);
+  color: #aaa;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Aerodrome */
+.aero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 10px;
+}
+.aero-card {
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+}
+.aero-icao { font-weight: 800; font-size: 14px; letter-spacing: 1px; margin-bottom: 8px; }
+.aero-period {
   font-size: 11px;
-  min-width: 600px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  line-height: 1.5;
 }
+.aero-period:last-child { border-bottom: none; }
+.aero-period.tempo { color: var(--text-dim); padding-left: 16px; font-style: italic; }
+.aero-period .period-type { font-weight: 700; margin-right: 4px; }
+.aero-same { font-size: 10px; color: var(--text-dim); margin-top: 8px; letter-spacing: 0.5px; }
+
+/* 7-Day */
+.seven-day-grid { overflow-x: auto; }
+.seven-day-table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 600px; }
 .seven-day-table th {
-  padding: 4px 6px;
+  padding: 6px 6px;
   font-size: 10px;
   color: var(--text-dim);
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
-.seven-day-table td {
-  padding: 4px 6px;
-  text-align: center;
-}
+.seven-day-table td { padding: 5px 6px; text-align: center; }
 .seven-day-table td:first-child {
   text-align: left;
   font-weight: 700;
   font-size: 10px;
-  color: var(--text-dim);
+  color: var(--text-secondary);
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
+.seven-day-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
 .dot {
   width: 14px;
   height: 14px;
   border-radius: 50%;
   display: inline-block;
 }
-.dot.go { background: var(--go); box-shadow: 0 0 6px rgba(0,255,65,0.4); }
-.dot.marginal { background: var(--amber); box-shadow: 0 0 6px rgba(255,170,0,0.4); }
-.dot.noGo { background: var(--nogo); box-shadow: 0 0 6px rgba(255,51,51,0.4); }
+.dot.go { background: var(--go); box-shadow: 0 0 6px rgba(64,191,64,0.4); }
+.dot.marginal { background: var(--accent); box-shadow: 0 0 6px rgba(229,214,51,0.4); }
+.dot.noGo { background: var(--nogo); box-shadow: 0 0 6px rgba(217,38,38,0.4); }
 .temps-row td { font-weight: 700; font-size: 12px; }
-
-/* Solar/Lunar */
-.solar-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
-}
-.solar-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-}
-.solar-icon { font-size: 16px; }
-.solar-label {
-  font-size: 10px;
-  color: var(--text-dim);
-  text-transform: uppercase;
-}
-
-/* Aerodrome */
-.aero-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 10px;
-}
-.aero-card {
-  background: rgba(0,0,0,0.2);
-  border-radius: 8px;
-  padding: 12px;
-  border: 1px solid var(--card-border);
-}
-.aero-icao {
-  font-weight: 800;
-  font-size: 14px;
-  letter-spacing: 1px;
-  margin-bottom: 6px;
-}
-.aero-period {
+.seven-day-synopsis {
+  margin-top: 12px;
   font-size: 11px;
-  padding: 4px 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 10px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+}
+.thresholds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  margin-top: 12px;
+}
+.thresholds-table th {
+  text-align: left;
+  padding: 4px 8px;
+  color: var(--text-dim);
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+}
+.thresholds-table td {
+  padding: 4px 8px;
+  color: var(--text-secondary);
   border-bottom: 1px solid rgba(255,255,255,0.03);
 }
-.aero-period:last-child { border-bottom: none; }
-.aero-period.tempo {
-  color: var(--text-dim);
-  padding-left: 16px;
-  font-style: italic;
-}
-.aero-same {
+.thresholds-toggle {
   font-size: 10px;
-  color: var(--text-dim);
-  margin-top: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  margin-top: 8px;
+  letter-spacing: 1px;
+  font-weight: 600;
 }
 
-/* Takeoff Data */
-.takeoff-grid {
+/* Enroute Hazards */
+.enroute-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 10px;
 }
+.enroute-card {
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+}
+.enroute-card-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+.enroute-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 11px;
+}
+.enroute-row .label { color: var(--text-dim); }
+.enroute-row .value { font-weight: 700; }
+.enroute-row .value.none { color: var(--text-dim); }
+.enroute-row .value.active { color: var(--accent); }
 
-.no-data {
-  text-align: center;
-  padding: 40px;
-  color: var(--text-dim);
-  font-size: 14px;
+/* Utilities */
+.no-data { text-align: center; padding: 40px; color: var(--text-dim); font-size: 13px; }
+.section-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
+/* Footer */
 .footer {
   text-align: center;
   padding: 24px;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-dim);
-  border-top: 1px solid var(--card-border);
+  letter-spacing: 1px;
+}
+.footer-line {
+  width: 60px;
+  height: 2px;
+  background: var(--accent);
+  margin: 0 auto 12px;
+  border-radius: 1px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .header { flex-direction: column; align-items: flex-start; }
-  .container { padding: 12px; }
-  .area-grid { grid-template-columns: 1fr; }
-  .aero-grid { grid-template-columns: 1fr; }
+  .header-inner { flex-direction: column; align-items: flex-start; }
+  .header-right { width: 100%; justify-content: space-between; }
+  .container { padding: 12px; gap: 12px; }
+  .area-grid, .aero-grid { grid-template-columns: 1fr; }
+  .enroute-grid { grid-template-columns: 1fr; }
+  .space-grid { grid-template-columns: 1fr; }
   .station-area { display: none; }
-  .header-title h1 { font-size: 14px; }
+  .station-name { min-width: 80px; font-size: 12px; }
+  .go-summary { flex-direction: column; gap: 8px; text-align: center; }
+  .key-weather-grid { font-size: 11px; }
+}
+@media (max-width: 480px) {
+  .header { padding: 12px 16px; }
+  .container { padding: 8px; }
+  .metar-grid { grid-template-columns: repeat(2, 1fr); }
+  .takeoff-grid { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-title">
-    <span class="header-icon">&#x1F681;</span>
-    <h1>Fort Novosel Training Status</h1>
-  </div>
-  <div class="header-meta">
-    <span id="lastUpdated"></span>
-    <div class="tabs" id="periodTabs"></div>
+  <div class="header-inner">
+    <div class="header-title">
+      <span class="header-logo">&#x1F681;</span>
+      <h1>Fort Novosel Training Status</h1>
+    </div>
+    <div class="header-right">
+      <span class="header-meta" id="lastUpdated"></span>
+      <div class="tabs" id="periodTabs"></div>
+    </div>
   </div>
 </div>
 
 <div class="container">
   <!-- Training Status -->
-  <div class="card">
-    <div class="card-header">
+  <div class="card gold-accent" id="trainingCard">
+    <div class="card-header" onclick="toggleCard('trainingBody')">
       <span>Training Status</span>
-      <span id="goCountHeader"></span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="goCountHeader"></span>
+        <span class="collapse-icon" id="trainingBody-icon">&#x25BC;</span>
+      </span>
     </div>
-    <div class="card-body">
+    <div class="card-body" id="trainingBody">
       <div class="training-grid" id="trainingGrid"></div>
     </div>
   </div>
 
+  <!-- Weather Advisories Banner -->
+  <div id="advisoriesCard" style="display:none"></div>
+
   <!-- METAR -->
   <div class="card">
-    <div class="card-header">
-      <span>Current METAR</span>
-      <span id="metarTime"></span>
+    <div class="card-header" onclick="toggleCard('metarBody')">
+      <span>Current METAR <span id="metarEmojis"></span></span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="metarFltCat"></span>
+        <span id="metarTime"></span>
+        <span class="collapse-icon" id="metarBody-icon">&#x25BC;</span>
+      </span>
     </div>
     <div class="card-body" id="metarBody"></div>
   </div>
 
+  <!-- Key Weather -->
+  <div class="card" id="keyWeatherCard" style="display:none">
+    <div class="card-header" onclick="toggleCard('keyWeatherBody')">
+      <span>Key Weather</span>
+      <span class="collapse-icon" id="keyWeatherBody-icon">&#x25BC;</span>
+    </div>
+    <div class="card-body" id="keyWeatherBody"></div>
+  </div>
+
   <!-- Area Forecasts -->
   <div class="card">
-    <div class="card-header">
+    <div class="card-header" onclick="toggleCard('areaBody')">
       <span>Area Forecasts</span>
-      <span id="validPeriod"></span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="validPeriod" style="font-weight:600"></span>
+        <span class="collapse-icon" id="areaBody-icon">&#x25BC;</span>
+      </span>
     </div>
-    <div class="card-body">
+    <div class="card-body" id="areaBody">
       <div class="area-grid" id="areaGrid"></div>
     </div>
   </div>
 
-  <!-- Flight Hazards -->
+  <!-- MEF Flight Hazards -->
   <div class="card">
-    <div class="card-header">
-      <span>Flight Hazards</span>
-      <span id="hazardsBadge"></span>
+    <div class="card-header" onclick="toggleCard('hazardBody')">
+      <span>Flight Hazards (MEF)</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="hazardsBadge"></span>
+        <span class="collapse-icon" id="hazardBody-icon">&#x25BC;</span>
+      </span>
     </div>
-    <div class="card-body">
+    <div class="card-body" id="hazardBody">
       <div class="hazard-grid" id="hazardGrid"></div>
     </div>
   </div>
 
-  <!-- Weather Advisories -->
-  <div class="card" id="advisoriesCard" style="display:none">
-    <div class="card-header"><span>Weather Advisories</span></div>
-    <div class="card-body" id="advisoriesBody"></div>
+  <!-- Enroute Hazards -->
+  <div class="card" id="enrouteCard" style="display:none">
+    <div class="card-header" onclick="toggleCard('enrouteBody')">
+      <span>Enroute Hazards (175-1)</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="enrouteBadge"></span>
+        <span class="collapse-icon" id="enrouteBody-icon">&#x25BC;</span>
+      </span>
+    </div>
+    <div class="card-body" id="enrouteBody"></div>
+  </div>
+
+  <!-- Space Weather -->
+  <div class="card" id="spaceCard" style="display:none">
+    <div class="card-header" onclick="toggleCard('spaceBody')">
+      <span>Space Weather</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="spaceBadge"></span>
+        <span class="collapse-icon" id="spaceBody-icon">&#x25BC;</span>
+      </span>
+    </div>
+    <div class="card-body" id="spaceBody">
+      <div class="space-grid" id="spaceGrid"></div>
+    </div>
   </div>
 
   <!-- Flight Level Winds -->
   <div class="card">
-    <div class="card-header"><span>Flight Level Winds &amp; Temps</span></div>
+    <div class="card-header" onclick="toggleCard('windsBody')">
+      <span>Flight Level Winds &amp; Temps</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="windsSummary"></span>
+        <span class="collapse-icon" id="windsBody-icon">&#x25BC;</span>
+      </span>
+    </div>
     <div class="card-body" id="windsBody"></div>
   </div>
 
-  <!-- Solar / Lunar -->
+  <!-- Solar/Lunar -->
   <div class="card" id="solarCard" style="display:none">
-    <div class="card-header"><span>Solar / Lunar</span></div>
-    <div class="card-body">
+    <div class="card-header" onclick="toggleCard('solarBody')">
+      <span>Solar / Lunar</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="solarSummary"></span>
+        <span class="collapse-icon" id="solarBody-icon">&#x25BC;</span>
+      </span>
+    </div>
+    <div class="card-body" id="solarBody">
       <div class="solar-grid" id="solarGrid"></div>
     </div>
   </div>
 
   <!-- Takeoff Data -->
   <div class="card" id="takeoffCard" style="display:none">
-    <div class="card-header"><span>Takeoff Data (KOZR)</span></div>
-    <div class="card-body">
-      <div class="takeoff-grid" id="takeoffGrid"></div>
+    <div class="card-header" onclick="toggleCard('takeoffBody')">
+      <span>Takeoff Data (KOZR)</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="fogBadge"></span>
+        <span class="collapse-icon" id="takeoffBody-icon">&#x25BC;</span>
+      </span>
     </div>
+    <div class="card-body" id="takeoffBody"></div>
   </div>
 
   <!-- Aerodrome Forecasts -->
   <div class="card" id="aeroCard" style="display:none">
-    <div class="card-header"><span>Aerodrome Forecasts</span></div>
-    <div class="card-body">
+    <div class="card-header" onclick="toggleCard('aeroBody')">
+      <span>Aerodrome Forecasts</span>
+      <span class="collapse-icon" id="aeroBody-icon">&#x25BC;</span>
+    </div>
+    <div class="card-body" id="aeroBody">
       <div class="aero-grid" id="aeroGrid"></div>
     </div>
   </div>
 
   <!-- 7-Day Outlook -->
   <div class="card" id="sevenDayCard" style="display:none">
-    <div class="card-header"><span>7-Day Outlook</span><span id="sevenDayTitle"></span></div>
-    <div class="card-body">
+    <div class="card-header" onclick="toggleCard('sevenDayBody')">
+      <span>7-Day Outlook</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span id="sevenDayTitle"></span>
+        <span class="collapse-icon" id="sevenDayBody-icon">&#x25BC;</span>
+      </span>
+    </div>
+    <div class="card-body" id="sevenDayBody">
       <div class="seven-day-grid" id="sevenDayGrid"></div>
     </div>
   </div>
 </div>
 
-<div class="footer" id="footer"></div>
+<div class="footer">
+  <div class="footer-line"></div>
+  <div id="footerText">Data exported from My Weather Pal</div>
+</div>
 
 <script>
 let DATA = null;
@@ -572,7 +849,7 @@ async function loadData() {
     render();
   } catch(e) {
     document.querySelector('.container').innerHTML =
-      '<div class="no-data">Unable to load data.json<br><br>Export dashboard data from My Weather Pal and place data.json alongside this file.</div>';
+      '<div class="no-data">UNABLE TO LOAD DATA.JSON<br><br>Export dashboard data from My Weather Pal and place data.json alongside this file.</div>';
   }
 }
 
@@ -589,8 +866,117 @@ function initTabs() {
   });
 }
 
+function toggleCard(bodyId) {
+  const body = document.getElementById(bodyId);
+  const icon = document.getElementById(bodyId + '-icon');
+  if (!body) return;
+  body.classList.toggle('collapsed');
+  if (icon) icon.classList.toggle('collapsed');
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
+function badgeClass(status) {
+  if (status === 'GO') return 'badge go';
+  if (status === 'NO-GO') return 'badge nogo';
+  return 'badge unknown';
+}
+
+function convertAltitude(code) {
+  if (!code) return '--';
+  const num = parseInt(code) * 100;
+  if (isNaN(num)) return code;
+  return num.toLocaleString() + ' ft';
+}
+
+function getWindSpeed(windStr) {
+  if (!windStr) return 0;
+  const m = windStr.match(/\d{3}(\d{2,3})/);
+  return m ? parseInt(m[1]) : 0;
+}
+
+function metarWeatherEmojis(wxString) {
+  if (!wxString) return '';
+  const emojis = [];
+  if (/TS/i.test(wxString)) emojis.push('\u26C8\uFE0F');
+  if (/RA/i.test(wxString)) emojis.push('\uD83C\uDF27\uFE0F');
+  if (/SN/i.test(wxString)) emojis.push('\u2744\uFE0F');
+  if (/DZ/i.test(wxString)) emojis.push('\uD83C\uDF26\uFE0F');
+  if (/FG/i.test(wxString)) emojis.push('\uD83C\uDF2B\uFE0F');
+  if (/BR/i.test(wxString)) emojis.push('\uD83C\uDF01');
+  if (/HZ/i.test(wxString)) emojis.push('\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F');
+  if (/FZ/i.test(wxString)) emojis.push('\uD83E\uDD76');
+  if (/PL/i.test(wxString)) emojis.push('\uD83E\uDDCA');
+  if (/GR|GS/i.test(wxString)) emojis.push('\uD83E\uDEA8');
+  if (/DU|SA/i.test(wxString)) emojis.push('\uD83D\uDCA8');
+  if (/FC/i.test(wxString)) emojis.push('\uD83C\uDF2A\uFE0F');
+  return emojis.join(' ');
+}
+
+function formatWind(m) {
+  if (!m.wspd && !m.wdir) return 'CALM';
+  if (m.wspd === 0) return 'CALM';
+  const dir = m.wdir === 0 ? 'VRB' : String(m.wdir).padStart(3, '0');
+  const spd = String(m.wspd || 0).padStart(2, '0');
+  if (m.wgst) return dir + '/' + spd + 'G' + m.wgst + 'KT';
+  return dir + '/' + spd + 'KT';
+}
+
+function getFlightCatColor(cat) {
+  switch ((cat || '').toUpperCase()) {
+    case 'VFR': return 'var(--vfr)';
+    case 'MVFR': return 'var(--mvfr)';
+    case 'IFR': return 'var(--ifr)';
+    case 'LIFR': return 'var(--lifr)';
+    default: return 'var(--text)';
+  }
+}
+
+// Determine flight category from sky condition and visibility text
+function determineFlightCat(skyCondition, visibility) {
+  let ceiling = 99999;
+  let vis = 99;
+
+  // Parse ceiling from sky condition
+  if (skyCondition) {
+    const layers = skyCondition.match(/(BKN|OVC)(\d{3})/g);
+    if (layers) {
+      layers.forEach(l => {
+        const base = parseInt(l.match(/\d{3}/)[0]) * 100;
+        if (base < ceiling) ceiling = base;
+      });
+    }
+  }
+
+  // Parse visibility
+  if (visibility) {
+    const vStr = visibility.replace(/SM/i, '').trim();
+    if (vStr.startsWith('P')) { vis = 99; }
+    else if (vStr.includes('/')) {
+      const parts = vStr.split(/\s+/);
+      if (parts.length === 2 && parts[1].includes('/')) {
+        const frac = parts[1].split('/');
+        vis = parseInt(parts[0]) + parseInt(frac[0]) / parseInt(frac[1]);
+      } else {
+        const frac = vStr.split('/');
+        vis = parseInt(frac[0]) / parseInt(frac[1]);
+      }
+    } else {
+      vis = parseFloat(vStr) || 99;
+    }
+  }
+
+  if (ceiling < 500 || vis < 1) return 'LIFR';
+  if (ceiling < 1000 || vis < 3) return 'IFR';
+  if (ceiling <= 3000 || vis <= 5) return 'MVFR';
+  return 'VFR';
+}
+
 function render() {
-  // Update tab active state
   document.querySelectorAll('.tab').forEach(t => {
     t.classList.toggle('active', t.textContent === currentPeriod);
   });
@@ -601,26 +987,27 @@ function render() {
   // Last updated
   const exported = new Date(DATA.exportedAt);
   document.getElementById('lastUpdated').textContent =
-    'EXPORTED: ' + exported.toLocaleString('en-US', {
+    'EXPORTED ' + exported.toLocaleString('en-US', {
       month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:false, timeZoneName:'short'
     }).toUpperCase();
 
   renderTrainingStatus(fc);
+  renderAdvisories(fc);
   renderMETAR();
+  renderKeyWeather(fc);
   renderAreaForecasts(fc);
   renderHazards(fc);
-  renderAdvisories(fc);
+  renderEnrouteHazards(fc);
+  renderSpaceWeather(fc);
   renderWinds(fc);
   renderSolarLunar(fc);
   renderTakeoffData(fc);
   renderAerodromes(fc);
   renderSevenDay();
-}
 
-function badgeClass(status) {
-  if (status === 'GO') return 'badge go';
-  if (status === 'NO-GO') return 'badge nogo';
-  return 'badge unknown';
+  // Footer
+  document.getElementById('footerText').textContent =
+    'Data exported from My Weather Pal \u00B7 ' + exported.toLocaleString();
 }
 
 function renderTrainingStatus(fc) {
@@ -628,25 +1015,64 @@ function renderTrainingStatus(fc) {
   const grid = document.getElementById('trainingGrid');
 
   const stations = [
-    { name: 'CAIRNS AAF', area: 'KOZR', status: ts.cairns, info: ts.cairns === 'GO' ? '1000/3 METAR' : '1000/3 METAR', isCairns: true },
+    { name: 'CAIRNS AAF', area: 'KOZR', status: ts.cairns, info: '\u22651000/3 METAR', isCairns: true },
     { name: 'ALLEN', area: ts.allen.area, status: ts.allen.status, info: ts.allen.info },
     { name: 'TOTH', area: ts.toth.area, status: ts.toth.status, info: ts.toth.info },
     { name: 'HIGHBLUFF', area: ts.highbluff.area, status: ts.highbluff.status, info: ts.highbluff.info },
     { name: 'LUCAS', area: ts.lucas.area, status: ts.lucas.status, info: ts.lucas.info },
   ];
 
-  grid.innerHTML = stations.map(s => `
-    <div class="station-row ${s.isCairns ? 'cairns' : ''}">
-      <span class="station-icon">${s.status === 'GO' ? '&#x1F681;' : '&#x2601;&#xFE0F;'}</span>
-      <span class="station-name">${s.name}</span>
-      <span class="station-area">${s.area}</span>
-      <span class="station-info" style="color:${s.status === 'GO' ? 'var(--go)' : (s.status === 'NO-GO' ? 'var(--nogo)' : 'var(--text-dim)')}">${s.info}</span>
-      <span class="${badgeClass(s.status)}">${s.status}</span>
-    </div>
-  `).join('');
+  grid.innerHTML = stations.map(s => {
+    const infoColor = s.status === 'GO' ? 'var(--go)' : (s.status === 'NO-GO' ? 'var(--nogo)' : 'var(--text-dim)');
+    const icon = s.status === 'GO' ? '\uD83D\uDE81' : '\u2601\uFE0F';
+    return '<div class="station-row ' + (s.isCairns ? 'cairns' : '') + '">' +
+      '<span class="station-icon">' + icon + '</span>' +
+      '<span class="station-name">' + s.name + '</span>' +
+      '<span class="station-area">' + s.area + '</span>' +
+      '<span class="station-info" style="color:' + infoColor + '">' + escapeHtml(s.info) + '</span>' +
+      '<span class="' + badgeClass(s.status) + '">' + s.status + '</span>' +
+    '</div>';
+  }).join('');
+
+  // GO summary
+  const countColor = ts.goCount >= 4 ? 'var(--go)' : (ts.goCount >= 2 ? 'var(--accent)' : 'var(--nogo)');
+  grid.innerHTML += '<div class="go-summary">' +
+    '<span class="legend">CAIRNS = \u22651000/3 \u00A0\u00A0 STAGEFIELDS = \u2265700/1</span>' +
+    '<span class="count" style="color:' + countColor + '">' + ts.goCount + '/5 GO</span>' +
+  '</div>';
 
   document.getElementById('goCountHeader').innerHTML =
-    `<span class="go-count"><span class="number" style="color:${ts.goCount >= 4 ? 'var(--go)' : (ts.goCount >= 2 ? 'var(--amber)' : 'var(--nogo)')}">${ts.goCount}</span>/5 GO</span>`;
+    '<span style="color:' + countColor + ';font-weight:900;font-size:14px">' + ts.goCount + '/5</span>';
+}
+
+function renderAdvisories(fc) {
+  const card = document.getElementById('advisoriesCard');
+  const advisories = fc.mef?.weatherAdvisories || [];
+
+  if (advisories.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const hasWarning = advisories.some(a => a.type === 'TWA' || a.type === 'WARNING');
+  const bannerClass = hasWarning ? 'advisory-banner' : 'advisory-banner watch-level';
+
+  card.innerHTML = '<div class="card ' + bannerClass + '">' +
+    '<div class="card-header" style="cursor:default">' +
+      '<span>\u26A0\uFE0F Weather Advisories</span>' +
+      '<span style="font-size:10px;color:var(--nogo)">' + advisories.length + ' ACTIVE</span>' +
+    '</div>' +
+    '<div class="card-body" style="padding:0">' +
+      advisories.map(a => {
+        const isWarning = a.type === 'TWA' || a.type === 'WARNING';
+        return '<div class="advisory-item">' +
+          '<span class="advisory-type-badge ' + (isWarning ? 'warning' : 'watch') + '">' + a.type + ' ' + a.number + '</span>' +
+          '<div class="advisory-info">' +
+            escapeHtml(a.criteria) +
+            '<div class="advisory-times">' + a.validFrom + ' \u2014 ' + a.validTo + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>' +
+  '</div>';
 }
 
 function renderMETAR() {
@@ -655,58 +1081,75 @@ function renderMETAR() {
   if (!m) { body.innerHTML = '<div class="no-data">No METAR data available</div>'; return; }
 
   const fltCat = m.fltCat || 'VFR';
-  const ceil = m.ceilingFeet != null ? m.ceilingFeet.toLocaleString() + ' ft' : 'CLR';
+  const ceil = m.clouds ? getCeilingFromClouds(m.clouds) : '--';
   const wind = formatWind(m);
   const vis = m.visib || '--';
   const temp = m.temp != null ? Math.round(m.temp) + '\u00B0C' : '--';
   const dewp = m.dewp != null ? Math.round(m.dewp) + '\u00B0C' : '--';
   const altim = m.altim ? (m.altim / 33.8639).toFixed(2) + '"' : '--';
+  const emojis = metarWeatherEmojis(m.wxString);
 
   document.getElementById('metarTime').textContent = m.reportTime || '';
+  document.getElementById('metarFltCat').innerHTML = '<span class="flt-cat-badge ' + fltCat + '">' + fltCat + '</span>';
+  document.getElementById('metarEmojis').innerHTML = emojis ? '<span class="wx-emoji">' + emojis + '</span>' : '';
 
-  body.innerHTML = `
-    ${m.rawOb ? `<div class="metar-raw">${m.rawOb}</div>` : ''}
-    <div class="metar-grid">
-      <div class="metar-item">
-        <span class="metar-label">Flight Cat</span>
-        <span class="flt-cat-badge ${fltCat}">${fltCat}</span>
-      </div>
-      <div class="metar-item">
-        <span class="metar-label">Wind</span>
-        <span class="metar-value">${wind}</span>
-      </div>
-      <div class="metar-item">
-        <span class="metar-label">Visibility</span>
-        <span class="metar-value">${vis} SM</span>
-      </div>
-      <div class="metar-item">
-        <span class="metar-label">Ceiling</span>
-        <span class="metar-value">${ceil}</span>
-      </div>
-      <div class="metar-item">
-        <span class="metar-label">Temp</span>
-        <span class="metar-value">${temp}</span>
-      </div>
-      <div class="metar-item">
-        <span class="metar-label">Dewpoint</span>
-        <span class="metar-value">${dewp}</span>
-      </div>
-      <div class="metar-item">
-        <span class="metar-label">Altimeter</span>
-        <span class="metar-value">${altim}</span>
-      </div>
-      ${m.wxString ? `<div class="metar-item"><span class="metar-label">Weather</span><span class="metar-value">${m.wxString}</span></div>` : ''}
-    </div>
-  `;
+  body.innerHTML =
+    (m.rawOb ? '<div class="metar-raw">' + escapeHtml(m.rawOb) + '</div>' : '') +
+    '<div class="metar-grid">' +
+      dataItem('Wind', wind) +
+      dataItem('Visibility', vis + ' SM') +
+      dataItem('Ceiling', ceil) +
+      dataItem('Temp', temp) +
+      dataItem('Dewpoint', dewp) +
+      dataItem('Altimeter', altim) +
+      (m.wxString ? dataItem('Weather', m.wxString + ' ' + emojis) : '') +
+      (m.name ? dataItem('Station', m.name) : '') +
+    '</div>';
 }
 
-function formatWind(m) {
-  if (!m.wspd && !m.wdir) return 'CALM';
-  if (m.wspd === 0) return 'CALM';
-  const dir = m.wdir === 0 ? 'VRB' : String(m.wdir).padStart(3, '0');
-  const spd = String(m.wspd || 0).padStart(2, '0');
-  if (m.wgst) return `${dir}/${spd}G${m.wgst}KT`;
-  return `${dir}/${spd}KT`;
+function getCeilingFromClouds(clouds) {
+  let ceiling = null;
+  clouds.forEach(c => {
+    if ((c.cover === 'BKN' || c.cover === 'OVC') && c.base != null) {
+      if (ceiling === null || c.base < ceiling) ceiling = c.base;
+    }
+  });
+  return ceiling != null ? ceiling.toLocaleString() + ' ft' : 'CLR';
+}
+
+function dataItem(label, value) {
+  return '<div class="data-item"><span class="data-label">' + label + '</span><span class="data-value">' + value + '</span></div>';
+}
+
+function renderKeyWeather(fc) {
+  const card = document.getElementById('keyWeatherCard');
+  const body = document.getElementById('keyWeatherBody');
+  const mef = fc.mef;
+
+  if (!mef || !mef.maxTemp) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const rows = [
+    { label: 'Max Temp', kozr: mef.maxTemp?.kozr, area: mef.maxTemp?.area, unit: '\u00B0C' },
+    { label: 'Min Temp', kozr: mef.minTemp?.kozr, area: mef.minTemp?.area, unit: '\u00B0C' },
+    { label: 'Max Dewpoint', kozr: mef.maxDewpoint?.kozr, area: mef.maxDewpoint?.area, unit: '\u00B0C' },
+    { label: 'Min Altimeter', kozr: mef.minAltimeterSetting?.kozr, area: mef.minAltimeterSetting?.area, unit: '"' },
+    { label: 'Max Press Alt', kozr: mef.maxPressureAlt?.kozr, area: mef.maxPressureAlt?.area, unit: ' ft' },
+    { label: 'Max Density Alt', kozr: mef.maxDensityAlt?.kozr, area: mef.maxDensityAlt?.area, unit: ' ft' },
+    { label: 'Min Ceiling', kozr: mef.minCeiling?.kozr, area: mef.minCeiling?.area, unit: ' ft' },
+    { label: 'Min Visibility', kozr: mef.minVisibility?.kozr, area: mef.minVisibility?.area, unit: ' SM' },
+  ].filter(r => r.kozr || r.area);
+
+  if (rows.length === 0) { card.style.display = 'none'; return; }
+
+  body.innerHTML = '<div class="key-weather-grid">' +
+    '<div class="kw-header"></div><div class="kw-header" style="text-align:center">KOZR</div><div class="kw-header" style="text-align:center">AREA</div>' +
+    rows.map(r =>
+      '<div class="kw-label">' + r.label + '</div>' +
+      '<div class="kw-value">' + (r.kozr ? r.kozr + r.unit : '--') + '</div>' +
+      '<div class="kw-value">' + (r.area ? r.area + r.unit : '--') + '</div>'
+    ).join('') +
+  '</div>';
 }
 
 function renderAreaForecasts(fc) {
@@ -719,196 +1162,375 @@ function renderAreaForecasts(fc) {
   const areas = fc.mef.areaForecasts || [];
   grid.innerHTML = areas.map(a => {
     const text = a.amendmentText || a.forecast || '';
+    // Color area name by flight category-like heuristic
+    const areaColor = getAreaColor(text);
     const tsLabel = a.tsCoverage && a.tsCoverage.toUpperCase() !== 'NONE'
-      ? `<span class="ts-coverage active">TS: ${a.tsCoverage}</span>`
+      ? '<div><span class="ts-badge active">TS: ' + escapeHtml(a.tsCoverage) + '</span></div>'
       : '';
     const amdBadge = a.amendmentNumber
-      ? `<span style="color:var(--amber);font-size:11px;font-weight:700">${a.amendmentNumber} ${a.amendmentTime || ''}</span>`
+      ? '<span class="amendment-badge">\u26A0\uFE0F AMD ' + a.amendmentNumber + (a.amendmentTime ? ' ' + a.amendmentTime : '') + '</span>'
       : '';
 
-    return `
-      <div class="area-card">
-        <div class="area-header">
-          <span class="area-name">${a.name}</span>
-          ${amdBadge}
-        </div>
-        <div class="area-forecast">${escapeHtml(text)}</div>
-        ${tsLabel}
-      </div>
-    `;
+    // Format forecast text with dim segments
+    const formattedText = formatAreaForecast(text);
+
+    return '<div class="area-card">' +
+      '<div class="area-header">' +
+        '<span class="area-name" style="color:' + areaColor + '">' + a.name + '</span>' +
+        amdBadge +
+      '</div>' +
+      '<div class="area-forecast">' + formattedText + '</div>' +
+      tsLabel +
+    '</div>';
   }).join('');
+}
+
+function getAreaColor(text) {
+  // Check first segment for flight category
+  if (!text) return 'var(--text)';
+  // Check for IFR/LIFR conditions in first segment
+  const firstSegment = text.split(/AFT\s+\d{4}Z:/)[0];
+  const hasCeiling = firstSegment.match(/(OVC|BKN)(\d{3})/);
+  const hasVis = firstSegment.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);
+
+  let ceiling = 99999, vis = 99;
+  if (hasCeiling) ceiling = parseInt(hasCeiling[2]) * 100;
+  if (hasVis) {
+    const vStr = hasVis[1];
+    if (vStr.includes('/')) {
+      const parts = vStr.trim().split(/\s+/);
+      if (parts.length === 2) {
+        const frac = parts[1].split('/');
+        vis = parseInt(parts[0]) + parseInt(frac[0]) / parseInt(frac[1]);
+      } else {
+        const frac = vStr.split('/');
+        vis = parseInt(frac[0]) / parseInt(frac[1]);
+      }
+    } else {
+      vis = parseFloat(vStr) || 99;
+    }
+  }
+  if (/P6SM|P6\s*SM/i.test(firstSegment)) vis = 7;
+
+  if (ceiling < 500 || vis < 1) return 'var(--lifr)';
+  if (ceiling < 1000 || vis < 3) return 'var(--ifr)';
+  if (ceiling <= 3000 || vis <= 5) return 'var(--mvfr)';
+  return 'var(--vfr)';
+}
+
+function formatAreaForecast(text) {
+  if (!text) return '';
+  // Dim ISOLD and TEMPO segments
+  let formatted = escapeHtml(text);
+  // Highlight time segments
+  formatted = formatted.replace(/(AFT\s+\d{4}Z:)/g, '<br><strong style="color:var(--accent)">$1</strong>');
+  // Dim ISOLD/TEMPO segments
+  formatted = formatted.replace(/(ISOLD?\s+\d{4}-\d{4}Z:.*?)(?=(?:AFT|$))/g, '<span class="segment-dim">$1</span>');
+  formatted = formatted.replace(/(TEMPO\s+\d{4}-\d{4}Z:.*?)(?=(?:AFT|$))/g, '<span class="segment-dim">$1</span>');
+  return formatted;
 }
 
 function renderHazards(fc) {
   const grid = document.getElementById('hazardGrid');
   const badgeEl = document.getElementById('hazardsBadge');
-
-  // Combine MEF and enroute hazards
   const mefH = fc.mef?.flightHazards;
-  const enH = fc.flightBriefing?.enrouteData;
 
-  const items = [];
-
-  if (mefH) {
-    items.push({ label: 'Turbulence', value: mefH.turbulence });
-    items.push({ label: 'Icing', value: mefH.icing });
-    items.push({ label: 'Thunderstorms', value: mefH.thunderstorms });
-    items.push({ label: 'LLWS', value: mefH.llws });
-  }
-
-  if (enH) {
-    if (enH.thunderstorms) {
-      const ts = enH.thunderstorms;
-      const val = ts.coverage === 'NONE' ? 'NONE' : [ts.coverage, ts.type, ts.maxTops ? 'TOPS ' + ts.maxTops : ''].filter(Boolean).join(' ');
-      if (!mefH) items.push({ label: 'Thunderstorms', value: val });
-    }
-    if (enH.turbulence) {
-      const t = enH.turbulence;
-      const val = t.severity === 'NONE' ? 'NONE' : [t.severity, t.levels].filter(Boolean).join(' ');
-      if (!mefH) items.push({ label: 'Turbulence', value: val });
-    }
-    if (enH.icing) {
-      const i = enH.icing;
-      const val = i.severity === 'NONE' ? 'NONE' : [i.severity, i.type, i.levels].filter(Boolean).join(' ');
-      if (!mefH) items.push({ label: 'Icing', value: val });
-    }
-    items.push({ label: 'Obscurations', value: enH.obscurations });
-    items.push({ label: 'Min Ceiling', value: enH.minCeiling ? enH.minCeiling + ' ft AGL' : null });
-    items.push({ label: 'Min Freezing Lvl', value: enH.minFreezingLevel ? enH.minFreezingLevel + ' ft MSL' : null });
-    if (!mefH) items.push({ label: 'LLWS', value: enH.llws });
-  }
-
-  const filtered = items.filter(i => i.value != null);
-  const hasHazards = filtered.some(i => i.value && i.value.toUpperCase() !== 'NONE');
-
-  badgeEl.innerHTML = hasHazards
-    ? '<span style="color:var(--amber);font-weight:700">HAZARDS</span>'
-    : '';
-
-  grid.innerHTML = filtered.map(i => {
-    const isNone = !i.value || i.value.toUpperCase() === 'NONE';
-    return `
-      <div class="hazard-item">
-        <span class="hazard-label">${i.label}</span>
-        <span class="hazard-value ${isNone ? 'none' : 'active'}">${i.value || 'NONE'}</span>
-      </div>
-    `;
-  }).join('');
-
-  if (filtered.length === 0) {
+  if (!mefH) {
     grid.innerHTML = '<div class="no-data" style="padding:10px">No hazard data available</div>';
+    badgeEl.innerHTML = '';
+    return;
   }
+
+  const items = [
+    { label: 'Turbulence', value: mefH.turbulence },
+    { label: 'Icing', value: mefH.icing },
+    { label: 'Thunderstorms', value: mefH.thunderstorms },
+    { label: 'LLWS', value: mefH.llws },
+  ];
+
+  const hasHazards = items.some(i => i.value && i.value.toUpperCase() !== 'NONE');
+  badgeEl.innerHTML = hasHazards ? '<span class="hazards-badge">HAZARDS</span>' : '';
+
+  grid.innerHTML = items.map(i => {
+    const isNone = !i.value || i.value.toUpperCase() === 'NONE';
+    return '<div class="hazard-item">' +
+      '<span class="data-label">' + i.label + '</span>' +
+      '<span class="hazard-value ' + (isNone ? 'none' : 'active') + '">' + (i.value || 'NONE') + '</span>' +
+    '</div>';
+  }).join('');
 }
 
-function renderAdvisories(fc) {
-  const card = document.getElementById('advisoriesCard');
-  const body = document.getElementById('advisoriesBody');
-  const advisories = fc.mef?.weatherAdvisories || [];
+function renderEnrouteHazards(fc) {
+  const card = document.getElementById('enrouteCard');
+  const body = document.getElementById('enrouteBody');
+  const badgeEl = document.getElementById('enrouteBadge');
+  const en = fc.flightBriefing?.enrouteData;
 
-  if (advisories.length === 0) { card.style.display = 'none'; return; }
+  if (!en) { card.style.display = 'none'; return; }
   card.style.display = 'block';
 
-  body.innerHTML = advisories.map(a => {
-    const isWarning = a.type === 'TWA' || a.type === 'WARNING';
-    return `
-      <div class="advisory-item">
-        <span class="advisory-badge ${isWarning ? 'warning' : 'watch'}">${a.type} ${a.number}</span>
-        <div class="advisory-info">
-          ${escapeHtml(a.criteria)}
-          <div class="advisory-times">${a.validFrom} - ${a.validTo}</div>
-        </div>
-      </div>
-    `;
+  let hasHazards = false;
+  const cards = [];
+
+  // Thunderstorms
+  if (en.thunderstorms) {
+    const ts = en.thunderstorms;
+    const isActive = ts.coverage && ts.coverage.toUpperCase() !== 'NONE';
+    if (isActive) hasHazards = true;
+    cards.push(enrouteCardHtml('Thunderstorms', [
+      { label: 'Coverage', value: ts.coverage, active: isActive },
+      { label: 'Type', value: ts.type, active: isActive },
+      { label: 'Max Tops', value: ts.maxTops ? convertAltitude(ts.maxTops) : null, active: isActive },
+      { label: 'Location', value: ts.location, active: isActive },
+    ]));
+  }
+
+  // Turbulence
+  if (en.turbulence) {
+    const t = en.turbulence;
+    const isActive = t.severity && t.severity.toUpperCase() !== 'NONE';
+    if (isActive) hasHazards = true;
+    cards.push(enrouteCardHtml('Turbulence', [
+      { label: 'Severity', value: t.severity, active: isActive },
+      { label: 'Levels', value: t.levels ? convertLevels(t.levels) : null, active: isActive },
+      { label: 'Location', value: t.location, active: isActive },
+    ]));
+  }
+
+  // Icing
+  if (en.icing) {
+    const i = en.icing;
+    const isActive = i.severity && i.severity.toUpperCase() !== 'NONE';
+    if (isActive) hasHazards = true;
+    cards.push(enrouteCardHtml('Icing', [
+      { label: 'Severity', value: i.severity, active: isActive },
+      { label: 'Type', value: i.type, active: isActive },
+      { label: 'Levels', value: i.levels ? convertLevels(i.levels) : null, active: isActive },
+      { label: 'Location', value: i.location, active: isActive },
+    ]));
+  }
+
+  // Precipitation
+  if (en.precipitation) {
+    const p = en.precipitation;
+    const isActive = p.intensity && p.intensity.toUpperCase() !== 'NONE';
+    if (isActive) hasHazards = true;
+    cards.push(enrouteCardHtml('Precipitation', [
+      { label: 'Intensity', value: p.intensity, active: isActive },
+      { label: 'Type', value: p.type, active: isActive },
+      { label: 'Freezing', value: p.freezing, active: isActive },
+      { label: 'Location', value: p.location, active: isActive },
+    ]));
+  }
+
+  // Additional items
+  const miscItems = [];
+  if (en.obscurations) {
+    const isActive = en.obscurations.toUpperCase() !== 'NONE';
+    if (isActive) hasHazards = true;
+    miscItems.push({ label: 'Obscurations', value: en.obscurations, active: isActive });
+  }
+  if (en.minCeiling) {
+    miscItems.push({ label: 'Min Ceiling', value: convertAltitude(en.minCeiling) + ' AGL' + (en.minCeilingLocation ? ' (' + en.minCeilingLocation + ')' : ''), active: true });
+  }
+  if (en.llws) {
+    const llwsActive = en.llws.toUpperCase() !== 'NONE';
+    if (llwsActive) hasHazards = true;
+    miscItems.push({ label: 'LLWS', value: en.llws, active: llwsActive });
+  }
+  if (en.minFreezingLevel) {
+    miscItems.push({ label: 'Min Freezing Level', value: convertAltitude(en.minFreezingLevel) + ' MSL', active: true });
+  }
+
+  if (miscItems.length > 0) {
+    cards.push(enrouteCardHtml('Additional', miscItems));
+  }
+
+  badgeEl.innerHTML = hasHazards ? '<span class="hazards-badge">HAZARDS</span>' : '';
+
+  body.innerHTML = '<div class="enroute-grid">' + cards.join('') + '</div>';
+}
+
+function enrouteCardHtml(title, rows) {
+  const filteredRows = rows.filter(r => r.value != null);
+  if (filteredRows.length === 0) return '';
+  return '<div class="enroute-card">' +
+    '<div class="enroute-card-title">' + title + '</div>' +
+    filteredRows.map(r => {
+      const isNone = !r.value || r.value.toUpperCase() === 'NONE';
+      return '<div class="enroute-row">' +
+        '<span class="label">' + r.label + '</span>' +
+        '<span class="value ' + (isNone ? 'none' : 'active') + '">' + escapeHtml(r.value || 'NONE') + '</span>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+}
+
+function convertLevels(levels) {
+  // Convert "020-060" to "2,000 - 6,000 ft"
+  if (!levels) return levels;
+  return levels.replace(/(\d{3})/g, function(m) {
+    return convertAltitude(m).replace(' ft', '');
+  }) + ' ft';
+}
+
+function renderSpaceWeather(fc) {
+  const card = document.getElementById('spaceCard');
+  const grid = document.getElementById('spaceGrid');
+  const badgeEl = document.getElementById('spaceBadge');
+  const sw = fc.flightBriefing?.enrouteData?.spaceWeather;
+
+  if (!sw) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const items = [
+    { label: 'FREQ', value: sw.frequency },
+    { label: 'GPS', value: sw.gps },
+    { label: 'RAD', value: sw.radiation },
+  ];
+
+  const hasActive = items.some(i => i.value && i.value.toUpperCase() !== 'NONE');
+  badgeEl.innerHTML = hasActive
+    ? '<span class="section-badge" style="background:rgba(187,102,255,0.15);color:#bb66ff">CHECK IMPACTS</span>'
+    : '';
+
+  grid.innerHTML = items.map(i => {
+    const isNone = !i.value || i.value.toUpperCase() === 'NONE';
+    return '<div class="space-item">' +
+      '<div class="space-label">' + i.label + '</div>' +
+      '<div class="space-value ' + (isNone ? 'none' : 'active') + '">' + (i.value || 'NONE') + '</div>' +
+    '</div>';
   }).join('');
 }
 
 function renderWinds(fc) {
   const body = document.getElementById('windsBody');
+  const summaryEl = document.getElementById('windsSummary');
   const winds = fc.mef?.flightLevelWinds || fc.flightBriefing?.enrouteData?.flightLevelWinds || [];
 
   if (winds.length === 0) {
     body.innerHTML = '<div class="no-data" style="padding:10px">No wind data available</div>';
+    summaryEl.innerHTML = '';
     return;
   }
 
-  body.innerHTML = `
-    <table class="winds-table">
-      <thead><tr><th>Level</th><th>Wind</th><th>Temp</th></tr></thead>
-      <tbody>
-        ${winds.map(w => {
-          const lvl = parseInt(w.level) * 100;
-          const lvlStr = lvl >= 1000 ? (lvl/1000).toFixed(lvl%1000?1:0).replace('.0','') + ',000' : lvl.toString();
-          const windSpeed = parseInt((w.wind.match(/\d{3}(\d{2,3})/)||[])[1]) || 0;
-          const tempVal = parseInt(w.temp) || 99;
-          const highWind = windSpeed >= 20;
-          const icing = tempVal <= 4;
-          return `<tr>
-            <td>${lvlStr} ft</td>
-            <td>${w.wind}${highWind ? '<span class="wind-badge high">HIGH WIND</span>' : ''}</td>
-            <td>${w.temp}${icing ? '<span class="wind-badge icing">ICING</span>' : ''}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
+  let highWindCount = 0;
+  let icingCount = 0;
+
+  const rows = winds.map(w => {
+    const lvl = parseInt(w.level) * 100;
+    const lvlStr = lvl.toLocaleString() + ' ft';
+    const windSpeed = getWindSpeed(w.wind);
+    const tempVal = parseInt(w.temp) || 99;
+    const highWind = windSpeed >= 20;
+    const icing = tempVal <= 4;
+    if (highWind) highWindCount++;
+    if (icing) icingCount++;
+
+    return '<tr>' +
+      '<td>' + lvlStr + '</td>' +
+      '<td>' + w.wind + (highWind ? '<span class="wind-badge high">HIGH WIND</span>' : '') + '</td>' +
+      '<td>' + w.temp + (icing ? '<span class="wind-badge icing">ICING</span>' : '') + '</td>' +
+    '</tr>';
+  }).join('');
+
+  // Summary badges in header
+  let summary = '';
+  if (highWindCount > 0) summary += '<span class="wind-badge high" style="margin-left:0">' + highWindCount + ' HIGH</span>';
+  if (icingCount > 0) summary += '<span class="wind-badge icing" style="margin-left:4px">' + icingCount + ' ICE</span>';
+  summaryEl.innerHTML = summary;
+
+  body.innerHTML = '<table class="winds-table">' +
+    '<thead><tr><th>Level</th><th>Wind</th><th>Temp</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody>' +
+  '</table>';
 }
 
 function renderSolarLunar(fc) {
   const card = document.getElementById('solarCard');
   const grid = document.getElementById('solarGrid');
+  const summaryEl = document.getElementById('solarSummary');
   const sl = fc.mef?.solarLunar || fc.flightBriefing?.enrouteData?.solarLunar;
 
   if (!sl) { card.style.display = 'none'; return; }
   card.style.display = 'block';
 
   const items = [
-    { icon: '\u{1F305}', label: 'BMNT', value: sl.bmnt },
-    { icon: '\u{1F305}', label: 'BMCT', value: sl.bmct },
+    { icon: '\uD83C\uDF05', label: 'BMNT', value: sl.bmnt },
+    { icon: '\uD83C\uDF05', label: 'BMCT', value: sl.bmct },
     { icon: '\u2600\uFE0F', label: 'Sunrise', value: sl.sunrise },
-    { icon: '\u{1F307}', label: 'Sunset', value: sl.sunset },
-    { icon: '\u{1F307}', label: 'EECT', value: sl.eect },
-    { icon: '\u{1F307}', label: 'EENT', value: sl.eent },
-    { icon: '\u{1F319}', label: 'Moonrise', value: sl.moonrise },
-    { icon: '\u{1F319}', label: 'Moonset', value: sl.moonset },
-    { icon: '\u{1F319}', label: 'Illumination', value: sl.illumination },
+    { icon: '\uD83C\uDF07', label: 'Sunset', value: sl.sunset },
+    { icon: '\uD83C\uDF07', label: 'EECT', value: sl.eect },
+    { icon: '\uD83C\uDF07', label: 'EENT', value: sl.eent },
+    { icon: '\uD83C\uDF19', label: 'Moonrise', value: sl.moonrise },
+    { icon: '\uD83C\uDF19', label: 'Moonset', value: sl.moonset },
+    { icon: '\uD83C\uDF15', label: 'Illumination', value: sl.illumination },
   ].filter(i => i.value);
 
-  grid.innerHTML = items.map(i => `
-    <div class="solar-item">
-      <span class="solar-icon">${i.icon}</span>
-      <div>
-        <div class="solar-label">${i.label}</div>
-        <div>${i.value}</div>
-      </div>
-    </div>
-  `).join('');
+  // Show sunrise/sunset in header
+  const sunriseVal = sl.sunrise || '';
+  const sunsetVal = sl.sunset || '';
+  summaryEl.innerHTML = sunriseVal && sunsetVal
+    ? '<span style="font-size:10px;color:var(--text-dim)">\u2600\uFE0F ' + sunriseVal + ' \u00A0 \uD83C\uDF07 ' + sunsetVal + '</span>'
+    : '';
+
+  grid.innerHTML = items.map(i =>
+    '<div class="solar-item">' +
+      '<span class="solar-icon">' + i.icon + '</span>' +
+      '<div>' +
+        '<div class="data-label">' + i.label + '</div>' +
+        '<div style="font-weight:600">' + i.value + '</div>' +
+      '</div>' +
+    '</div>'
+  ).join('');
 }
 
 function renderTakeoffData(fc) {
   const card = document.getElementById('takeoffCard');
-  const grid = document.getElementById('takeoffGrid');
+  const body = document.getElementById('takeoffBody');
+  const fogBadge = document.getElementById('fogBadge');
   const td = fc.flightBriefing?.takeoffData;
 
-  if (!td) { card.style.display = 'none'; return; }
+  if (!td) { card.style.display = 'none'; fogBadge.innerHTML = ''; return; }
   card.style.display = 'block';
 
-  const items = [
+  // Check for possible fog (temp-dewpoint spread <= 2)
+  const rwyTemp = parseFloat(td.runwayTemp);
+  const dewpt = parseFloat(td.dewpoint);
+  const hasFog = !isNaN(rwyTemp) && !isNaN(dewpt) && (rwyTemp - dewpt) <= 2;
+  fogBadge.innerHTML = hasFog ? '<span class="fog-badge">POSSIBLE FOG</span>' : '';
+
+  // Main takeoff data
+  const mainItems = [
     { label: 'Runway Temp', value: td.runwayTemp ? td.runwayTemp + '\u00B0C' : null },
     { label: 'Dewpoint', value: td.dewpoint ? td.dewpoint + '\u00B0C' : null },
+    { label: 'Temp Deviation', value: td.tempDeviation ? td.tempDeviation + '\u00B0C' : null },
     { label: 'Press Alt', value: td.pressureAlt ? td.pressureAlt + ' ft' : null },
     { label: 'Density Alt', value: td.densityAlt ? td.densityAlt + ' ft' : null },
     { label: 'Surface Wind', value: td.surfaceWind },
+  ].filter(i => i.value);
+
+  // KOZR Maximums
+  const maxItems = [
     { label: 'Max Temp', value: td.maxTemp ? td.maxTemp + '\u00B0C' : null },
     { label: 'Max Press Alt', value: td.maxPA ? td.maxPA + ' ft' : null },
     { label: 'Max Density Alt', value: td.maxDA ? td.maxDA + ' ft' : null },
   ].filter(i => i.value);
 
-  grid.innerHTML = items.map(i => `
-    <div class="metar-item">
-      <span class="metar-label">${i.label}</span>
-      <span class="metar-value">${i.value}</span>
-    </div>
-  `).join('');
+  let html = '<div class="takeoff-section"><div class="takeoff-grid">' +
+    mainItems.map(i => dataItem(i.label, i.value)).join('') +
+  '</div></div>';
+
+  if (maxItems.length > 0) {
+    html += '<div class="takeoff-section">' +
+      '<div class="takeoff-section-title">KOZR Maximums</div>' +
+      '<div class="takeoff-grid">' +
+        maxItems.map(i => dataItem(i.label, i.value)).join('') +
+      '</div>' +
+    '</div>';
+  }
+
+  body.innerHTML = html;
 }
 
 function renderAerodromes(fc) {
@@ -920,25 +1542,37 @@ function renderAerodromes(fc) {
   card.style.display = 'block';
 
   grid.innerHTML = aeros.map(a => {
+    // Determine flight category for header from first non-TEMPO period
+    const mainPeriod = a.periods.find(p => p.periodType !== 'TEMPO') || a.periods[0];
+    const fltCat = mainPeriod ? determineFlightCat(mainPeriod.skyCondition, mainPeriod.visibility) : 'VFR';
+    const headerColor = getFlightCatColor(fltCat);
+
     const periodsHtml = a.periods.map(p => {
       const isTempo = p.periodType === 'TEMPO';
-      const parts = [p.surfaceWind, p.visibility, p.weather, p.skyCondition, p.altimeter].filter(Boolean).join(' ');
-      const timeStr = p.validFrom && p.validTo ? `${p.validFrom}-${p.validTo}` : '';
-      const prefix = p.periodType ? p.periodType + ' ' : '';
-      return `<div class="aero-period ${isTempo ? 'tempo' : ''}">${prefix}${timeStr} ${parts}</div>`;
+      const isFrom = p.periodType === 'FM' || p.periodType === 'FROM';
+      const periodFltCat = determineFlightCat(p.skyCondition, p.visibility);
+      const periodColor = isTempo ? 'var(--text-dim)' : getFlightCatColor(periodFltCat);
+
+      const parts = [p.surfaceWind, p.visibility, p.weather, p.skyCondition, p.altimeter].filter(Boolean).join(' \u00B7 ');
+      const timeStr = p.validFrom && p.validTo ? p.validFrom + '\u2013' + p.validTo : '';
+      const prefix = p.periodType ? '<span class="period-type">' + p.periodType + '</span> ' : '';
+
+      return '<div class="aero-period ' + (isTempo ? 'tempo' : '') + '" style="color:' + periodColor + '">' +
+        prefix + timeStr + '<br>' + parts +
+      '</div>';
     }).join('');
 
     const sameAsHtml = a.sameAs && a.sameAs.length > 0
-      ? `<div class="aero-same">Same as: ${a.sameAs.join(', ')}</div>`
+      ? '<div class="aero-same">Same as: ' + a.sameAs.join(', ') + '</div>'
       : '';
 
-    return `
-      <div class="aero-card">
-        <div class="aero-icao">${a.icao}</div>
-        ${periodsHtml}
-        ${sameAsHtml}
-      </div>
-    `;
+    return '<div class="aero-card">' +
+      '<div class="aero-icao" style="color:' + headerColor + '">' + a.icao +
+        ' <span class="flt-cat-badge ' + fltCat + '" style="font-size:10px">' + fltCat + '</span>' +
+      '</div>' +
+      periodsHtml +
+      sameAsHtml +
+    '</div>';
   }).join('');
 }
 
@@ -957,56 +1591,75 @@ function renderSevenDay() {
   const ppd = sd.periodsPerDay || [];
   sd.dayLabels.forEach((day, i) => {
     const span = ppd[i] || 1;
-    headerCols += `<th colspan="${span}">${day}</th>`;
+    headerCols += '<th colspan="' + span + '">' + day + '</th>';
   });
 
-  // Sub-header (AM/PM/N1)
+  // Sub-header
   let subHeader = '<th></th>';
   ppd.forEach(p => {
     if (p === 3) {
       subHeader += '<th>AM</th><th>PM</th><th>N1</th>';
     } else {
-      subHeader += '<th>-</th>';
+      subHeader += '<th>\u2014</th>';
     }
   });
 
   // Category rows
   const catRows = (sd.categories || []).map(cat => {
-    let row = `<td>${cat.shortName || cat.name}</td>`;
+    let row = '<td>' + (cat.shortName || cat.name) + '</td>';
     (cat.statuses || []).forEach(s => {
       const cls = s === 'go' ? 'go' : (s === 'marginal' ? 'marginal' : 'noGo');
-      row += `<td><span class="dot ${cls}"></span></td>`;
+      row += '<td><span class="dot ' + cls + '"></span></td>';
     });
-    return `<tr>${row}</tr>`;
+    return '<tr>' + row + '</tr>';
   }).join('');
 
   // Temp rows
-  const totalCols = ppd.reduce((a,b) => a+b, 0);
-  let highRow = '<td>HIGH</td>';
-  let lowRow = '<td>LOW</td>';
+  let highRow = '<td style="color:var(--nogo)">HIGH</td>';
+  let lowRow = '<td style="color:var(--mvfr)">LOW</td>';
   (sd.highTemps || []).forEach((t, i) => {
     const span = ppd[i] || 1;
-    highRow += `<td colspan="${span}">${t}\u00B0</td>`;
-    lowRow += `<td colspan="${span}">${(sd.lowTemps||[])[i] || '--'}\u00B0</td>`;
+    highRow += '<td colspan="' + span + '" style="color:var(--nogo)">' + t + '\u00B0</td>';
+    lowRow += '<td colspan="' + span + '" style="color:var(--mvfr)">' + ((sd.lowTemps||[])[i] || '--') + '\u00B0</td>';
   });
 
-  grid.innerHTML = `
-    <table class="seven-day-table">
-      <thead><tr>${headerCols}</tr><tr>${subHeader}</tr></thead>
-      <tbody>
-        ${catRows}
-        <tr class="temps-row">${highRow}</tr>
-        <tr class="temps-row">${lowRow}</tr>
-      </tbody>
-    </table>
-    ${sd.synopsis ? `<div style="margin-top:12px;font-size:11px;color:var(--text-dim);line-height:1.6">${escapeHtml(sd.synopsis)}</div>` : ''}
-  `;
+  // Thresholds legend
+  const thresholdsId = 'thresholds-' + Date.now();
+  const thresholdsHtml =
+    '<div class="thresholds-toggle" onclick="toggleThresholds(\'' + thresholdsId + '\', this)">\u25B6 SHOW THRESHOLDS</div>' +
+    '<div id="' + thresholdsId + '" style="display:none">' +
+      '<table class="thresholds-table">' +
+        '<thead><tr><th>Category</th><th style="color:var(--go)">GO</th><th style="color:var(--accent)">MARGINAL</th><th style="color:var(--nogo)">NO GO</th></tr></thead>' +
+        '<tbody>' +
+          '<tr><td>CIG/VIS</td><td>\u22651000\'/3SM</td><td>700\'/2SM</td><td>\u2264500\'/1SM</td></tr>' +
+          '<tr><td>WIND</td><td>&lt;20 KTS</td><td>20-29 KTS</td><td>\u226530 KTS</td></tr>' +
+          '<tr><td>TURB</td><td>NONE</td><td>LGT (CAT II)</td><td>\u2265MDT (CAT II)</td></tr>' +
+          '<tr><td>ICE</td><td>NONE</td><td>4\u00B0/MOIST</td><td>0\u00B0/MOIST</td></tr>' +
+          '<tr><td>TS</td><td>&lt;30 KTS</td><td>30-44 KTS</td><td>\u226545 KTS</td></tr>' +
+          '<tr><td>UAS</td><td>&lt;10 KTS</td><td>10 KTS</td><td>&gt;10 KTS</td></tr>' +
+        '</tbody>' +
+      '</table>' +
+    '</div>';
+
+  grid.innerHTML =
+    '<table class="seven-day-table">' +
+      '<thead><tr>' + headerCols + '</tr><tr>' + subHeader + '</tr></thead>' +
+      '<tbody>' +
+        catRows +
+        '<tr class="temps-row">' + highRow + '</tr>' +
+        '<tr class="temps-row">' + lowRow + '</tr>' +
+      '</tbody>' +
+    '</table>' +
+    (sd.synopsis ? '<div class="seven-day-synopsis">' + escapeHtml(sd.synopsis) + '</div>' : '') +
+    thresholdsHtml;
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text || '';
-  return div.innerHTML;
+function toggleThresholds(id, el) {
+  const div = document.getElementById(id);
+  if (!div) return;
+  const visible = div.style.display !== 'none';
+  div.style.display = visible ? 'none' : 'block';
+  el.textContent = (visible ? '\u25B6 SHOW' : '\u25BC HIDE') + ' THRESHOLDS';
 }
 
 // Load on page ready
