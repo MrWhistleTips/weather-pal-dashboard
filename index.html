@@ -436,6 +436,18 @@ body {
 <div class="hero">
   <div class="hero-left">
 
+    <!-- Takeoff Data -->
+    <div class="card" id="toCard" style="display:none">
+      <div class="card-hdr" onclick="tog('toBody')">
+        <span>Takeoff Data (KOZR)</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span id="fogBadge"></span>
+          <span class="ci" id="toBody-icon">&#x25BC;</span>
+        </span>
+      </div>
+      <div class="cbd" id="toBody"></div>
+    </div>
+
     <!-- MEF Header -->
     <div id="mefHdrCard" style="display:none"></div>
 
@@ -600,17 +612,6 @@ body {
     </div>
   </div>
 
-  <!-- Takeoff Data -->
-  <div class="card" id="toCard" style="display:none">
-    <div class="card-hdr" onclick="tog('toBody')">
-      <span>Takeoff Data (KOZR)</span>
-      <span style="display:flex;align-items:center;gap:6px">
-        <span id="fogBadge"></span>
-        <span class="ci" id="toBody-icon">&#x25BC;</span>
-      </span>
-    </div>
-    <div class="cbd" id="toBody"></div>
-  </div>
 
 
 </div>
