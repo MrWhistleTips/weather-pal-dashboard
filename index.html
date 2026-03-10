@@ -875,7 +875,7 @@ function rTS(fc){
   // Cairns info from METAR
   const mCeil=m?ceilNum(m.clouds):99999,mVis=m?parseFloat(m.visib)||99:99;
   const cairnsGo=mCeil>=1000&&mVis>=3;
-  const cairnsInfo=m?(cairnsGo?'Weather is Trainable':'Weather is Untrainable'):'--';
+  const cairnsInfo=m?(cairnsGo?'Trainable':'Untrainable'):'--';
   const cairnsCat=m?(m.fltCat||'VFR'):'VFR';
   // Use 1000ft flight level wind for landing calcs (matching iOS app)
   const flw=fc.mef?.flightLevelWinds||[];
@@ -901,8 +901,8 @@ function rTS(fc){
     const icon=tsIcon(s.i);
     // Area name colored by flight category (muted) + training info on same line
     const areaLine=s.c?'':'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">'+s.a+'</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>';
-    // Cairns info line
-    const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px;color:'+infoC+'">'+icon+esc(s.i)+'</div>':'';
+    // Cairns info line (with KOZR spacer to align with stagefield area names)
+    const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">KOZR</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>':'';
     // Landing info
     const lnd=s.land?'<div style="font-size:11px;color:var(--text-dim);margin-top:1px">\uD83D\uDEEC '+s.land.rwy+(s.land.hw!==0||s.land.xw!==0?' <span style="color:'+(s.land.hw>=0?'var(--go)':'var(--nogo)')+'">'+( s.land.hw>=0?'\u2193':'\u2191')+Math.abs(s.land.hw)+'kt</span> <span style="color:'+(s.land.xw>=15?'#e08040':'var(--text-dim)')+'">'+( s.land.fromRight?'\u2190':'\u2192')+s.land.xw+'kt</span>':' CALM')+'</div>':'';
     return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+s.n+'</span>'+allAdvBadges+'</div>'+cairnsInfoLine+areaLine+lnd+'</td><td style="vertical-align:top;text-align:right;padding:6px 10px"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
