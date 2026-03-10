@@ -544,7 +544,6 @@ body {
         <span>METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
         <span style="display:flex;align-items:center;gap:8px">
           <span id="metarCat"></span>
-          <span id="metarTime" style="font-weight:600"></span>
           <span class="ci" id="metarBody-icon">&#x25BC;</span>
         </span>
       </div>
@@ -952,8 +951,6 @@ function rMETAR(fc){
   const alt=m.altim?(m.altim/33.8639).toFixed(2)+'"':'--',em=wxEmoji(m.wxString);
   // Station name
   document.getElementById('metarStation').textContent=m.name||'Cairns AAF';
-  // Report time
-  document.getElementById('metarTime').textContent=m.reportTime||'';
   // Flight category badge
   document.getElementById('metarCat').innerHTML='<span class="flt-cat '+fcat+'">'+fcat+'</span>';
   // Weather emojis
