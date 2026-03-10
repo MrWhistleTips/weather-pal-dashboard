@@ -457,7 +457,7 @@ body {
     <!-- MEF Header -->
     <div id="mefHdrCard" style="display:none"></div>
 
-    <!-- Training Status + 7-Day side by side -->
+    <!-- Training Status + Key Weather / Winds side by side -->
     <div class="ts-sd-row">
       <!-- Training Status -->
       <div class="card gold-top ts-card-narrow">
@@ -473,16 +473,25 @@ body {
         </div>
       </div>
 
-      <!-- 7-Day Outlook -->
-      <div class="card sd-card-side" id="sdCard" style="display:none">
-        <div class="card-hdr" onclick="tog('sdBody')">
-          <span>7-Day Outlook</span>
-          <span style="display:flex;align-items:center;gap:6px">
-            <span id="sdTitle"></span>
-            <span class="ci" id="sdBody-icon">&#x25BC;</span>
-          </span>
+      <!-- Key Weather + Flight Level Winds stacked -->
+      <div class="sd-card-side" style="display:flex;flex-direction:column;gap:12px">
+        <div class="card" id="kwCard" style="display:none">
+          <div class="card-hdr" onclick="tog('kwBody')">
+            <span>Key Weather</span>
+            <span class="ci" id="kwBody-icon">&#x25BC;</span>
+          </div>
+          <div class="cbd" id="kwBody"></div>
         </div>
-        <div class="cbd" id="sdBody"><div class="sd-grid" id="sdGrid"></div></div>
+        <div class="card">
+          <div class="card-hdr" onclick="tog('wBody')">
+            <span>Flight Level Winds</span>
+            <span style="display:flex;align-items:center;gap:6px">
+              <span id="wSum"></span>
+              <span class="ci" id="wBody-icon">&#x25BC;</span>
+            </span>
+          </div>
+          <div class="cbd" id="wBody"></div>
+        </div>
       </div>
     </div>
 
@@ -528,14 +537,17 @@ body {
       <div class="cbd" id="metarBody"></div>
     </div>
 
-    <!-- Key Weather + Hazards side by side -->
+    <!-- 7-Day Outlook + Hazards side by side -->
     <div class="two-col">
-      <div class="card" id="kwCard" style="display:none">
-        <div class="card-hdr" onclick="tog('kwBody')">
-          <span>Key Weather</span>
-          <span class="ci" id="kwBody-icon">&#x25BC;</span>
+      <div class="card" id="sdCard" style="display:none">
+        <div class="card-hdr" onclick="tog('sdBody')">
+          <span>7-Day Outlook</span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <span id="sdTitle"></span>
+            <span class="ci" id="sdBody-icon">&#x25BC;</span>
+          </span>
         </div>
-        <div class="cbd" id="kwBody"></div>
+        <div class="cbd" id="sdBody"><div class="sd-grid" id="sdGrid"></div></div>
       </div>
       <div class="card">
         <div class="card-hdr" onclick="tog('hazBody')">
@@ -571,28 +583,16 @@ body {
   <!-- FWB Header -->
   <div id="fwbHdrCard" style="display:none"></div>
 
-  <!-- Enroute Hazards + Flight Level Winds side by side -->
-  <div class="two-col">
-    <div class="card" id="enCard" style="display:none">
-      <div class="card-hdr" onclick="tog('enBody')">
-        <span>Enroute Hazards (175-1)</span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span id="enBadge"></span>
-          <span class="ci" id="enBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="enBody"></div>
+  <!-- Enroute Hazards -->
+  <div class="card" id="enCard" style="display:none">
+    <div class="card-hdr" onclick="tog('enBody')">
+      <span>Enroute Hazards (175-1)</span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <span id="enBadge"></span>
+        <span class="ci" id="enBody-icon">&#x25BC;</span>
+      </span>
     </div>
-    <div class="card">
-      <div class="card-hdr" onclick="tog('wBody')">
-        <span>Flight Level Winds</span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span id="wSum"></span>
-          <span class="ci" id="wBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="wBody"></div>
-    </div>
+    <div class="cbd" id="enBody"></div>
   </div>
 
   <!-- Space Weather -->
