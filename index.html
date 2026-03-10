@@ -64,6 +64,10 @@ body {
 }
 .nav-brand img { width: 32px; height: 32px; }
 .nav-brand span { font-size: 14px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+.nav-center { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; font-size: 10px; color: var(--text-dim); letter-spacing: 0.5px; }
+.nav-center .sol-pair { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.nav-center .sol-pl { font-weight: 600; text-transform: uppercase; font-size: 9px; opacity: 0.7; }
+.nav-center .sol-pv { font-weight: 700; font-size: 11px; color: var(--text-secondary); }
 .nav-right { display: flex; align-items: center; gap: 14px; }
 .nav-meta { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
 .tabs { display: flex; gap: 2px; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 2px; border: 1px solid var(--border); }
@@ -404,6 +408,7 @@ body {
   .ts-card-narrow { flex: none; width: 100%; }
   .sd-card-side { flex: none; width: 100%; }
   .two-col { grid-template-columns: 1fr; }
+  .nav-center { display: none; }
   .content { padding: 12px 16px; }
 }
 @media (max-width: 600px) {
@@ -427,6 +432,7 @@ body {
       <img src="angrycloudclear.png" alt="">
       <span>Fort Novosel Training Status</span>
     </div>
+    <div class="nav-center" id="navSolar"></div>
     <div class="nav-right">
       <span class="nav-meta" id="lastUpdated"></span>
       <div class="tabs" id="periodTabs"></div>
@@ -1119,11 +1125,15 @@ function rW(fc){
 
 /* ── SOLAR/LUNAR ── */
 function rSol(fc){
-  const c=document.getElementById('solCard'),g=document.getElementById('solGrid'),se=document.getElementById('solSum'),sl=fc.mef?.solarLunar||fc.flightBriefing?.enrouteData?.solarLunar;
-  if(!sl){c.style.display='none';return}c.style.display='block';
-  const items=[{i:'\uD83C\uDF05',l:'BMNT',v:sl.bmnt},{i:'\uD83C\uDF05',l:'BMCT',v:sl.bmct},{i:'\u2600\uFE0F',l:'Sunrise',v:sl.sunrise},{i:'\uD83C\uDF07',l:'Sunset',v:sl.sunset},{i:'\uD83C\uDF07',l:'EECT',v:sl.eect},{i:'\uD83C\uDF07',l:'EENT',v:sl.eent},{i:'\uD83C\uDF19',l:'Moonrise',v:sl.moonrise},{i:'\uD83C\uDF19',l:'Moonset',v:sl.moonset},{i:'\uD83C\uDF15',l:'Illum',v:sl.illumination}].filter(i=>i.v);
+  const c=document.getElementById('solCard'),g=document.getElementById('solGrid'),se=document.getElementById('solSum'),ns=document.getElementById('navSolar'),sl=fc.mef?.solarLunar||fc.flightBriefing?.enrouteData?.solarLunar;
+  if(!sl){c.style.display='none';ns.innerHTML='';return}c.style.display='block';
+  const items=[{l:'BMNT',v:sl.bmnt},{l:'BMCT',v:sl.bmct},{l:'Sunrise',v:sl.sunrise},{l:'Sunset',v:sl.sunset},{l:'EECT',v:sl.eect},{l:'EENT',v:sl.eent},{l:'Moonrise',v:sl.moonrise},{l:'Moonset',v:sl.moonset},{l:'Illum',v:sl.illumination}].filter(i=>i.v);
+  const itemsE=[{i:'\uD83C\uDF05',l:'BMNT',v:sl.bmnt},{i:'\uD83C\uDF05',l:'BMCT',v:sl.bmct},{i:'\u2600\uFE0F',l:'Sunrise',v:sl.sunrise},{i:'\uD83C\uDF07',l:'Sunset',v:sl.sunset},{i:'\uD83C\uDF07',l:'EECT',v:sl.eect},{i:'\uD83C\uDF07',l:'EENT',v:sl.eent},{i:'\uD83C\uDF19',l:'Moonrise',v:sl.moonrise},{i:'\uD83C\uDF19',l:'Moonset',v:sl.moonset},{i:'\uD83C\uDF15',l:'Illum',v:sl.illumination}].filter(i=>i.v);
   se.innerHTML=sl.sunrise&&sl.sunset?'<span style="font-size:9px;color:var(--text-dim)">\u2600\uFE0F '+sl.sunrise+' \u00A0\uD83C\uDF07 '+sl.sunset+'</span>':'';
-  g.innerHTML='<div class="sol-compact">'+items.map(i=>'<span class="sol-it"><span class="sol-ic">'+i.i+'</span><span class="sol-l">'+i.l+'</span><span class="sol-v">'+i.v+'</span></span>').join('')+'</div>';
+  // Navbar solar (no emojis)
+  ns.innerHTML=items.map(i=>'<span class="sol-pair"><span class="sol-pl">'+i.l+'</span><span class="sol-pv">'+i.v+'</span></span>').join('');
+  // Card solar (with emojis)
+  g.innerHTML='<div class="sol-compact">'+itemsE.map(i=>'<span class="sol-it"><span class="sol-ic">'+i.i+'</span><span class="sol-l">'+i.l+'</span><span class="sol-v">'+i.v+'</span></span>').join('')+'</div>';
 }
 
 /* ── TAKEOFF DATA ── */
