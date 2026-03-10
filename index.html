@@ -66,7 +66,7 @@ body {
 .nav-brand span { font-size: 14px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
 .nav-center { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; font-size: 10px; color: var(--text-dim); letter-spacing: 0.5px; }
 .nav-center .sol-pair { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
-.nav-center .sol-pl { font-weight: 600; text-transform: uppercase; font-size: 9px; opacity: 0.7; }
+.nav-center .sol-pl { font-weight: 600; text-transform: uppercase; font-size: 9px; opacity: 0.85; }
 .nav-center .sol-pv { font-weight: 700; font-size: 11px; color: var(--text-secondary); }
 .nav-right { display: flex; align-items: center; gap: 14px; }
 .nav-meta { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
@@ -377,7 +377,7 @@ body {
 .sd-groups { display: flex; gap: 8px; flex: 1; }
 .sd-group { display: flex; gap: 2px; justify-content: center; align-items: center; }
 .sd-group-hdr { font-size: 11px; font-weight: 700; color: var(--text-dim); text-align: center; letter-spacing: 0.5px; }
-.sd-sub { font-size: 8px; color: var(--text-dim); opacity: 0.6; text-align: center; }
+.sd-sub { font-size: 8px; color: var(--text-dim); opacity: 0.85; text-align: center; }
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 .dot.go { background: var(--go); box-shadow: 0 0 4px rgba(64,191,64,0.4); }
 .dot.marginal { background: var(--accent); box-shadow: 0 0 4px rgba(229,214,51,0.4); }
@@ -397,9 +397,9 @@ body {
 .drag-section.dragging { opacity: 0.4; transform: scale(0.98); }
 .drag-section.drag-over-top { border-top: 2px solid var(--accent) !important; }
 .drag-section.drag-over-bottom { border-bottom: 2px solid var(--accent) !important; }
-.drag-handle { font-size: 12px; color: var(--text-dim); opacity: 0.4; margin-right: 6px; cursor: grab; letter-spacing: 2px; }
+.drag-handle { font-size: 12px; color: var(--text-dim); opacity: 0.65; margin-right: 6px; cursor: grab; letter-spacing: 2px; }
 .drag-section:hover .drag-handle { opacity: 0.8; }
-.reset-layout { font-size: 10px; color: var(--text-dim); cursor: pointer; letter-spacing: 1px; text-transform: uppercase; opacity: 0.5; transition: opacity 0.2s; }
+.reset-layout { font-size: 10px; color: var(--text-dim); cursor: pointer; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; transition: opacity 0.2s; }
 .reset-layout:hover { opacity: 1; color: var(--accent); }
 
 /* ── FOOTER ── */
@@ -914,9 +914,9 @@ function rTS(fc){
     const infoC=tsInfoCol(s.i);
     const icon=tsIcon(s.i);
     // Area name colored by flight category (muted) + training info on same line
-    const areaLine=s.c?'':'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">'+s.a+'</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>';
+    const areaLine=s.c?'':'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.8;font-weight:600;letter-spacing:0.5px">'+s.a+'</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>';
     // Cairns info line (with KOZR spacer to align with stagefield area names)
-    const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">KOZR</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>':'';
+    const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.8;font-weight:600;letter-spacing:0.5px">KOZR</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>':'';
     // Landing info
     const lnd=s.land?'<div style="font-size:11px;color:var(--text-dim);margin-top:1px">\uD83D\uDEEC '+s.land.rwy+(s.land.hw!==0||s.land.xw!==0?' <span style="color:'+(s.land.hw>=0?'var(--go)':'var(--nogo)')+'">'+( s.land.hw>=0?'\u2193':'\u2191')+Math.abs(s.land.hw)+'kt</span> <span style="color:'+(s.land.xw>=15?'#e08040':'var(--text-dim)')+'">'+( s.land.fromRight?'\u2190':'\u2192')+s.land.xw+'kt</span>':' CALM')+'</div>':'';
     return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+s.n+'</span>'+allAdvBadges+'</div>'+cairnsInfoLine+areaLine+lnd+'</td><td style="vertical-align:middle;text-align:right;padding:6px 10px"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
@@ -1047,7 +1047,7 @@ function fmtArea(t){
     if(isActive){
       html+='<span style="color:'+col+';font-weight:700">'+f+'</span>';
     }else{
-      html+='<span style="color:'+col+';opacity:0.6">'+f+'</span>';
+      html+='<span style="color:'+col+';opacity:0.8">'+f+'</span>';
     }
   }
   return html;
