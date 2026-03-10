@@ -610,19 +610,40 @@ function render(){
   document.getElementById('footerText').textContent='Data exported from My Weather Pal \u00B7 '+exp.toLocaleString();
 }
 
+function ceilNum(cl){if(!cl)return 99999;let c=99999;cl.forEach(l=>{if((l.cover==='BKN'||l.cover==='OVC')&&l.base!=null&&l.base<c)c=l.base});return c}
+function tsIcon(info){if(!info||info==='--')return'';if(/^Trainable$/i.test(info)||/weather is trainable/i.test(info))return'\u2705 ';if(/trainable in/i.test(info))return'\uD83D\uDD50 ';if(/untrainable in/i.test(info))return'\u26A0\uFE0F ';if(/untrainable/i.test(info))return'\u274C ';return''}
+function tsInfoCol(info){if(!info||info==='--')return'var(--text-dim)';if(/^Trainable$/i.test(info)||/weather is trainable/i.test(info))return'var(--go)';if(/trainable in/i.test(info))return'var(--accent)';if(/untrainable in/i.test(info))return'#e08040';return'var(--nogo)'}
+function advBadges(advs,areaName){return advs.filter(a=>(a.criteria||'').toUpperCase().includes(areaName.toUpperCase())).map(a=>{const w=a.type==='TWA'||a.type==='WARNING';return'<span style="font-size:8px;padding:1px 5px;border-radius:2px;margin-left:4px;font-weight:700;color:#fff;background:'+(w?'var(--nogo)':'#cc9900')+'">'+a.type+' '+a.number+'</span>'}).join('')}
+function landingRwy(wdir,rwys){if(!wdir||wdir===0)return null;let best=null,bestHW=-999;rwys.forEach(([r1,r2])=>{[r1,r2].forEach(rh=>{const hw=Math.round(Math.cos((wdir-rh)*Math.PI/180)*10);if(hw>bestHW){bestHW=hw;const xw=Math.abs(Math.round(Math.sin((wdir-rh)*Math.PI/180)*10));const rn=String(Math.round(rh/10)).padStart(2,'0');best={rwy:'RWY '+rn,hw:hw,xw:xw}}})});return best}
 function rTS(fc){
   const ts=fc.trainingStatus,g=document.getElementById('tsGrid');
+  const m=DATA.metar,advs=fc.mef?.weatherAdvisories||[];
+  const areas=fc.mef?.areaForecasts||[];
+  const areaMap={};areas.forEach(a=>{areaMap[a.name.toUpperCase()]=areaColor(a.amendmentText||a.forecast||'')});
+  // Cairns info from METAR
+  const mCeil=m?ceilNum(m.clouds):99999,mVis=m?parseFloat(m.visib)||99:99;
+  const cairnsGo=mCeil>=1000&&mVis>=3;
+  const cairnsInfo=m?(cairnsGo?'Weather is Trainable':'Weather is Untrainable'):'--';
+  const cairnsCat=m?(m.fltCat||'VFR'):'VFR';
+  // Wind for landing calc
+  const wdir=m?m.wdir:0,wspd2=m?m.wspd:0;
+  const cairnsLand=wspd2>0?landingRwy(wdir,[[60,240],[180,360]]):null;
+  const sfRwys={ALLEN:[[120,300]],TOTH:[[70,250]],HIGHBLUFF:[[100,280]],LUCAS:[[180,360]]};
   const st=[
-    {n:'CAIRNS AAF',a:'KOZR',s:ts.cairns,i:'\u22651000/3 METAR',c:true},
-    {n:'ALLEN',a:ts.allen.area,s:ts.allen.status,i:ts.allen.info},
-    {n:'TOTH',a:ts.toth.area,s:ts.toth.status,i:ts.toth.info},
-    {n:'HIGHBLUFF',a:ts.highbluff.area,s:ts.highbluff.status,i:ts.highbluff.info},
-    {n:'LUCAS',a:ts.lucas.area,s:ts.lucas.status,i:ts.lucas.info},
+    {n:'CAIRNS',a:'KOZR',s:cairnsGo?'GO':'NO-GO',i:cairnsInfo,c:true,cat:cairnsCat,area:null,land:cairnsLand},
+    {n:'ALLEN',a:ts.allen.area,s:ts.allen.status,i:ts.allen.info,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,sfRwys.ALLEN):null},
+    {n:'TOTH',a:ts.toth.area,s:ts.toth.status,i:ts.toth.info,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,sfRwys.TOTH):null},
+    {n:'HIGHBLUFF',a:ts.highbluff.area,s:ts.highbluff.status,i:ts.highbluff.info,area:'BEARCAT',land:wspd2>0?landingRwy(wdir,sfRwys.HIGHBLUFF):null},
+    {n:'LUCAS',a:ts.lucas.area,s:ts.lucas.status,i:ts.lucas.info,area:'VANGUARD C',land:wspd2>0?landingRwy(wdir,sfRwys.LUCAS):null},
   ];
   g.innerHTML=st.map(s=>{
     const ic=s.s==='GO'?'\uD83D\uDE81':'\u2601\uFE0F';
-    const col=s.s==='GO'?'var(--go)':s.s==='NO-GO'?'var(--nogo)':'var(--text-dim)';
-    return'<tr class="'+(s.c?'cairns-row':'')+'"><td>'+ic+'</td><td class="stn">'+s.n+'</td><td class="area">'+s.a+'</td><td class="info" style="color:'+col+'">'+esc(s.i)+'</td><td><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
+    const nameCol=s.c?fcColor(s.cat):(s.area?areaMap[s.area]||'var(--text)':'var(--text)');
+    const ab=s.area?advBadges(advs,s.area):(s.c?advBadges(advs,'CAIRNS'):'');
+    const infoC=tsInfoCol(s.i);
+    const icon=tsIcon(s.i);
+    const lnd=s.land?'<div style="font-size:9px;color:var(--text-dim);margin-top:1px">\uD83D\uDEEC '+s.land.rwy+(s.land.hw!==0||s.land.xw!==0?' <span style="color:'+(s.land.hw>=0?'var(--go)':'var(--nogo)')+'">'+( s.land.hw>=0?'\u2193':'\u2191')+Math.abs(s.land.hw)+'kt</span> <span style="color:'+(s.land.xw>=15?'#e08040':'var(--text-dim)')+'">'+s.land.xw+'kt xw</span>':' CALM')+'</div>':'';
+    return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px">'+ic+'</td><td class="stn" style="vertical-align:top"><span style="color:'+nameCol+'">'+s.n+'</span>'+ab+lnd+'</td><td class="area" style="vertical-align:top">'+s.a+'</td><td class="info" style="color:'+infoC+';vertical-align:top">'+icon+esc(s.i)+'</td><td style="vertical-align:top"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
   }).join('');
   g.innerHTML+='<tr><td colspan="5"><div class="ts-legend"><span>CAIRNS \u22651000/3 \u00A0\u00B7\u00A0 STAGEFIELDS \u2265700/1</span><span style="font-weight:800;font-size:11px;color:'+(ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)')+'">'+ts.goCount+'/5 GO</span></div></td></tr>';
   const cc=ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)';
