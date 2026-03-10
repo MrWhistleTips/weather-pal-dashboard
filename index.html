@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fort Novosel Training Status</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --card: #111827;
+  --card-border: #1e2a3a;
+  --text: #e0e6ed;
+  --text-dim: #6b7b8d;
+  --go: #00ff41;
+  --go-bg: rgba(0,255,65,0.12);
+  --nogo: #ff3333;
+  --nogo-bg: rgba(255,51,51,0.12);
+  --amber: #ffaa00;
+  --amber-bg: rgba(255,170,0,0.12);
+  --vfr: #00cc44;
+  --mvfr: #4488ff;
+  --ifr: #ff3333;
+  --lifr: #ff44ff;
+  --accent: #3b82f6;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.4;
+}
+.header {
+  background: linear-gradient(180deg, #0f1729 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--card-border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-title h1 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.header-icon {
+  font-size: 28px;
+}
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--card);
+  border-radius: 8px;
+  padding: 3px;
+  border: 1px solid var(--card-border);
+}
+.tab {
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  transition: all 0.2s;
+}
+.tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+.tab:hover:not(.active) {
+  color: var(--text);
+  background: rgba(255,255,255,0.05);
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.card-body { padding: 16px; }
+
+/* Training Status */
+.training-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.station-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  gap: 12px;
+}
+.station-row.cairns {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--card-border);
+}
+.station-icon { font-size: 18px; width: 28px; text-align: center; }
+.station-name {
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 90px;
+}
+.station-area {
+  font-size: 11px;
+  color: var(--text-dim);
+  min-width: 100px;
+}
+.station-info {
+  font-size: 11px;
+  flex: 1;
+}
+.badge {
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-align: center;
+  min-width: 72px;
+}
+.badge.go { background: var(--go-bg); color: var(--go); border: 1px solid rgba(0,255,65,0.3); }
+.badge.nogo { background: var(--nogo-bg); color: var(--nogo); border: 1px solid rgba(255,51,51,0.3); }
+.badge.unknown { background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--card-border); }
+.go-count {
+  font-size: 28px;
+  font-weight: 800;
+  text-align: center;
+  padding: 8px;
+}
+.go-count .number { font-size: 36px; }
+
+/* METAR */
+.metar-raw {
+  font-size: 12px;
+  background: rgba(0,0,0,0.3);
+  padding: 10px 14px;
+  border-radius: 6px;
+  word-break: break-all;
+  margin-bottom: 12px;
+  border-left: 3px solid var(--accent);
+}
+.metar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.metar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.metar-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.metar-value { font-size: 16px; font-weight: 700; }
+.flt-cat-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.flt-cat-badge.VFR { background: rgba(0,204,68,0.15); color: var(--vfr); }
+.flt-cat-badge.MVFR { background: rgba(68,136,255,0.15); color: var(--mvfr); }
+.flt-cat-badge.IFR { background: rgba(255,51,51,0.15); color: var(--ifr); }
+.flt-cat-badge.LIFR { background: rgba(255,68,255,0.15); color: var(--lifr); }
+
+/* Area Forecasts */
+.area-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 10px;
+}
+.area-card {
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid var(--card-border);
+}
+.area-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.area-name {
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+.area-forecast {
+  font-size: 11px;
+  color: var(--text);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+.ts-coverage {
+  font-size: 10px;
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.ts-coverage.active { background: var(--amber-bg); color: var(--amber); }
+.ts-coverage.none { color: var(--text-dim); }
+
+/* Hazards */
+.hazard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+.hazard-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.2);
+}
+.hazard-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.hazard-value {
+  font-size: 13px;
+  font-weight: 700;
+}
+.hazard-value.none { color: var(--text-dim); }
+.hazard-value.active { color: var(--amber); }
+
+/* Advisories */
+.advisory-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.2);
+  margin-bottom: 8px;
+}
+.advisory-badge {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.advisory-badge.warning { background: rgba(255,51,51,0.2); color: var(--nogo); }
+.advisory-badge.watch { background: var(--amber-bg); color: var(--amber); }
+.advisory-info { font-size: 12px; flex: 1; }
+.advisory-times { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+
+/* Flight Level Winds */
+.winds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.winds-table th {
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--card-border);
+}
+.winds-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.winds-table tr:last-child td { border-bottom: none; }
+.wind-badge {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  font-weight: 700;
+}
+.wind-badge.high { background: var(--amber-bg); color: var(--amber); }
+.wind-badge.icing { background: rgba(68,136,255,0.15); color: var(--mvfr); }
+
+/* 7-Day */
+.seven-day-grid {
+  overflow-x: auto;
+}
+.seven-day-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  min-width: 600px;
+}
+.seven-day-table th {
+  padding: 4px 6px;
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: center;
+  font-weight: 600;
+}
+.seven-day-table td {
+  padding: 4px 6px;
+  text-align: center;
+}
+.seven-day-table td:first-child {
+  text-align: left;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot.go { background: var(--go); box-shadow: 0 0 6px rgba(0,255,65,0.4); }
+.dot.marginal { background: var(--amber); box-shadow: 0 0 6px rgba(255,170,0,0.4); }
+.dot.noGo { background: var(--nogo); box-shadow: 0 0 6px rgba(255,51,51,0.4); }
+.temps-row td { font-weight: 700; font-size: 12px; }
+
+/* Solar/Lunar */
+.solar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+.solar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.solar-icon { font-size: 16px; }
+.solar-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* Aerodrome */
+.aero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 10px;
+}
+.aero-card {
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid var(--card-border);
+}
+.aero-icao {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.aero-period {
+  font-size: 11px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.aero-period:last-child { border-bottom: none; }
+.aero-period.tempo {
+  color: var(--text-dim);
+  padding-left: 16px;
+  font-style: italic;
+}
+.aero-same {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+/* Takeoff Data */
+.takeoff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 11px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--card-border);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; }
+  .container { padding: 12px; }
+  .area-grid { grid-template-columns: 1fr; }
+  .aero-grid { grid-template-columns: 1fr; }
+  .station-area { display: none; }
+  .header-title h1 { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">
+    <span class="header-icon">&#x1F681;</span>
+    <h1>Fort Novosel Training Status</h1>
+  </div>
+  <div class="header-meta">
+    <span id="lastUpdated"></span>
+    <div class="tabs" id="periodTabs"></div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Training Status -->
+  <div class="card">
+    <div class="card-header">
+      <span>Training Status</span>
+      <span id="goCountHeader"></span>
+    </div>
+    <div class="card-body">
+      <div class="training-grid" id="trainingGrid"></div>
+    </div>
+  </div>
+
+  <!-- METAR -->
+  <div class="card">
+    <div class="card-header">
+      <span>Current METAR</span>
+      <span id="metarTime"></span>
+    </div>
+    <div class="card-body" id="metarBody"></div>
+  </div>
+
+  <!-- Area Forecasts -->
+  <div class="card">
+    <div class="card-header">
+      <span>Area Forecasts</span>
+      <span id="validPeriod"></span>
+    </div>
+    <div class="card-body">
+      <div class="area-grid" id="areaGrid"></div>
+    </div>
+  </div>
+
+  <!-- Flight Hazards -->
+  <div class="card">
+    <div class="card-header">
+      <span>Flight Hazards</span>
+      <span id="hazardsBadge"></span>
+    </div>
+    <div class="card-body">
+      <div class="hazard-grid" id="hazardGrid"></div>
+    </div>
+  </div>
+
+  <!-- Weather Advisories -->
+  <div class="card" id="advisoriesCard" style="display:none">
+    <div class="card-header"><span>Weather Advisories</span></div>
+    <div class="card-body" id="advisoriesBody"></div>
+  </div>
+
+  <!-- Flight Level Winds -->
+  <div class="card">
+    <div class="card-header"><span>Flight Level Winds &amp; Temps</span></div>
+    <div class="card-body" id="windsBody"></div>
+  </div>
+
+  <!-- Solar / Lunar -->
+  <div class="card" id="solarCard" style="display:none">
+    <div class="card-header"><span>Solar / Lunar</span></div>
+    <div class="card-body">
+      <div class="solar-grid" id="solarGrid"></div>
+    </div>
+  </div>
+
+  <!-- Takeoff Data -->
+  <div class="card" id="takeoffCard" style="display:none">
+    <div class="card-header"><span>Takeoff Data (KOZR)</span></div>
+    <div class="card-body">
+      <div class="takeoff-grid" id="takeoffGrid"></div>
+    </div>
+  </div>
+
+  <!-- Aerodrome Forecasts -->
+  <div class="card" id="aeroCard" style="display:none">
+    <div class="card-header"><span>Aerodrome Forecasts</span></div>
+    <div class="card-body">
+      <div class="aero-grid" id="aeroGrid"></div>
+    </div>
+  </div>
+
+  <!-- 7-Day Outlook -->
+  <div class="card" id="sevenDayCard" style="display:none">
+    <div class="card-header"><span>7-Day Outlook</span><span id="sevenDayTitle"></span></div>
+    <div class="card-body">
+      <div class="seven-day-grid" id="sevenDayGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer" id="footer"></div>
+
+<script>
+let DATA = null;
+let currentPeriod = 'AM';
+
+async function loadData() {
+  try {
+    const resp = await fetch('data.json');
+    DATA = await resp.json();
+    initTabs();
+    render();
+  } catch(e) {
+    document.querySelector('.container').innerHTML =
+      '<div class="no-data">Unable to load data.json<br><br>Export dashboard data from My Weather Pal and place data.json alongside this file.</div>';
+  }
+}
+
+function initTabs() {
+  const tabs = document.getElementById('periodTabs');
+  tabs.innerHTML = '';
+  const periods = DATA.forecasts.map(f => f.type);
+  periods.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (p === currentPeriod ? ' active' : '');
+    btn.textContent = p;
+    btn.onclick = () => { currentPeriod = p; render(); };
+    tabs.appendChild(btn);
+  });
+}
+
+function render() {
+  // Update tab active state
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.textContent === currentPeriod);
+  });
+
+  const fc = DATA.forecasts.find(f => f.type === currentPeriod);
+  if (!fc) return;
+
+  // Last updated
+  const exported = new Date(DATA.exportedAt);
+  document.getElementById('lastUpdated').textContent =
+    'EXPORTED: ' + exported.toLocaleString('en-US', {
+      month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:false, timeZoneName:'short'
+    }).toUpperCase();
+
+  renderTrainingStatus(fc);
+  renderMETAR();
+  renderAreaForecasts(fc);
+  renderHazards(fc);
+  renderAdvisories(fc);
+  renderWinds(fc);
+  renderSolarLunar(fc);
+  renderTakeoffData(fc);
+  renderAerodromes(fc);
+  renderSevenDay();
+}
+
+function badgeClass(status) {
+  if (status === 'GO') return 'badge go';
+  if (status === 'NO-GO') return 'badge nogo';
+  return 'badge unknown';
+}
+
+function renderTrainingStatus(fc) {
+  const ts = fc.trainingStatus;
+  const grid = document.getElementById('trainingGrid');
+
+  const stations = [
+    { name: 'CAIRNS AAF', area: 'KOZR', status: ts.cairns, info: ts.cairns === 'GO' ? '1000/3 METAR' : '1000/3 METAR', isCairns: true },
+    { name: 'ALLEN', area: ts.allen.area, status: ts.allen.status, info: ts.allen.info },
+    { name: 'TOTH', area: ts.toth.area, status: ts.toth.status, info: ts.toth.info },
+    { name: 'HIGHBLUFF', area: ts.highbluff.area, status: ts.highbluff.status, info: ts.highbluff.info },
+    { name: 'LUCAS', area: ts.lucas.area, status: ts.lucas.status, info: ts.lucas.info },
+  ];
+
+  grid.innerHTML = stations.map(s => `
+    <div class="station-row ${s.isCairns ? 'cairns' : ''}">
+      <span class="station-icon">${s.status === 'GO' ? '&#x1F681;' : '&#x2601;&#xFE0F;'}</span>
+      <span class="station-name">${s.name}</span>
+      <span class="station-area">${s.area}</span>
+      <span class="station-info" style="color:${s.status === 'GO' ? 'var(--go)' : (s.status === 'NO-GO' ? 'var(--nogo)' : 'var(--text-dim)')}">${s.info}</span>
+      <span class="${badgeClass(s.status)}">${s.status}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('goCountHeader').innerHTML =
+    `<span class="go-count"><span class="number" style="color:${ts.goCount >= 4 ? 'var(--go)' : (ts.goCount >= 2 ? 'var(--amber)' : 'var(--nogo)')}">${ts.goCount}</span>/5 GO</span>`;
+}
+
+function renderMETAR() {
+  const m = DATA.metar;
+  const body = document.getElementById('metarBody');
+  if (!m) { body.innerHTML = '<div class="no-data">No METAR data available</div>'; return; }
+
+  const fltCat = m.fltCat || 'VFR';
+  const ceil = m.ceilingFeet != null ? m.ceilingFeet.toLocaleString() + ' ft' : 'CLR';
+  const wind = formatWind(m);
+  const vis = m.visib || '--';
+  const temp = m.temp != null ? Math.round(m.temp) + '\u00B0C' : '--';
+  const dewp = m.dewp != null ? Math.round(m.dewp) + '\u00B0C' : '--';
+  const altim = m.altim ? (m.altim / 33.8639).toFixed(2) + '"' : '--';
+
+  document.getElementById('metarTime').textContent = m.reportTime || '';
+
+  body.innerHTML = `
+    ${m.rawOb ? `<div class="metar-raw">${m.rawOb}</div>` : ''}
+    <div class="metar-grid">
+      <div class="metar-item">
+        <span class="metar-label">Flight Cat</span>
+        <span class="flt-cat-badge ${fltCat}">${fltCat}</span>
+      </div>
+      <div class="metar-item">
+        <span class="metar-label">Wind</span>
+        <span class="metar-value">${wind}</span>
+      </div>
+      <div class="metar-item">
+        <span class="metar-label">Visibility</span>
+        <span class="metar-value">${vis} SM</span>
+      </div>
+      <div class="metar-item">
+        <span class="metar-label">Ceiling</span>
+        <span class="metar-value">${ceil}</span>
+      </div>
+      <div class="metar-item">
+        <span class="metar-label">Temp</span>
+        <span class="metar-value">${temp}</span>
+      </div>
+      <div class="metar-item">
+        <span class="metar-label">Dewpoint</span>
+        <span class="metar-value">${dewp}</span>
+      </div>
+      <div class="metar-item">
+        <span class="metar-label">Altimeter</span>
+        <span class="metar-value">${altim}</span>
+      </div>
+      ${m.wxString ? `<div class="metar-item"><span class="metar-label">Weather</span><span class="metar-value">${m.wxString}</span></div>` : ''}
+    </div>
+  `;
+}
+
+function formatWind(m) {
+  if (!m.wspd && !m.wdir) return 'CALM';
+  if (m.wspd === 0) return 'CALM';
+  const dir = m.wdir === 0 ? 'VRB' : String(m.wdir).padStart(3, '0');
+  const spd = String(m.wspd || 0).padStart(2, '0');
+  if (m.wgst) return `${dir}/${spd}G${m.wgst}KT`;
+  return `${dir}/${spd}KT`;
+}
+
+function renderAreaForecasts(fc) {
+  const grid = document.getElementById('areaGrid');
+  const vp = document.getElementById('validPeriod');
+  if (!fc.mef) { grid.innerHTML = '<div class="no-data">No MEF data</div>'; return; }
+
+  vp.textContent = fc.mef.validPeriod || '';
+
+  const areas = fc.mef.areaForecasts || [];
+  grid.innerHTML = areas.map(a => {
+    const text = a.amendmentText || a.forecast || '';
+    const tsLabel = a.tsCoverage && a.tsCoverage.toUpperCase() !== 'NONE'
+      ? `<span class="ts-coverage active">TS: ${a.tsCoverage}</span>`
+      : '';
+    const amdBadge = a.amendmentNumber
+      ? `<span style="color:var(--amber);font-size:11px;font-weight:700">${a.amendmentNumber} ${a.amendmentTime || ''}</span>`
+      : '';
+
+    return `
+      <div class="area-card">
+        <div class="area-header">
+          <span class="area-name">${a.name}</span>
+          ${amdBadge}
+        </div>
+        <div class="area-forecast">${escapeHtml(text)}</div>
+        ${tsLabel}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHazards(fc) {
+  const grid = document.getElementById('hazardGrid');
+  const badgeEl = document.getElementById('hazardsBadge');
+
+  // Combine MEF and enroute hazards
+  const mefH = fc.mef?.flightHazards;
+  const enH = fc.flightBriefing?.enrouteData;
+
+  const items = [];
+
+  if (mefH) {
+    items.push({ label: 'Turbulence', value: mefH.turbulence });
+    items.push({ label: 'Icing', value: mefH.icing });
+    items.push({ label: 'Thunderstorms', value: mefH.thunderstorms });
+    items.push({ label: 'LLWS', value: mefH.llws });
+  }
+
+  if (enH) {
+    if (enH.thunderstorms) {
+      const ts = enH.thunderstorms;
+      const val = ts.coverage === 'NONE' ? 'NONE' : [ts.coverage, ts.type, ts.maxTops ? 'TOPS ' + ts.maxTops : ''].filter(Boolean).join(' ');
+      if (!mefH) items.push({ label: 'Thunderstorms', value: val });
+    }
+    if (enH.turbulence) {
+      const t = enH.turbulence;
+      const val = t.severity === 'NONE' ? 'NONE' : [t.severity, t.levels].filter(Boolean).join(' ');
+      if (!mefH) items.push({ label: 'Turbulence', value: val });
+    }
+    if (enH.icing) {
+      const i = enH.icing;
+      const val = i.severity === 'NONE' ? 'NONE' : [i.severity, i.type, i.levels].filter(Boolean).join(' ');
+      if (!mefH) items.push({ label: 'Icing', value: val });
+    }
+    items.push({ label: 'Obscurations', value: enH.obscurations });
+    items.push({ label: 'Min Ceiling', value: enH.minCeiling ? enH.minCeiling + ' ft AGL' : null });
+    items.push({ label: 'Min Freezing Lvl', value: enH.minFreezingLevel ? enH.minFreezingLevel + ' ft MSL' : null });
+    if (!mefH) items.push({ label: 'LLWS', value: enH.llws });
+  }
+
+  const filtered = items.filter(i => i.value != null);
+  const hasHazards = filtered.some(i => i.value && i.value.toUpperCase() !== 'NONE');
+
+  badgeEl.innerHTML = hasHazards
+    ? '<span style="color:var(--amber);font-weight:700">HAZARDS</span>'
+    : '';
+
+  grid.innerHTML = filtered.map(i => {
+    const isNone = !i.value || i.value.toUpperCase() === 'NONE';
+    return `
+      <div class="hazard-item">
+        <span class="hazard-label">${i.label}</span>
+        <span class="hazard-value ${isNone ? 'none' : 'active'}">${i.value || 'NONE'}</span>
+      </div>
+    `;
+  }).join('');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="no-data" style="padding:10px">No hazard data available</div>';
+  }
+}
+
+function renderAdvisories(fc) {
+  const card = document.getElementById('advisoriesCard');
+  const body = document.getElementById('advisoriesBody');
+  const advisories = fc.mef?.weatherAdvisories || [];
+
+  if (advisories.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  body.innerHTML = advisories.map(a => {
+    const isWarning = a.type === 'TWA' || a.type === 'WARNING';
+    return `
+      <div class="advisory-item">
+        <span class="advisory-badge ${isWarning ? 'warning' : 'watch'}">${a.type} ${a.number}</span>
+        <div class="advisory-info">
+          ${escapeHtml(a.criteria)}
+          <div class="advisory-times">${a.validFrom} - ${a.validTo}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderWinds(fc) {
+  const body = document.getElementById('windsBody');
+  const winds = fc.mef?.flightLevelWinds || fc.flightBriefing?.enrouteData?.flightLevelWinds || [];
+
+  if (winds.length === 0) {
+    body.innerHTML = '<div class="no-data" style="padding:10px">No wind data available</div>';
+    return;
+  }
+
+  body.innerHTML = `
+    <table class="winds-table">
+      <thead><tr><th>Level</th><th>Wind</th><th>Temp</th></tr></thead>
+      <tbody>
+        ${winds.map(w => {
+          const lvl = parseInt(w.level) * 100;
+          const lvlStr = lvl >= 1000 ? (lvl/1000).toFixed(lvl%1000?1:0).replace('.0','') + ',000' : lvl.toString();
+          const windSpeed = parseInt((w.wind.match(/\d{3}(\d{2,3})/)||[])[1]) || 0;
+          const tempVal = parseInt(w.temp) || 99;
+          const highWind = windSpeed >= 20;
+          const icing = tempVal <= 4;
+          return `<tr>
+            <td>${lvlStr} ft</td>
+            <td>${w.wind}${highWind ? '<span class="wind-badge high">HIGH WIND</span>' : ''}</td>
+            <td>${w.temp}${icing ? '<span class="wind-badge icing">ICING</span>' : ''}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderSolarLunar(fc) {
+  const card = document.getElementById('solarCard');
+  const grid = document.getElementById('solarGrid');
+  const sl = fc.mef?.solarLunar || fc.flightBriefing?.enrouteData?.solarLunar;
+
+  if (!sl) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const items = [
+    { icon: '\u{1F305}', label: 'BMNT', value: sl.bmnt },
+    { icon: '\u{1F305}', label: 'BMCT', value: sl.bmct },
+    { icon: '\u2600\uFE0F', label: 'Sunrise', value: sl.sunrise },
+    { icon: '\u{1F307}', label: 'Sunset', value: sl.sunset },
+    { icon: '\u{1F307}', label: 'EECT', value: sl.eect },
+    { icon: '\u{1F307}', label: 'EENT', value: sl.eent },
+    { icon: '\u{1F319}', label: 'Moonrise', value: sl.moonrise },
+    { icon: '\u{1F319}', label: 'Moonset', value: sl.moonset },
+    { icon: '\u{1F319}', label: 'Illumination', value: sl.illumination },
+  ].filter(i => i.value);
+
+  grid.innerHTML = items.map(i => `
+    <div class="solar-item">
+      <span class="solar-icon">${i.icon}</span>
+      <div>
+        <div class="solar-label">${i.label}</div>
+        <div>${i.value}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTakeoffData(fc) {
+  const card = document.getElementById('takeoffCard');
+  const grid = document.getElementById('takeoffGrid');
+  const td = fc.flightBriefing?.takeoffData;
+
+  if (!td) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const items = [
+    { label: 'Runway Temp', value: td.runwayTemp ? td.runwayTemp + '\u00B0C' : null },
+    { label: 'Dewpoint', value: td.dewpoint ? td.dewpoint + '\u00B0C' : null },
+    { label: 'Press Alt', value: td.pressureAlt ? td.pressureAlt + ' ft' : null },
+    { label: 'Density Alt', value: td.densityAlt ? td.densityAlt + ' ft' : null },
+    { label: 'Surface Wind', value: td.surfaceWind },
+    { label: 'Max Temp', value: td.maxTemp ? td.maxTemp + '\u00B0C' : null },
+    { label: 'Max Press Alt', value: td.maxPA ? td.maxPA + ' ft' : null },
+    { label: 'Max Density Alt', value: td.maxDA ? td.maxDA + ' ft' : null },
+  ].filter(i => i.value);
+
+  grid.innerHTML = items.map(i => `
+    <div class="metar-item">
+      <span class="metar-label">${i.label}</span>
+      <span class="metar-value">${i.value}</span>
+    </div>
+  `).join('');
+}
+
+function renderAerodromes(fc) {
+  const card = document.getElementById('aeroCard');
+  const grid = document.getElementById('aeroGrid');
+  const aeros = fc.flightBriefing?.aerodromeForecasts || [];
+
+  if (aeros.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  grid.innerHTML = aeros.map(a => {
+    const periodsHtml = a.periods.map(p => {
+      const isTempo = p.periodType === 'TEMPO';
+      const parts = [p.surfaceWind, p.visibility, p.weather, p.skyCondition, p.altimeter].filter(Boolean).join(' ');
+      const timeStr = p.validFrom && p.validTo ? `${p.validFrom}-${p.validTo}` : '';
+      const prefix = p.periodType ? p.periodType + ' ' : '';
+      return `<div class="aero-period ${isTempo ? 'tempo' : ''}">${prefix}${timeStr} ${parts}</div>`;
+    }).join('');
+
+    const sameAsHtml = a.sameAs && a.sameAs.length > 0
+      ? `<div class="aero-same">Same as: ${a.sameAs.join(', ')}</div>`
+      : '';
+
+    return `
+      <div class="aero-card">
+        <div class="aero-icao">${a.icao}</div>
+        ${periodsHtml}
+        ${sameAsHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSevenDay() {
+  const card = document.getElementById('sevenDayCard');
+  const grid = document.getElementById('sevenDayGrid');
+  const titleEl = document.getElementById('sevenDayTitle');
+  const sd = DATA.sevenDay;
+
+  if (!sd) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  titleEl.textContent = sd.title || '';
+
+  // Build header
+  let headerCols = '<th></th>';
+  const ppd = sd.periodsPerDay || [];
+  sd.dayLabels.forEach((day, i) => {
+    const span = ppd[i] || 1;
+    headerCols += `<th colspan="${span}">${day}</th>`;
+  });
+
+  // Sub-header (AM/PM/N1)
+  let subHeader = '<th></th>';
+  ppd.forEach(p => {
+    if (p === 3) {
+      subHeader += '<th>AM</th><th>PM</th><th>N1</th>';
+    } else {
+      subHeader += '<th>-</th>';
+    }
+  });
+
+  // Category rows
+  const catRows = (sd.categories || []).map(cat => {
+    let row = `<td>${cat.shortName || cat.name}</td>`;
+    (cat.statuses || []).forEach(s => {
+      const cls = s === 'go' ? 'go' : (s === 'marginal' ? 'marginal' : 'noGo');
+      row += `<td><span class="dot ${cls}"></span></td>`;
+    });
+    return `<tr>${row}</tr>`;
+  }).join('');
+
+  // Temp rows
+  const totalCols = ppd.reduce((a,b) => a+b, 0);
+  let highRow = '<td>HIGH</td>';
+  let lowRow = '<td>LOW</td>';
+  (sd.highTemps || []).forEach((t, i) => {
+    const span = ppd[i] || 1;
+    highRow += `<td colspan="${span}">${t}\u00B0</td>`;
+    lowRow += `<td colspan="${span}">${(sd.lowTemps||[])[i] || '--'}\u00B0</td>`;
+  });
+
+  grid.innerHTML = `
+    <table class="seven-day-table">
+      <thead><tr>${headerCols}</tr><tr>${subHeader}</tr></thead>
+      <tbody>
+        ${catRows}
+        <tr class="temps-row">${highRow}</tr>
+        <tr class="temps-row">${lowRow}</tr>
+      </tbody>
+    </table>
+    ${sd.synopsis ? `<div style="margin-top:12px;font-size:11px;color:var(--text-dim);line-height:1.6">${escapeHtml(sd.synopsis)}</div>` : ''}
+  `;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
+// Load on page ready
+loadData();
+</script>
+</body>
+</html>

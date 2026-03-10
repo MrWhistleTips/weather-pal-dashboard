@@ -1,0 +1,376 @@
+{
+  "exportedAt": "2026-03-09T14:30:00Z",
+  "metar": {
+    "icaoId": "KOZR",
+    "reportTime": "09 Mar 1452Z",
+    "temp": 22,
+    "dewp": 14,
+    "wdir": 160,
+    "wspd": 8,
+    "wgst": null,
+    "visib": "10+",
+    "altim": 1015.2,
+    "slp": null,
+    "metarType": "METAR",
+    "rawOb": "METAR KOZR 091452Z 16008KT 10SM FEW045 BKN110 22/14 A2998 RMK AO2 SLP152",
+    "name": "Cairns AAF",
+    "cover": "BKN",
+    "clouds": [
+      { "cover": "FEW", "base": 4500 },
+      { "cover": "BKN", "base": 11000 }
+    ],
+    "fltCat": "VFR",
+    "wxString": null
+  },
+  "forecasts": [
+    {
+      "type": "AM",
+      "fetchedAt": "2026-03-09T08:00:00Z",
+      "amendmentNumber": null,
+      "trainingStatus": {
+        "cairns": "GO",
+        "allen": { "status": "GO", "area": "GOLDFISH", "info": "Trainable" },
+        "toth": { "status": "GO", "area": "GOLDFISH", "info": "Trainable" },
+        "highbluff": { "status": "NO-GO", "area": "BEARCAT", "info": "Trainable in 2h 15m" },
+        "lucas": { "status": "GO", "area": "VANGUARD C", "info": "Trainable" },
+        "goCount": 4
+      },
+      "mef": {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "date": "09",
+        "validPeriod": "AM 1200Z-1800Z",
+        "forecasterInitials": "JKL",
+        "amendedAt": null,
+        "rawText": "",
+        "flightLevelWinds": [
+          { "id": "w1", "level": "010", "wind": "16012KT", "temp": "18 \u00b0C" },
+          { "id": "w2", "level": "020", "wind": "18015KT", "temp": "14 \u00b0C" },
+          { "id": "w3", "level": "030", "wind": "20018KT", "temp": "10 \u00b0C" },
+          { "id": "w4", "level": "040", "wind": "22022KT", "temp": "6 \u00b0C" },
+          { "id": "w5", "level": "050", "wind": "24025KT", "temp": "2 \u00b0C" },
+          { "id": "w6", "level": "060", "wind": "26028KT", "temp": "-2 \u00b0C" },
+          { "id": "w7", "level": "070", "wind": "27030KT", "temp": "-8 \u00b0C" },
+          { "id": "w8", "level": "080", "wind": "28035KT", "temp": "-14 \u00b0C" }
+        ],
+        "maxTemp": { "kozr": "24", "area": "25" },
+        "minTemp": { "kozr": "12", "area": "11" },
+        "maxDewpoint": { "kozr": "16", "area": "15" },
+        "minAltimeterSetting": { "kozr": "29.96", "area": "29.94" },
+        "maxPressureAlt": { "kozr": "380", "area": "420" },
+        "maxDensityAlt": { "kozr": "2100", "area": "2200" },
+        "minCeiling": { "kozr": "3500", "area": "2800" },
+        "minVisibility": { "kozr": "7", "area": "5" },
+        "minWeather": null,
+        "solarLunar": {
+          "bmnt": "0518L",
+          "sunrise": "0604L",
+          "sunset": "1745L",
+          "eent": "1831L",
+          "bmct": "0538L",
+          "eect": "1811L",
+          "moonrise": "1420L",
+          "moonset": "0345L",
+          "azimuth": null,
+          "elevation": null,
+          "illumination": "82%"
+        },
+        "flightHazards": {
+          "turbulence": "LIGHT CAT II 020-060",
+          "icing": "NONE",
+          "thunderstorms": "NONE",
+          "llws": "NONE"
+        },
+        "areaForecasts": [
+          {
+            "id": "a1",
+            "name": "GOLDFISH",
+            "forecast": "SCT035 BKN100 7SM HZ AFT 1500Z: FEW040 BKN120 7SM HZ",
+            "amendmentNumber": null,
+            "amendmentTime": null,
+            "amendmentText": null,
+            "tsCoverage": "NONE"
+          },
+          {
+            "id": "a2",
+            "name": "BEARCAT",
+            "forecast": "OVC006 1/2SM FG AFT 1400Z: BKN025 SCT100 5SM HZ AFT 1600Z: FEW040 BKN110 7SM HZ",
+            "amendmentNumber": null,
+            "amendmentTime": null,
+            "amendmentText": null,
+            "tsCoverage": "NONE"
+          },
+          {
+            "id": "a3",
+            "name": "VANGUARD N",
+            "forecast": "SCT030 BKN090 7SM HZ AFT 1500Z: FEW045 SCT110 7SM",
+            "amendmentNumber": null,
+            "amendmentTime": null,
+            "amendmentText": null,
+            "tsCoverage": "NONE"
+          },
+          {
+            "id": "a4",
+            "name": "VANGUARD C",
+            "forecast": "SCT035 BKN100 7SM HZ AFT 1500Z: FEW040 BKN120 P6SM",
+            "amendmentNumber": null,
+            "amendmentTime": null,
+            "amendmentText": null,
+            "tsCoverage": "NONE"
+          },
+          {
+            "id": "a5",
+            "name": "VANGUARD S",
+            "forecast": "SCT030 BKN080 5SM HZ AFT 1500Z: FEW040 SCT100 7SM",
+            "amendmentNumber": null,
+            "amendmentTime": null,
+            "amendmentText": null,
+            "tsCoverage": "NONE"
+          },
+          {
+            "id": "a6",
+            "name": "HAWK",
+            "forecast": "SCT040 BKN110 7SM AFT 1500Z: FEW045 SCT120 P6SM",
+            "amendmentNumber": null,
+            "amendmentTime": null,
+            "amendmentText": null,
+            "tsCoverage": "NONE"
+          }
+        ],
+        "remarks": null,
+        "pmPlanning": null,
+        "weatherAdvisories": [
+          {
+            "id": "adv1",
+            "type": "AWA",
+            "number": "03-011",
+            "validFrom": "1200Z",
+            "validTo": "1500Z",
+            "criteria": "CIGS BLW 700 FT BEARCAT AREA DUE TO RADIATION FOG"
+          }
+        ]
+      },
+      "flightBriefing": {
+        "id": "fb1",
+        "date": "09 MAR 1200Z",
+        "amendedAt": null,
+        "rawText": "",
+        "takeoffData": {
+          "date": "09",
+          "runwayTemp": "18",
+          "dewpoint": "14",
+          "tempDeviation": "+2",
+          "pressureAlt": "340",
+          "densityAlt": "1850",
+          "surfaceWind": "160/08KT",
+          "wwas": [],
+          "maxTemp": "24",
+          "maxPA": "380",
+          "maxDA": "2100"
+        },
+        "enrouteData": {
+          "flightLevelWinds": [
+            { "id": "ew1", "level": "010", "wind": "16012KT", "temp": "18 \u00b0C" },
+            { "id": "ew2", "level": "020", "wind": "18015KT", "temp": "14 \u00b0C" },
+            { "id": "ew3", "level": "030", "wind": "20018KT", "temp": "10 \u00b0C" },
+            { "id": "ew4", "level": "040", "wind": "22022KT", "temp": "6 \u00b0C" },
+            { "id": "ew5", "level": "050", "wind": "24025KT", "temp": "2 \u00b0C" }
+          ],
+          "spaceWeather": {
+            "frequency": "NONE",
+            "gps": "NONE",
+            "radiation": "NONE"
+          },
+          "solarLunar": {
+            "bmnt": "0518L",
+            "sunrise": "0604L",
+            "sunset": "1745L",
+            "eent": "1831L",
+            "bmct": null,
+            "eect": null,
+            "moonrise": null,
+            "moonset": null,
+            "azimuth": null,
+            "elevation": null,
+            "illumination": null
+          },
+          "obscurations": "FG/HZ",
+          "minCeiling": "006",
+          "minCeilingLocation": "BEARCAT",
+          "llws": "NONE",
+          "minFreezingLevel": "120",
+          "thunderstorms": {
+            "coverage": "NONE",
+            "type": null,
+            "maxTops": null,
+            "location": null
+          },
+          "turbulence": {
+            "severity": "LIGHT",
+            "levels": "020-060",
+            "location": null
+          },
+          "icing": {
+            "severity": "NONE",
+            "type": null,
+            "levels": null,
+            "location": null
+          },
+          "precipitation": {
+            "intensity": "NONE",
+            "type": null,
+            "freezing": null,
+            "location": null
+          }
+        },
+        "aerodromeForecasts": [
+          {
+            "id": "af1",
+            "icao": "KOZR",
+            "periods": [
+              { "id": "p1", "periodType": "", "validFrom": "09/1200Z", "validTo": "09/1800Z", "surfaceWind": "16008KT", "visibility": "7SM", "weather": "HZ", "skyCondition": "SCT035 BKN100", "altimeter": "29.96" },
+              { "id": "p2", "periodType": "TEMPO", "validFrom": "09/1200Z", "validTo": "09/1400Z", "surfaceWind": null, "visibility": "3SM", "weather": "BR", "skyCondition": "BKN015", "altimeter": null }
+            ],
+            "sameAs": ["KLOR", "KHEY"]
+          },
+          {
+            "id": "af2",
+            "icao": "K79J",
+            "periods": [
+              { "id": "p3", "periodType": "", "validFrom": "09/1200Z", "validTo": "09/1800Z", "surfaceWind": "15006KT", "visibility": "5SM", "weather": "HZ", "skyCondition": "SCT030 BKN090", "altimeter": "29.95" }
+            ],
+            "sameAs": []
+          }
+        ],
+        "weatherAdvisories": [],
+        "contactInfo": null,
+        "remarks": null
+      }
+    },
+    {
+      "type": "PM",
+      "fetchedAt": "2026-03-09T12:00:00Z",
+      "amendmentNumber": null,
+      "trainingStatus": {
+        "cairns": "GO",
+        "allen": { "status": "GO", "area": "GOLDFISH", "info": "Trainable" },
+        "toth": { "status": "GO", "area": "GOLDFISH", "info": "Trainable" },
+        "highbluff": { "status": "GO", "area": "BEARCAT", "info": "Trainable" },
+        "lucas": { "status": "GO", "area": "VANGUARD C", "info": "Trainable" },
+        "goCount": 5
+      },
+      "mef": {
+        "id": "22222222-2222-2222-2222-222222222222",
+        "date": "09",
+        "validPeriod": "PM 1800Z-0030Z",
+        "forecasterInitials": "MNO",
+        "amendedAt": null,
+        "rawText": "",
+        "flightLevelWinds": [
+          { "id": "pw1", "level": "010", "wind": "18010KT", "temp": "22 \u00b0C" },
+          { "id": "pw2", "level": "020", "wind": "20014KT", "temp": "16 \u00b0C" },
+          { "id": "pw3", "level": "030", "wind": "22018KT", "temp": "10 \u00b0C" },
+          { "id": "pw4", "level": "040", "wind": "24020KT", "temp": "4 \u00b0C" }
+        ],
+        "maxTemp": null,
+        "minTemp": null,
+        "maxDewpoint": null,
+        "minAltimeterSetting": null,
+        "maxPressureAlt": null,
+        "maxDensityAlt": null,
+        "minCeiling": null,
+        "minVisibility": null,
+        "minWeather": null,
+        "solarLunar": null,
+        "flightHazards": {
+          "turbulence": "NONE",
+          "icing": "NONE",
+          "thunderstorms": "ISOLATED AREA TOPS 350",
+          "llws": "NONE"
+        },
+        "areaForecasts": [
+          { "id": "pa1", "name": "GOLDFISH", "forecast": "FEW045 SCT120 P6SM ISOLD 1900-2100Z: SCT040CB BKN080 5SM +TSRA", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "ISOLATED" },
+          { "id": "pa2", "name": "BEARCAT", "forecast": "FEW040 SCT100 P6SM", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" },
+          { "id": "pa3", "name": "VANGUARD N", "forecast": "FEW045 SCT110 P6SM", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" },
+          { "id": "pa4", "name": "VANGUARD C", "forecast": "FEW040 SCT120 P6SM", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" },
+          { "id": "pa5", "name": "VANGUARD S", "forecast": "FEW045 SCT100 P6SM", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" },
+          { "id": "pa6", "name": "HAWK", "forecast": "FEW050 SCT110 P6SM", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" }
+        ],
+        "remarks": null,
+        "pmPlanning": null,
+        "weatherAdvisories": []
+      },
+      "flightBriefing": null
+    },
+    {
+      "type": "N1",
+      "fetchedAt": "2026-03-09T18:00:00Z",
+      "amendmentNumber": null,
+      "trainingStatus": {
+        "cairns": "GO",
+        "allen": { "status": "GO", "area": "GOLDFISH", "info": "Trainable" },
+        "toth": { "status": "GO", "area": "GOLDFISH", "info": "Trainable" },
+        "highbluff": { "status": "GO", "area": "BEARCAT", "info": "Trainable" },
+        "lucas": { "status": "NO-GO", "area": "VANGUARD C", "info": "Untrainable" },
+        "goCount": 4
+      },
+      "mef": {
+        "id": "33333333-3333-3333-3333-333333333333",
+        "date": "10",
+        "validPeriod": "N1 0030Z-0730Z",
+        "forecasterInitials": "PQR",
+        "amendedAt": null,
+        "rawText": "",
+        "flightLevelWinds": [
+          { "id": "nw1", "level": "010", "wind": "14006KT", "temp": "14 \u00b0C" },
+          { "id": "nw2", "level": "020", "wind": "16010KT", "temp": "10 \u00b0C" },
+          { "id": "nw3", "level": "030", "wind": "18014KT", "temp": "6 \u00b0C" }
+        ],
+        "maxTemp": null,
+        "minTemp": null,
+        "maxDewpoint": null,
+        "minAltimeterSetting": null,
+        "maxPressureAlt": null,
+        "maxDensityAlt": null,
+        "minCeiling": null,
+        "minVisibility": null,
+        "minWeather": null,
+        "solarLunar": null,
+        "flightHazards": {
+          "turbulence": "NONE",
+          "icing": "NONE",
+          "thunderstorms": "NONE",
+          "llws": "NONE"
+        },
+        "areaForecasts": [
+          { "id": "na1", "name": "GOLDFISH", "forecast": "FEW035 SCT100 P6SM", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" },
+          { "id": "na2", "name": "BEARCAT", "forecast": "SCT030 BKN090 7SM HZ", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" },
+          { "id": "na3", "name": "VANGUARD N", "forecast": "FEW030 SCT080 7SM", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" },
+          { "id": "na4", "name": "VANGUARD C", "forecast": "OVC005 1SM FG", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" },
+          { "id": "na5", "name": "VANGUARD S", "forecast": "SCT025 BKN070 5SM HZ", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" },
+          { "id": "na6", "name": "HAWK", "forecast": "FEW035 SCT090 P6SM", "amendmentNumber": null, "amendmentTime": null, "amendmentText": null, "tsCoverage": "NONE" }
+        ],
+        "remarks": null,
+        "pmPlanning": null,
+        "weatherAdvisories": []
+      },
+      "flightBriefing": null
+    }
+  ],
+  "sevenDay": {
+    "title": "7-DAY OUTLOOK: 06 MAR - 12 MAR",
+    "dayLabels": ["T", "F", "S", "S", "M", "T", "W"],
+    "periodsPerDay": [3, 3, 3, 3, 1, 1, 1],
+    "categories": [
+      { "id": "c1", "name": "Ceiling", "shortName": "CIG", "statuses": ["go","go","go","go","go","marginal","go","go","go","go","go","go","go","go","go"] },
+      { "id": "c2", "name": "Visibility", "shortName": "VIS", "statuses": ["go","go","go","go","go","go","go","go","marginal","noGo","go","go","go","go","go"] },
+      { "id": "c3", "name": "Surface Wind", "shortName": "WIND", "statuses": ["go","go","go","marginal","marginal","go","go","go","go","go","go","go","go","go","go"] },
+      { "id": "c4", "name": "Turbulence", "shortName": "TURB", "statuses": ["go","go","go","go","go","go","go","go","go","go","marginal","go","go","go","go"] },
+      { "id": "c5", "name": "Icing", "shortName": "ICE", "statuses": ["go","go","go","go","go","go","go","go","go","go","go","go","go","go","go"] },
+      { "id": "c6", "name": "Thunderstorms", "shortName": "TS", "statuses": ["go","go","go","go","marginal","noGo","go","go","go","go","go","go","marginal","go","go"] },
+      { "id": "c7", "name": "UAS Winds", "shortName": "UAS", "statuses": ["go","go","go","go","go","go","go","go","go","go","go","go","go","go","go"] }
+    ],
+    "highTemps": [24, 22, 20, 18, 21, 23, 25],
+    "lowTemps": [12, 10, 8, 7, 9, 11, 13],
+    "synopsis": "Weak cold front passage Thu night into Fri. Scattered thunderstorms possible Fri PM-Sat AM along frontal boundary. Clearing trend Sun-Mon. High pressure builds mid-week with VFR conditions expected."
+  }
+}
