@@ -862,6 +862,16 @@ function rTS(fc){
     const txt=a.amendmentText||a.forecast||'';
     areaMap[a.name.toUpperCase()]=activeAreaColor(txt);
   });
+  // Time-aware active advisory filtering (match iOS app)
+  const nowMin=currentZuluMinutes();
+  const activeAdvs=advs.filter(a=>{
+    const fm=a.validFrom?.replace('Z',''),tm=a.validTo?.replace('Z','');
+    if(!fm||!tm||fm.length<4||tm.length<4)return false;
+    const fromMin=parseInt(fm.substring(0,2))*60+parseInt(fm.substring(2,4));
+    const toMin=parseInt(tm.substring(0,2))*60+parseInt(tm.substring(2,4));
+    if(toMin>fromMin)return nowMin>=fromMin&&nowMin<toMin;
+    return nowMin>=fromMin||nowMin<toMin;
+  });
   // Cairns info from METAR
   const mCeil=m?ceilNum(m.clouds):99999,mVis=m?parseFloat(m.visib)||99:99;
   const cairnsGo=mCeil>=1000&&mVis>=3;
@@ -874,6 +884,8 @@ function rTS(fc){
   const wdir=pw.dir,wspd2=pw.spd;
   const cairnsLand=wspd2>0?landingRwy(wdir,wspd2,[[60,240],[180,360]]):null;
   const sfRwys={ALLEN:[[120,300]],TOTH:[[70,250]],HIGHBLUFF:[[100,280]],LUCAS:[[180,360]]};
+  // All active advisory badges (shown on every row, matching iOS app)
+  const allAdvBadges=activeAdvs.map(a=>{const w=a.type==='TWA'||a.type==='WARNING';return'<span style="font-size:10px;padding:2px 6px;border-radius:2px;margin-left:4px;font-weight:700;color:#fff;background:'+(w?'var(--nogo)':'#cc9900')+'">'+a.type+' '+a.number+'</span>'}).join('');
   const st=[
     {n:'CAIRNS',a:'KOZR',s:cairnsGo?'GO':'NO-GO',i:cairnsInfo,c:true,cat:cairnsCat,area:null,land:cairnsLand},
     {n:'ALLEN',a:ts.allen.area,s:ts.allen.status,i:ts.allen.info,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.ALLEN):null},
@@ -881,16 +893,26 @@ function rTS(fc){
     {n:'HIGHBLUFF',a:ts.highbluff.area,s:ts.highbluff.status,i:ts.highbluff.info,area:'BEARCAT',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.HIGHBLUFF):null},
     {n:'LUCAS',a:ts.lucas.area,s:ts.lucas.status,i:ts.lucas.info,area:'VANGUARD C',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.LUCAS):null},
   ];
+  // Render matching iOS app layout: name+advs on line 1, area+info on line 2, landing on line 3
   g.innerHTML=st.map(s=>{
     const ic=s.s==='GO'?'\uD83D\uDE81':'\u2601\uFE0F';
     const nameCol=s.c?fcColor(s.cat):(s.area?areaMap[s.area]||'var(--text)':'var(--text)');
-    const ab=s.area?advBadges(advs,s.area):(s.c?advBadges(advs,'CAIRNS'):'');
     const infoC=tsInfoCol(s.i);
     const icon=tsIcon(s.i);
-    const lnd=s.land?'<div style="font-size:11px;color:var(--text-dim);margin-top:2px">\uD83D\uDEEC '+s.land.rwy+(s.land.hw!==0||s.land.xw!==0?' <span style="color:'+(s.land.hw>=0?'var(--go)':'var(--nogo)')+'">'+( s.land.hw>=0?'\u2193':'\u2191')+Math.abs(s.land.hw)+'kt</span> <span style="color:'+(s.land.xw>=15?'#e08040':'var(--text-dim)')+'">'+( s.land.fromRight?'\u2190':'\u2192')+s.land.xw+'kt</span>':' CALM')+'</div>':'';
-    return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px">'+ic+'</td><td class="stn" style="vertical-align:top"><span style="color:'+nameCol+'">'+s.n+'</span>'+ab+lnd+'</td><td class="area" style="vertical-align:top">'+s.a+'</td><td class="info" style="color:'+infoC+';vertical-align:top">'+icon+esc(s.i)+'</td><td style="vertical-align:top"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
+    // Area name colored by flight category (muted) + training info on same line
+    const areaLine=s.c?'':'<div style="font-size:11px;margin-top:1px"><span style="color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">'+s.a+'</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>';
+    // Cairns info line
+    const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px;color:'+infoC+'">'+icon+esc(s.i)+'</div>':'';
+    // Landing info
+    const lnd=s.land?'<div style="font-size:11px;color:var(--text-dim);margin-top:1px">\uD83D\uDEEC '+s.land.rwy+(s.land.hw!==0||s.land.xw!==0?' <span style="color:'+(s.land.hw>=0?'var(--go)':'var(--nogo)')+'">'+( s.land.hw>=0?'\u2193':'\u2191')+Math.abs(s.land.hw)+'kt</span> <span style="color:'+(s.land.xw>=15?'#e08040':'var(--text-dim)')+'">'+( s.land.fromRight?'\u2190':'\u2192')+s.land.xw+'kt</span>':' CALM')+'</div>':'';
+    return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+s.n+'</span>'+allAdvBadges+'</div>'+cairnsInfoLine+areaLine+lnd+'</td><td style="vertical-align:top;text-align:right;padding:6px 10px"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
   }).join('');
-  g.innerHTML+='<tr><td colspan="5"><div class="ts-legend"><span>CAIRNS \u22651000/3 \u00A0\u00B7\u00A0 STAGEFIELDS \u2265700/1 \u00A0\u00B7\u00A0 \uD83D\uDEEC 1000ft winds</span><span style="font-weight:800;font-size:13px;color:'+(ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)')+'">'+ts.goCount+'/5 GO</span></div></td></tr>';
+  // Legend row 1: minimums
+  g.innerHTML+='<tr><td colspan="3"><div class="ts-legend"><span>Cairns GO = \u22651000/3</span><span>Stagefield GO = \u2265700/1</span><span style="font-weight:800;font-size:13px;color:'+(ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)')+'">'+ts.goCount+'/5 GO</span></div></td></tr>';
+  // Legend row 2: wind components (only if wind data exists)
+  if(w1000){
+    g.innerHTML+='<tr><td colspan="3"><div style="display:flex;justify-content:space-between;padding:2px 8px;font-size:10px;color:var(--text-dim);letter-spacing:0.5px"><span>\u2193 = Headwind</span><span>\u2190 \u2192 = Crosswind L/R</span><span>Winds @ 1000ft</span></div></td></tr>';
+  }
   const cc=ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)';
   document.getElementById('goCountHdr').innerHTML='<span style="color:'+cc+';font-weight:900;font-size:14px">'+ts.goCount+'/5</span>';
   document.getElementById('heroGoCount').innerHTML='<span style="color:'+cc+'">'+ts.goCount+'/5</span>';
