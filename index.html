@@ -300,12 +300,12 @@ body {
 .en-row .v.active { color: var(--accent); }
 
 /* ── SPACE WEATHER ── */
-.sp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.sp-item { text-align: center; padding: 12px 10px; border-radius: 5px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); }
-.sp-lbl { font-size: 11px; font-weight: 800; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 4px; }
-.sp-val { font-size: 14px; font-weight: 700; }
-.sp-val.none { color: var(--text-dim); }
-.sp-val.active { color: #bb66ff; }
+.sp-compact { display: flex; flex-wrap: wrap; gap: 2px 14px; align-items: baseline; }
+.sp-compact .sp-it { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.sp-compact .sp-l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.sp-compact .sp-v { font-size: 13px; font-weight: 700; }
+.sp-compact .sp-v.none { color: var(--text-dim); }
+.sp-compact .sp-v.active { color: #bb66ff; }
 
 /* ── WINDS TABLE ── */
 .w-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -317,9 +317,11 @@ body {
 .wb.ice { background: rgba(68,136,255,0.15); color: var(--mvfr); }
 
 /* ── SOLAR/LUNAR ── */
-.sol-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
-.sol-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
-.sol-icon { font-size: 16px; }
+.sol-compact { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+.sol-compact .sol-it { display: flex; align-items: baseline; gap: 3px; white-space: nowrap; }
+.sol-compact .sol-l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.sol-compact .sol-v { font-size: 13px; font-weight: 700; }
+.sol-compact .sol-ic { font-size: 12px; }
 
 /* ── TAKEOFF DATA ── */
 .to-compact { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
@@ -412,7 +414,6 @@ body {
   .mascot-label { font-size: 14px; letter-spacing: 3px; }
   .content { padding: 8px 12px; }
   .area-grid, .aero-grid, .en-grid { grid-template-columns: 1fr; }
-  .sp-grid { grid-template-columns: 1fr; }
   .metar-grid { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
@@ -564,7 +565,7 @@ body {
   <!-- FWB Header -->
   <div id="fwbHdrCard" style="display:none"></div>
 
-  <!-- Enroute Hazards + Space Weather side by side -->
+  <!-- Enroute Hazards + Flight Level Winds side by side -->
   <div class="two-col">
     <div class="card" id="enCard" style="display:none">
       <div class="card-hdr" onclick="tog('enBody')">
@@ -576,20 +577,6 @@ body {
       </div>
       <div class="cbd" id="enBody"></div>
     </div>
-    <div class="card" id="spCard" style="display:none">
-      <div class="card-hdr" onclick="tog('spBody')">
-        <span>Space Weather</span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span id="spBadge"></span>
-          <span class="ci" id="spBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="spBody"><div class="sp-grid" id="spGrid"></div></div>
-    </div>
-  </div>
-
-  <!-- Winds + Solar side by side -->
-  <div class="two-col">
     <div class="card">
       <div class="card-hdr" onclick="tog('wBody')">
         <span>Flight Level Winds</span>
@@ -600,16 +587,30 @@ body {
       </div>
       <div class="cbd" id="wBody"></div>
     </div>
-    <div class="card" id="solCard" style="display:none">
-      <div class="card-hdr" onclick="tog('solBody')">
-        <span>Solar / Lunar</span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span id="solSum"></span>
-          <span class="ci" id="solBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="solBody"><div class="sol-grid" id="solGrid"></div></div>
+  </div>
+
+  <!-- Space Weather -->
+  <div class="card" id="spCard" style="display:none">
+    <div class="card-hdr" onclick="tog('spBody')">
+      <span>Space Weather</span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <span id="spBadge"></span>
+        <span class="ci" id="spBody-icon">&#x25BC;</span>
+      </span>
     </div>
+    <div class="cbd" id="spBody"><div id="spGrid"></div></div>
+  </div>
+
+  <!-- Solar / Lunar -->
+  <div class="card" id="solCard" style="display:none">
+    <div class="card-hdr" onclick="tog('solBody')">
+      <span>Solar / Lunar</span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <span id="solSum"></span>
+        <span class="ci" id="solBody-icon">&#x25BC;</span>
+      </span>
+    </div>
+    <div class="cbd" id="solBody"><div id="solGrid"></div></div>
   </div>
 
 
@@ -1100,9 +1101,9 @@ function cvtLvl(l){if(!l)return l;return l.replace(/(\d{3})/g,m=>cvtAlt(m).repla
 function rSp(fc){
   const c=document.getElementById('spCard'),g=document.getElementById('spGrid'),be=document.getElementById('spBadge'),sw=fc.flightBriefing?.enrouteData?.spaceWeather;
   if(!sw){c.style.display='none';return}c.style.display='block';
-  const items=[{l:'HF Radio (FREQ)',v:sw.frequency},{l:'GPS',v:sw.gps},{l:'Radiation (RAD)',v:sw.radiation}];
+  const items=[{l:'HF Radio',v:sw.frequency},{l:'GPS',v:sw.gps},{l:'Radiation',v:sw.radiation}];
   be.innerHTML=items.some(i=>i.v&&i.v.toUpperCase()!=='NONE')?'<span style="font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(187,102,255,0.15);color:#bb66ff;font-weight:700">CHECK IMPACTS</span>':'';
-  g.innerHTML=items.map(i=>{const n=!i.v||i.v.toUpperCase()==='NONE';return'<div class="sp-item"><div class="sp-lbl">'+i.l+'</div><div class="sp-val '+(n?'none':'active')+'">'+(i.v||'NONE')+'</div></div>'}).join('');
+  g.innerHTML='<div class="sp-compact">'+items.map(i=>{const n=!i.v||i.v.toUpperCase()==='NONE';return'<span class="sp-it"><span class="sp-l">'+i.l+'</span><span class="sp-v '+(n?'none':'active')+'">'+(i.v||'NONE')+'</span></span>'}).join('')+'</div>';
 }
 
 /* ── FLIGHT LEVEL WINDS ── */
@@ -1122,7 +1123,7 @@ function rSol(fc){
   if(!sl){c.style.display='none';return}c.style.display='block';
   const items=[{i:'\uD83C\uDF05',l:'BMNT',v:sl.bmnt},{i:'\uD83C\uDF05',l:'BMCT',v:sl.bmct},{i:'\u2600\uFE0F',l:'Sunrise',v:sl.sunrise},{i:'\uD83C\uDF07',l:'Sunset',v:sl.sunset},{i:'\uD83C\uDF07',l:'EECT',v:sl.eect},{i:'\uD83C\uDF07',l:'EENT',v:sl.eent},{i:'\uD83C\uDF19',l:'Moonrise',v:sl.moonrise},{i:'\uD83C\uDF19',l:'Moonset',v:sl.moonset},{i:'\uD83C\uDF15',l:'Illum',v:sl.illumination}].filter(i=>i.v);
   se.innerHTML=sl.sunrise&&sl.sunset?'<span style="font-size:9px;color:var(--text-dim)">\u2600\uFE0F '+sl.sunrise+' \u00A0\uD83C\uDF07 '+sl.sunset+'</span>':'';
-  g.innerHTML=items.map(i=>'<div class="sol-item"><span class="sol-icon">'+i.i+'</span><div><div class="dl">'+i.l+'</div><div style="font-weight:600">'+i.v+'</div></div></div>').join('');
+  g.innerHTML='<div class="sol-compact">'+items.map(i=>'<span class="sol-it"><span class="sol-ic">'+i.i+'</span><span class="sol-l">'+i.l+'</span><span class="sol-v">'+i.v+'</span></span>').join('')+'</div>';
 }
 
 /* ── TAKEOFF DATA ── */
