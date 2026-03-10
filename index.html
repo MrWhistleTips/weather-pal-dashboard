@@ -207,8 +207,9 @@ body {
 .ts-table .info { font-size: 12px; }
 .ts-table .cairns-row { background: rgba(229,214,51,0.04); }
 .badge {
-  padding: 3px 12px; border-radius: 3px; font-size: 12px;
+  padding: 6px 16px; border-radius: 4px; font-size: 14px;
   font-weight: 800; letter-spacing: 1px; text-align: center; display: inline-block;
+  min-width: 52px;
 }
 .badge.go { background: var(--go-bg); color: var(--go); border: 1px solid rgba(64,191,64,0.25); }
 .badge.nogo { background: var(--nogo-bg); color: var(--nogo); border: 1px solid rgba(217,38,38,0.25); }
@@ -905,7 +906,7 @@ function rTS(fc){
     const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">KOZR</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>':'';
     // Landing info
     const lnd=s.land?'<div style="font-size:11px;color:var(--text-dim);margin-top:1px">\uD83D\uDEEC '+s.land.rwy+(s.land.hw!==0||s.land.xw!==0?' <span style="color:'+(s.land.hw>=0?'var(--go)':'var(--nogo)')+'">'+( s.land.hw>=0?'\u2193':'\u2191')+Math.abs(s.land.hw)+'kt</span> <span style="color:'+(s.land.xw>=15?'#e08040':'var(--text-dim)')+'">'+( s.land.fromRight?'\u2190':'\u2192')+s.land.xw+'kt</span>':' CALM')+'</div>':'';
-    return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+s.n+'</span>'+allAdvBadges+'</div>'+cairnsInfoLine+areaLine+lnd+'</td><td style="vertical-align:top;text-align:right;padding:6px 10px"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
+    return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+s.n+'</span>'+allAdvBadges+'</div>'+cairnsInfoLine+areaLine+lnd+'</td><td style="vertical-align:middle;text-align:right;padding:6px 10px"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
   }).join('');
   // Legend row 1: minimums
   g.innerHTML+='<tr><td colspan="3"><div class="ts-legend"><span>Cairns GO = \u22651000/3</span><span>Stagefield GO = \u2265700/1</span><span style="font-weight:800;font-size:13px;color:'+(ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)')+'">'+ts.goCount+'/5 GO</span></div></td></tr>';
