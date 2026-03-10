@@ -86,6 +86,9 @@ body {
   min-height: 60vh;
 }
 .hero-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.ts-sd-row { display: flex; gap: 16px; align-items: flex-start; }
+.ts-card-narrow { flex: 0 0 380px; min-width: 0; }
+.sd-card-side { flex: 1; min-width: 0; }
 .hero-right {
   flex: 0 0 340px;
   display: flex;
@@ -393,6 +396,9 @@ body {
   .mascot { width: 200px; height: 200px; }
   .mascot-label { font-size: 16px; }
   .mascot-go-count { font-size: 36px; }
+  .ts-sd-row { flex-direction: column; }
+  .ts-card-narrow { flex: none; width: 100%; }
+  .sd-card-side { flex: none; width: 100%; }
   .two-col { grid-template-columns: 1fr; }
   .content { padding: 12px 16px; }
 }
@@ -433,17 +439,32 @@ body {
     <!-- MEF Header -->
     <div id="mefHdrCard" style="display:none"></div>
 
-    <!-- Training Status -->
-    <div class="card gold-top">
-      <div class="card-hdr" onclick="tog('tsBody')">
-        <span>Training Status</span>
-        <span style="display:flex;align-items:center;gap:8px">
-          <span id="goCountHdr"></span>
-          <span class="ci" id="tsBody-icon">&#x25BC;</span>
-        </span>
+    <!-- Training Status + 7-Day side by side -->
+    <div class="ts-sd-row">
+      <!-- Training Status -->
+      <div class="card gold-top ts-card-narrow">
+        <div class="card-hdr" onclick="tog('tsBody')">
+          <span>Training Status</span>
+          <span style="display:flex;align-items:center;gap:8px">
+            <span id="goCountHdr"></span>
+            <span class="ci" id="tsBody-icon">&#x25BC;</span>
+          </span>
+        </div>
+        <div class="cbd" id="tsBody">
+          <table class="ts-table" id="tsGrid"></table>
+        </div>
       </div>
-      <div class="cbd" id="tsBody">
-        <table class="ts-table" id="tsGrid"></table>
+
+      <!-- 7-Day Outlook -->
+      <div class="card sd-card-side" id="sdCard" style="display:none">
+        <div class="card-hdr" onclick="tog('sdBody')">
+          <span>7-Day Outlook</span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <span id="sdTitle"></span>
+            <span class="ci" id="sdBody-icon">&#x25BC;</span>
+          </span>
+        </div>
+        <div class="cbd" id="sdBody"><div class="sd-grid" id="sdGrid"></div></div>
       </div>
     </div>
 
@@ -522,18 +543,6 @@ body {
     <div class="mascot-go-count" id="heroGoCount"></div>
     <div class="mascot-go-label">STATIONS GO</div>
     <a href="https://www.army.mil/rucker#org-weather" target="_blank" rel="noopener" style="margin-top:16px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);text-decoration:none;padding:6px 16px;border:1px solid var(--accent-border);border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='var(--accent-dim)'" onmouseout="this.style.background='transparent'">RUCKER WEATHER</a>
-
-    <!-- 7-Day Outlook -->
-    <div class="card" id="sdCard" style="display:none;margin-top:20px;width:100%">
-      <div class="card-hdr" onclick="tog('sdBody')">
-        <span>7-Day Outlook</span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span id="sdTitle"></span>
-          <span class="ci" id="sdBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="sdBody"><div class="sd-grid" id="sdGrid"></div></div>
-    </div>
   </div>
 </div>
 
