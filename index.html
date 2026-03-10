@@ -394,6 +394,27 @@ body {
     <!-- Advisories -->
     <div id="advCard" style="display:none"></div>
 
+    <!-- Area Forecasts -->
+    <div class="card">
+      <div class="card-hdr" onclick="tog('areaBody')">
+        <span>Area Forecasts</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span id="validPeriod" style="font-weight:600"></span>
+          <span class="ci" id="areaBody-icon">&#x25BC;</span>
+        </span>
+      </div>
+      <div class="cbd" id="areaBody"><div class="area-grid" id="areaGrid"></div></div>
+    </div>
+
+    <!-- Aerodrome Forecasts -->
+    <div class="card" id="aeroCard" style="display:none">
+      <div class="card-hdr" onclick="tog('aeroBody')">
+        <span>Aerodrome Forecasts</span>
+        <span class="ci" id="aeroBody-icon">&#x25BC;</span>
+      </div>
+      <div class="cbd" id="aeroBody"><div class="aero-grid" id="aeroGrid"></div></div>
+    </div>
+
     <!-- METAR -->
     <div class="card">
       <div class="card-hdr" onclick="tog('metarBody')">
@@ -428,18 +449,6 @@ body {
           <div class="haz-grid" id="hazGrid"></div>
         </div>
       </div>
-    </div>
-
-    <!-- Area Forecasts -->
-    <div class="card">
-      <div class="card-hdr" onclick="tog('areaBody')">
-        <span>Area Forecasts</span>
-        <span style="display:flex;align-items:center;gap:8px">
-          <span id="validPeriod" style="font-weight:600"></span>
-          <span class="ci" id="areaBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="areaBody"><div class="area-grid" id="areaGrid"></div></div>
     </div>
 
   </div>
@@ -515,15 +524,6 @@ body {
       </span>
     </div>
     <div class="cbd" id="toBody"></div>
-  </div>
-
-  <!-- Aerodrome Forecasts -->
-  <div class="card" id="aeroCard" style="display:none">
-    <div class="card-hdr" onclick="tog('aeroBody')">
-      <span>Aerodrome Forecasts</span>
-      <span class="ci" id="aeroBody-icon">&#x25BC;</span>
-    </div>
-    <div class="cbd" id="aeroBody"><div class="aero-grid" id="aeroGrid"></div></div>
   </div>
 
   <!-- 7-Day Outlook -->
