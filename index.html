@@ -322,9 +322,11 @@ body {
 .sol-icon { font-size: 16px; }
 
 /* ── TAKEOFF DATA ── */
-.to-section { margin-bottom: 8px; }
-.to-title { font-size: 11px; font-weight: 800; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1px solid var(--border); }
-.to-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.to-compact { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+.to-compact .to-item { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.to-compact .to-lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.to-compact .to-val { font-size: 13px; font-weight: 700; }
+.to-max-lbl { font-size: 10px; font-weight: 800; letter-spacing: 1px; color: var(--accent); text-transform: uppercase; margin-left: 4px; }
 .fog-badge { font-size: 11px; padding: 2px 8px; border-radius: 3px; background: rgba(128,128,128,0.2); color: #aaa; font-weight: 700; }
 
 /* ── AERODROMES ── */
@@ -412,7 +414,6 @@ body {
   .area-grid, .aero-grid, .en-grid { grid-template-columns: 1fr; }
   .sp-grid { grid-template-columns: 1fr; }
   .metar-grid { grid-template-columns: repeat(2, 1fr); }
-  .to-grid { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
@@ -1131,10 +1132,12 @@ function rTO(fc){
   if(!td){c.style.display='none';fb.innerHTML='';return}c.style.display='block';
   const rt=parseFloat(td.runwayTemp),dp=parseFloat(td.dewpoint),fog=!isNaN(rt)&&!isNaN(dp)&&(rt-dp)<=2;
   fb.innerHTML=fog?'<span class="fog-badge">POSSIBLE FOG</span>':'';
-  const main=[{l:'Rwy Temp',v:td.runwayTemp?td.runwayTemp+'\u00B0C':null},{l:'Dewpoint',v:td.dewpoint?td.dewpoint+'\u00B0C':null},{l:'Temp Dev',v:td.tempDeviation?td.tempDeviation+'\u00B0C':null},{l:'Press Alt',v:td.pressureAlt?td.pressureAlt+' ft':null},{l:'Density Alt',v:td.densityAlt?td.densityAlt+' ft':null},{l:'Sfc Wind',v:td.surfaceWind}].filter(i=>i.v);
-  const max=[{l:'Max Temp',v:td.maxTemp?td.maxTemp+'\u00B0C':null},{l:'Max PA',v:td.maxPA?td.maxPA+' ft':null},{l:'Max DA',v:td.maxDA?td.maxDA+' ft':null}].filter(i=>i.v);
-  let h='<div class="to-section"><div class="to-grid">'+main.map(i=>di(i.l,i.v)).join('')+'</div></div>';
-  if(max.length)h+='<div class="to-section"><div class="to-title">KOZR Maximums</div><div class="to-grid">'+max.map(i=>di(i.l,i.v)).join('')+'</div></div>';
+  function ti(l,v){return'<span class="to-item"><span class="to-lbl">'+l+'</span><span class="to-val">'+v+'</span></span>'}
+  const main=[{l:'Rwy',v:td.runwayTemp?td.runwayTemp+'\u00B0C':null},{l:'Dew',v:td.dewpoint?td.dewpoint+'\u00B0C':null},{l:'Dev',v:td.tempDeviation?td.tempDeviation+'\u00B0C':null},{l:'PA',v:td.pressureAlt?td.pressureAlt+'ft':null},{l:'DA',v:td.densityAlt?td.densityAlt+'ft':null},{l:'Wind',v:td.surfaceWind}].filter(i=>i.v);
+  const max=[{l:'Max Tmp',v:td.maxTemp?td.maxTemp+'\u00B0C':null},{l:'Max PA',v:td.maxPA?td.maxPA+'ft':null},{l:'Max DA',v:td.maxDA?td.maxDA+'ft':null}].filter(i=>i.v);
+  let h='<div class="to-compact">'+main.map(i=>ti(i.l,i.v)).join('');
+  if(max.length)h+='<span class="to-max-lbl">\u2502</span>'+max.map(i=>ti(i.l,i.v)).join('');
+  h+='</div>';
   b.innerHTML=h;
 }
 
