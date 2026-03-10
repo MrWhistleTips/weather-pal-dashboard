@@ -637,7 +637,7 @@ function tog(id){
 function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
 function bc(s){return s==='GO'?'badge go':s==='NO-GO'?'badge nogo':'badge unknown'}
 function cvtAlt(c){if(!c)return'--';const n=parseInt(c)*100;return isNaN(n)?c:n.toLocaleString()+' ft'}
-function windSpd(w){if(!w)return 0;const m=w.match(/\d{3}(\d{2,3})/);return m?parseInt(m[1]):0}
+function windSpd(w){if(!w)return 0;const m=w.match(/(\d{3})(\d{2,3})/);return m?parseInt(m[2]):0}
 function fmtWind(m){if(!m.wspd&&!m.wdir)return'CALM';if(m.wspd===0)return'CALM';const d=m.wdir===0?'VRB':String(m.wdir).padStart(3,'0'),s=String(m.wspd||0).padStart(2,'0');return m.wgst?d+'/'+s+'G'+m.wgst+'KT':d+'/'+s+'KT'}
 function fcColor(c){switch((c||'').toUpperCase()){case'VFR':return'var(--vfr)';case'MVFR':return'var(--mvfr)';case'IFR':return'var(--ifr)';case'LIFR':return'var(--lifr)';default:return'var(--text)'}}
 
@@ -744,7 +744,7 @@ function areaIsGo(forecastText){
 /* ── WIND PARSING ── */
 function parseWindStr(w){
   if(!w)return{dir:0,spd:0};
-  const m=w.match(/(\d{3})(\d{2,3})(?:G\d+)?KT/);
+  const m=w.match(/(\d{3})(\d{2,3})(?:G\d+)?\s*KT/);
   if(!m)return{dir:0,spd:0};
   return{dir:parseInt(m[1]),spd:parseInt(m[2])};
 }
