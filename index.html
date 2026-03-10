@@ -671,7 +671,10 @@ function rArea(fc){
   const g=document.getElementById('areaGrid'),vp=document.getElementById('validPeriod');
   if(!fc.mef){g.innerHTML='<div class="no-data">No MEF data</div>';return}
   vp.textContent=fc.mef.validPeriod||'';
-  g.innerHTML=(fc.mef.areaForecasts||[]).map(a=>{
+  const rmk=fc.mef.remarks;
+  const hasAmd=(fc.mef.areaForecasts||[]).some(a=>a.amendmentNumber);
+  const rmkHtml=hasAmd&&rmk?'<div style="margin-bottom:8px;padding:6px 10px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:10px;color:var(--accent)"><span style="font-weight:800;letter-spacing:1px;margin-right:6px">REMARKS:</span>'+esc(rmk)+'</div>':'';
+  g.innerHTML=rmkHtml+(fc.mef.areaForecasts||[]).map(a=>{
     const txt=a.amendmentText||a.forecast||'',col=areaColor(txt);
     const ts=a.tsCoverage&&a.tsCoverage.toUpperCase()!=='NONE'?'<div><span class="ts-tag active">TS: '+esc(a.tsCoverage)+'</span></div>':'';
     const amd=a.amendmentNumber?'<span class="amd-badge">\u26A0 '+a.amendmentNumber+(a.amendmentTime?' '+a.amendmentTime:'')+'</span>':'';
