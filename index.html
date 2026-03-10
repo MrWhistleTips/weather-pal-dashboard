@@ -772,6 +772,56 @@ function areaIsGo(forecastText,validPeriod){
   return cv.ceil>=700&&cv.vis>=1;
 }
 
+/* Compute time-aware trainability info from area forecast text (matches iOS app logic) */
+function areaTrainInfo(forecastText){
+  if(!forecastText)return{status:'NO-GO',info:'--'};
+  const segs=parseSegments(forecastText);
+  const ai=getActiveSegIndex(segs);
+  const nowMin=currentZuluMinutes();
+  // Check if current segment is GO
+  const curCV=segCeilVis(segs[ai].text);
+  const curGo=curCV.ceil>=700&&curCV.vis>=1;
+  if(curGo){
+    // Currently GO — check if a future segment drops below
+    for(let i=ai+1;i<segs.length;i++){
+      const fCV=segCeilVis(segs[i].text);
+      if(fCV.ceil<700||fCV.vis<1){
+        const diff=segs[i].startMin-nowMin;
+        if(diff>0){const h=Math.floor(diff/60),m=diff%60;return{status:'GO',info:'Untrainable in '+(h?h+'h ':'')+(m?m+'m':'')};}
+        return{status:'GO',info:'Trainable'};
+      }
+    }
+    return{status:'GO',info:'Trainable'};
+  } else {
+    // Currently NO-GO — check if a future segment is GO
+    for(let i=ai+1;i<segs.length;i++){
+      const fCV=segCeilVis(segs[i].text);
+      if(fCV.ceil>=700&&fCV.vis>=1){
+        const diff=segs[i].startMin-nowMin;
+        if(diff>0){const h=Math.floor(diff/60),m=diff%60;return{status:'NO-GO',info:'Trainable in '+(h?h+'h ':'')+(m?m+'m':'')};}
+        return{status:'NO-GO',info:'Untrainable'};
+      }
+    }
+    return{status:'NO-GO',info:'Untrainable'};
+  }
+}
+
+/* Get ceiling/vis from a single segment text (no active-segment lookup) */
+function segCeilVis(segText){
+  const clean=segText.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|AFT|$))/gi,'');
+  let c=99999,v=99;
+  const ch=clean.match(/(OVC|BKN)(\d{3})/);
+  if(ch)c=parseInt(ch[2])*100;
+  const vh=clean.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);
+  if(vh){
+    const vs=vh[1];
+    if(vs.includes('/')){const p=vs.trim().split(/\s+/);if(p.length===2){const f=p[1].split('/');v=parseInt(p[0])+parseInt(f[0])/parseInt(f[1])}else{const f=vs.split('/');v=parseInt(f[0])/parseInt(f[1])}}
+    else v=parseFloat(vs)||99;
+  }
+  if(/P6SM/i.test(clean))v=7;
+  return{ceil:c,vis:v};
+}
+
 /* ── WIND PARSING ── */
 function parseWindStr(w){
   if(!w)return{dir:0,spd:0};
@@ -917,14 +967,26 @@ function rTS(fc){
   const wdir=pw.dir,wspd2=pw.spd;
   const cairnsLand=wspd2>0?landingRwy(wdir,wspd2,[[60,240],[180,360]]):null;
   const sfRwys={ALLEN:[[120,300]],TOTH:[[70,250]],HIGHBLUFF:[[100,280]],LUCAS:[[180,360]]};
+  // Build area forecast text map for live time-aware GO/NO-GO computation
+  const areaTextMap={};areas.forEach(a=>{areaTextMap[a.name.toUpperCase()]=a.amendmentText||a.forecast||''});
+  // Compute stagefield status from area forecasts (time-aware, matches iOS logic)
+  function sfStatus(areaName){
+    const txt=areaTextMap[areaName];
+    if(!txt)return{s:'NO-GO',i:'--'};
+    const ti=areaTrainInfo(txt);
+    return{s:ti.status,i:ti.info};
+  }
+  const allenSt=sfStatus('GOLDFISH'),tothSt=sfStatus('GOLDFISH'),hbSt=sfStatus('BEARCAT'),lucasSt=sfStatus('VANGUARD C');
+  // Recompute goCount from live statuses
+  const liveGoCount=(cairnsGo?1:0)+(allenSt.s==='GO'?1:0)+(tothSt.s==='GO'?1:0)+(hbSt.s==='GO'?1:0)+(lucasSt.s==='GO'?1:0);
   // All active advisory badges (shown on every row, matching iOS app)
   const allAdvBadges=activeAdvs.map(a=>{const w=a.type==='TWA'||a.type==='WARNING';return'<span style="font-size:10px;padding:2px 6px;border-radius:2px;margin-left:4px;font-weight:700;color:#fff;background:'+(w?'var(--nogo)':'#cc9900')+'">'+a.type+' '+a.number+'</span>'}).join('');
   const st=[
     {n:'CAIRNS',a:'KOZR',s:cairnsGo?'GO':'NO-GO',i:cairnsInfo,c:true,cat:cairnsCat,area:null,land:cairnsLand},
-    {n:'ALLEN',a:ts.allen.area,s:ts.allen.status,i:ts.allen.info,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.ALLEN):null},
-    {n:'TOTH',a:ts.toth.area,s:ts.toth.status,i:ts.toth.info,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.TOTH):null},
-    {n:'HIGHBLUFF',a:ts.highbluff.area,s:ts.highbluff.status,i:ts.highbluff.info,area:'BEARCAT',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.HIGHBLUFF):null},
-    {n:'LUCAS',a:ts.lucas.area,s:ts.lucas.status,i:ts.lucas.info,area:'VANGUARD C',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.LUCAS):null},
+    {n:'ALLEN',a:ts.allen.area,s:allenSt.s,i:allenSt.i,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.ALLEN):null},
+    {n:'TOTH',a:ts.toth.area,s:tothSt.s,i:tothSt.i,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.TOTH):null},
+    {n:'HIGHBLUFF',a:ts.highbluff.area,s:hbSt.s,i:hbSt.i,area:'BEARCAT',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.HIGHBLUFF):null},
+    {n:'LUCAS',a:ts.lucas.area,s:lucasSt.s,i:lucasSt.i,area:'VANGUARD C',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.LUCAS):null},
   ];
   // Render matching iOS app layout: name+advs on line 1, area+info on line 2, landing on line 3
   g.innerHTML=st.map(s=>{
@@ -941,14 +1003,14 @@ function rTS(fc){
     return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+s.n+'</span>'+allAdvBadges+'</div>'+cairnsInfoLine+areaLine+lnd+'</td><td style="vertical-align:middle;text-align:right;padding:6px 10px"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
   }).join('');
   // Legend row 1: minimums
-  g.innerHTML+='<tr><td colspan="3"><div class="ts-legend"><span>Cairns GO = \u22651000/3</span><span>Stagefield GO = \u2265700/1</span><span style="font-weight:800;font-size:13px;color:'+(ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)')+'">'+ts.goCount+'/5 GO</span></div></td></tr>';
+  g.innerHTML+='<tr><td colspan="3"><div class="ts-legend"><span>Cairns GO = \u22651000/3</span><span>Stagefield GO = \u2265700/1</span><span style="font-weight:800;font-size:13px;color:'+(liveGoCount>=4?'var(--go)':liveGoCount>=2?'var(--accent)':'var(--nogo)')+'">'+liveGoCount+'/5 GO</span></div></td></tr>';
   // Legend row 2: wind components (only if wind data exists)
   if(w1000){
     g.innerHTML+='<tr><td colspan="3"><div style="display:flex;justify-content:space-between;padding:2px 8px;font-size:10px;color:var(--text-dim);letter-spacing:0.5px"><span>\u2193 = Headwind</span><span>\u2190 \u2192 = Crosswind L/R</span><span>Winds @ 1000ft</span></div></td></tr>';
   }
-  const cc=ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)';
-  document.getElementById('goCountHdr').innerHTML='<span style="color:'+cc+';font-weight:900;font-size:14px">'+ts.goCount+'/5</span>';
-  document.getElementById('heroGoCount').innerHTML='<span style="color:'+cc+'">'+ts.goCount+'/5</span>';
+  const cc=liveGoCount>=4?'var(--go)':liveGoCount>=2?'var(--accent)':'var(--nogo)';
+  document.getElementById('goCountHdr').innerHTML='<span style="color:'+cc+';font-weight:900;font-size:14px">'+liveGoCount+'/5</span>';
+  document.getElementById('heroGoCount').innerHTML='<span style="color:'+cc+'">'+liveGoCount+'/5</span>';
 }
 
 /* ── ADVISORIES ── */
@@ -1003,15 +1065,14 @@ function rArea(fc){
   const g=document.getElementById('areaGrid'),vp=document.getElementById('validPeriod');
   if(!fc.mef){g.innerHTML='<div class="no-data">No MEF data</div>';return}
   vp.textContent=fc.mef.validPeriod||'';
-  // Map stagefield area → training status for per-area badges
+  // Map stagefield area → training status for per-area badges (computed live from area forecasts)
   const sfMap={'GOLDFISH':[],'BEARCAT':[],'VANGUARD N':[],'VANGUARD C':[],'VANGUARD S':[],'HAWK':[]};
-  const ts=fc.trainingStatus;
-  if(ts){
-    if(ts.allen)sfMap[ts.allen.area]=[...(sfMap[ts.allen.area]||[]),{name:'Allen',status:ts.allen.status,info:ts.allen.info}];
-    if(ts.toth)sfMap[ts.toth.area]=[...(sfMap[ts.toth.area]||[]),{name:'Toth',status:ts.toth.status,info:ts.toth.info}];
-    if(ts.highbluff)sfMap[ts.highbluff.area]=[...(sfMap[ts.highbluff.area]||[]),{name:'Highbluff',status:ts.highbluff.status,info:ts.highbluff.info}];
-    if(ts.lucas)sfMap[ts.lucas.area]=[...(sfMap[ts.lucas.area]||[]),{name:'Lucas',status:ts.lucas.status,info:ts.lucas.info}];
-  }
+  const areaTexts={};(fc.mef.areaForecasts||[]).forEach(a=>{areaTexts[a.name.toUpperCase()]=a.amendmentText||a.forecast||''});
+  const sfDefs=[{name:'Allen',area:'GOLDFISH'},{name:'Toth',area:'GOLDFISH'},{name:'Highbluff',area:'BEARCAT'},{name:'Lucas',area:'VANGUARD C'}];
+  sfDefs.forEach(sf=>{
+    const ti=areaTrainInfo(areaTexts[sf.area]||'');
+    sfMap[sf.area]=[...(sfMap[sf.area]||[]),{name:sf.name,status:ti.status,info:ti.info}];
+  });
   const rmk=fc.mef.remarks;
   const rmkHtml=rmk?'<div style="grid-column:1/-1;padding:10px 14px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:12px;color:var(--accent);text-align:center"><span style="font-weight:800;letter-spacing:1px;margin-right:6px">REMARKS:</span>'+esc(rmk)+'</div>':'';
   const vpStr=fc.mef.validPeriod||'';
