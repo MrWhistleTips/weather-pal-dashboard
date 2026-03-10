@@ -548,18 +548,20 @@ body {
       <div class="cbd" id="metarBody"></div>
     </div>
 
-    <!-- 7-Day Outlook + Hazards side by side -->
-    <div class="two-col drag-section" data-section="sd-haz" draggable="true">
-      <div class="card" id="sdCard" style="display:none">
-        <div class="card-hdr" onclick="tog('sdBody')">
-          <span>7-Day Outlook</span>
-          <span style="display:flex;align-items:center;gap:6px">
-            <span id="sdTitle"></span>
-            <span class="ci" id="sdBody-icon">&#x25BC;</span>
-          </span>
-        </div>
-        <div class="cbd" id="sdBody"><div class="sd-grid" id="sdGrid"></div></div>
+    <!-- 7-Day Outlook -->
+    <div class="card drag-section" id="sdCard" data-section="sd" draggable="true" style="display:none">
+      <div class="card-hdr" onclick="tog('sdBody')">
+        <span>7-Day Outlook</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span id="sdTitle"></span>
+          <span class="ci" id="sdBody-icon">&#x25BC;</span>
+        </span>
       </div>
+      <div class="cbd" id="sdBody"><div class="sd-grid" id="sdGrid"></div></div>
+    </div>
+
+    <!-- MEF Hazards + Enroute Hazards (175-1) side by side -->
+    <div class="two-col drag-section" data-section="hazards" draggable="true">
       <div class="card">
         <div class="card-hdr" onclick="tog('hazBody')">
           <span>Hazards (MEF)</span>
@@ -571,6 +573,16 @@ body {
         <div class="cbd" id="hazBody">
           <div class="haz-grid" id="hazGrid"></div>
         </div>
+      </div>
+      <div class="card" id="enCard" style="display:none">
+        <div class="card-hdr" onclick="tog('enBody')">
+          <span>Hazards (175-1)</span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <span id="enBadge"></span>
+            <span class="ci" id="enBody-icon">&#x25BC;</span>
+          </span>
+        </div>
+        <div class="cbd" id="enBody"></div>
       </div>
     </div>
 
@@ -593,18 +605,6 @@ body {
 
   <!-- FWB Header -->
   <div id="fwbHdrCard" style="display:none"></div>
-
-  <!-- Enroute Hazards -->
-  <div class="card" id="enCard" style="display:none">
-    <div class="card-hdr" onclick="tog('enBody')">
-      <span>Enroute Hazards (175-1)</span>
-      <span style="display:flex;align-items:center;gap:6px">
-        <span id="enBadge"></span>
-        <span class="ci" id="enBody-icon">&#x25BC;</span>
-      </span>
-    </div>
-    <div class="cbd" id="enBody"></div>
-  </div>
 
   <!-- Space Weather -->
   <div class="card" id="spCard" style="display:none">
