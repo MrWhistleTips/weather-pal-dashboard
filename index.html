@@ -157,6 +157,8 @@ body {
   overflow: hidden;
 }
 .card.gold-top { border-top: 2px solid var(--accent); }
+.card.fresh { border-color: rgba(64,191,64,0.3); }
+.card.stale { border-color: rgba(217,38,38,0.3); }
 .card-hdr {
   padding: 10px 14px;
   border-bottom: 1px solid var(--border);
@@ -177,6 +179,24 @@ body {
 .card-hdr .ci.collapsed { transform: rotate(-90deg); }
 .cbd { padding: 12px 14px; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; }
 .cbd.collapsed { max-height: 0 !important; padding-top: 0; padding-bottom: 0; }
+
+/* ── MEF/FWB HEADER ── */
+.mef-hdr {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.mef-title { font-weight: 900; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+.mef-meta { display: flex; align-items: center; gap: 10px; }
+.mef-meta span { color: var(--text-dim); font-size: 11px; letter-spacing: 1px; }
+.freshness-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.freshness-dot.fresh { background: var(--go); box-shadow: 0 0 4px rgba(64,191,64,0.5); }
+.freshness-dot.stale { background: var(--nogo); box-shadow: 0 0 4px rgba(217,38,38,0.5); }
 
 /* ── TRAINING STATUS (compact) ── */
 .ts-table { width: 100%; border-collapse: collapse; }
@@ -231,6 +251,9 @@ body {
 .flt-cat.MVFR { background: rgba(68,136,255,0.15); color: var(--mvfr); }
 .flt-cat.IFR { background: rgba(217,38,38,0.15); color: var(--ifr); }
 .flt-cat.LIFR { background: rgba(255,68,255,0.15); color: var(--lifr); }
+.stale-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.stale-dot.fresh { background: var(--go); }
+.stale-dot.stale { background: var(--nogo); }
 
 /* ── KEY WEATHER (compact table) ── */
 .kw-grid { display: grid; grid-template-columns: auto 1fr 1fr; font-size: 13px; }
@@ -244,8 +267,9 @@ body {
 /* ── AREA FORECASTS ── */
 .area-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; }
 .area-card { background: rgba(0,0,0,0.2); border-radius: 5px; padding: 10px 12px; border: 1px solid var(--border); }
-.area-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 6px; }
+.area-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; gap: 6px; }
 .area-name { font-weight: 800; font-size: 13px; letter-spacing: 1px; }
+.area-info { font-size: 11px; margin-bottom: 4px; }
 .area-text { font-size: 12px; white-space: pre-wrap; line-height: 1.5; }
 .area-text .dim { color: var(--text-dim); }
 .amd-badge { font-size: 11px; padding: 2px 8px; border-radius: 3px; background: var(--accent-dim); color: var(--accent); font-weight: 700; animation: amdPulse 2s ease-in-out infinite; }
@@ -308,6 +332,29 @@ body {
 .aero-p.tempo { color: var(--text-dim); padding-left: 12px; font-style: italic; }
 .aero-p .pt { font-weight: 700; margin-right: 3px; }
 .aero-same { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+.aero-p.arr1-hl { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.aero-p.arr2-hl { outline: 2px solid var(--go); outline-offset: 2px; border-radius: 3px; }
+.aero-p.arr-both { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 3px; box-shadow: 0 0 0 2px var(--go); }
+
+/* ── ARRIVAL TIME ASSISTANT ── */
+.ata-card { padding: 12px 14px; }
+.ata-toggle { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.ata-switch { position: relative; width: 36px; height: 20px; cursor: pointer; }
+.ata-switch input { opacity: 0; width: 0; height: 0; }
+.ata-slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.1); border-radius: 10px; transition: 0.3s; }
+.ata-slider::before { content: ''; position: absolute; height: 16px; width: 16px; left: 2px; bottom: 2px; background: #fff; border-radius: 50%; transition: 0.3s; }
+.ata-switch input:checked + .ata-slider { background: var(--accent); }
+.ata-switch input:checked + .ata-slider::before { transform: translateX(16px); }
+.ata-rows { display: flex; flex-direction: column; gap: 8px; }
+.ata-row { display: flex; align-items: center; gap: 10px; }
+.ata-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.ata-dot.gold { background: var(--accent); }
+.ata-dot.green { background: var(--go); }
+.ata-row input[type="time"] {
+  background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text); font-family: inherit; font-size: 13px; padding: 4px 8px;
+}
+.ata-zulu { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
 
 /* ── 7-DAY ── */
 .sd-grid { overflow-x: auto; }
@@ -321,6 +368,8 @@ body {
 .dot.noGo { background: var(--nogo); box-shadow: 0 0 4px rgba(217,38,38,0.4); }
 .temps-row td { font-weight: 700; font-size: 13px; }
 .sd-syn { margin-top: 8px; font-size: 12px; color: var(--text-secondary); line-height: 1.5; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px; }
+.sd-legend { display: flex; align-items: center; gap: 16px; margin-top: 8px; font-size: 11px; color: var(--text-dim); }
+.sd-legend-item { display: flex; align-items: center; gap: 4px; }
 .thr-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
 .thr-tbl th { text-align: left; padding: 4px 8px; color: var(--text-dim); font-weight: 700; border-bottom: 1px solid var(--border); }
 .thr-tbl td { padding: 4px 8px; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.02); }
@@ -377,6 +426,9 @@ body {
 <div class="hero">
   <div class="hero-left">
 
+    <!-- MEF Header -->
+    <div id="mefHdrCard" style="display:none"></div>
+
     <!-- Training Status -->
     <div class="card gold-top">
       <div class="card-hdr" onclick="tog('tsBody')">
@@ -412,14 +464,19 @@ body {
         <span>Aerodrome Forecasts</span>
         <span class="ci" id="aeroBody-icon">&#x25BC;</span>
       </div>
-      <div class="cbd" id="aeroBody"><div class="aero-grid" id="aeroGrid"></div></div>
+      <div class="cbd" id="aeroBody">
+        <div id="ataCard" style="display:none"></div>
+        <div class="aero-grid" id="aeroGrid"></div>
+      </div>
     </div>
 
     <!-- METAR -->
     <div class="card">
       <div class="card-hdr" onclick="tog('metarBody')">
-        <span>METAR <span id="metarEmojis"></span></span>
+        <span>METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
         <span style="display:flex;align-items:center;gap:8px">
+          <span id="metarStale"></span>
+          <span id="metarTsBadge"></span>
           <span id="metarCat"></span>
           <span id="metarTime" style="font-weight:600"></span>
           <span class="ci" id="metarBody-icon">&#x25BC;</span>
@@ -466,6 +523,9 @@ body {
 
 <!-- CONTENT: Full-width below the fold -->
 <div class="content">
+
+  <!-- FWB Header -->
+  <div id="fwbHdrCard" style="display:none"></div>
 
   <!-- Enroute Hazards + Space Weather side by side -->
   <div class="two-col">
@@ -601,40 +661,225 @@ function detFC(sky,vis){
 
 function di(l,v){return'<div class="di"><span class="dl">'+l+'</span><span class="dv">'+v+'</span></div>'}
 
+/* ── TIME-AWARE SEGMENT LOGIC ── */
+function currentZuluMinutes(){
+  const now=new Date();
+  return now.getUTCHours()*60+now.getUTCMinutes();
+}
+
+function parseSegments(forecastText){
+  if(!forecastText)return[{text:'',startMin:0}];
+  // Split by AFT headers
+  const parts=forecastText.split(/(AFT\s+\d{4}Z:)/);
+  const segs=[];
+  let cur='';
+  for(let i=0;i<parts.length;i++){
+    const p=parts[i];
+    if(/^AFT\s+\d{4}Z:/.test(p.trim())){
+      if(cur.trim())segs.push({text:cur.trim(),startMin:0});
+      cur=p;
+    }else{
+      cur+=p;
+    }
+  }
+  if(cur.trim())segs.push({text:cur.trim(),startMin:0});
+  // Parse start times for AFT segments
+  for(let i=1;i<segs.length;i++){
+    const m=segs[i].text.match(/AFT\s+(\d{2})(\d{2})Z:/);
+    if(m)segs[i].startMin=parseInt(m[1])*60+parseInt(m[2]);
+  }
+  return segs;
+}
+
+function getActiveSegIndex(segs){
+  const now=currentZuluMinutes();
+  let active=0;
+  for(let i=segs.length-1;i>0;i--){
+    if(now>=segs[i].startMin){active=i;break}
+  }
+  return active;
+}
+
+function getActiveSegmentCeilVis(forecastText){
+  // Get ceiling and visibility from the currently active segment
+  const segs=parseSegments(forecastText);
+  const ai=getActiveSegIndex(segs);
+  const s=segs[ai].text;
+  // Strip ISOLD/TEMPO from the segment
+  const clean=s.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|AFT|$))/gi,'');
+  let c=99999,v=99;
+  const ch=clean.match(/(OVC|BKN)(\d{3})/);
+  if(ch)c=parseInt(ch[2])*100;
+  const vh=clean.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);
+  if(vh){
+    const vs=vh[1];
+    if(vs.includes('/')){const p=vs.trim().split(/\s+/);if(p.length===2){const f=p[1].split('/');v=parseInt(p[0])+parseInt(f[0])/parseInt(f[1])}else{const f=vs.split('/');v=parseInt(f[0])/parseInt(f[1])}}
+    else v=parseFloat(vs)||99;
+  }
+  if(/P6SM/i.test(clean))v=7;
+  return{ceil:c,vis:v};
+}
+
+function activeAreaColor(forecastText){
+  const cv=getActiveSegmentCeilVis(forecastText);
+  if(cv.ceil<500||cv.vis<1)return'var(--lifr)';
+  if(cv.ceil<1000||cv.vis<3)return'var(--ifr)';
+  if(cv.ceil<=3000||cv.vis<=5)return'var(--mvfr)';
+  return'var(--vfr)';
+}
+
+function activeAreaFC(forecastText){
+  const cv=getActiveSegmentCeilVis(forecastText);
+  if(cv.ceil<500||cv.vis<1)return'LIFR';
+  if(cv.ceil<1000||cv.vis<3)return'IFR';
+  if(cv.ceil<=3000||cv.vis<=5)return'MVFR';
+  return'VFR';
+}
+
+function areaIsGo(forecastText){
+  const cv=getActiveSegmentCeilVis(forecastText);
+  return cv.ceil>=700&&cv.vis>=1;
+}
+
+/* ── WIND PARSING ── */
+function parseWindStr(w){
+  if(!w)return{dir:0,spd:0};
+  const m=w.match(/(\d{3})(\d{2,3})(?:G\d+)?KT/);
+  if(!m)return{dir:0,spd:0};
+  return{dir:parseInt(m[1]),spd:parseInt(m[2])};
+}
+
+/* ── HAZARD ALTITUDE CONVERSION ── */
+function cvtHazVal(v){
+  if(!v||v.toUpperCase()==='NONE')return v||'NONE';
+  let hasAlt=false;
+  let result=v.replace(/\b(\d{3})\b/g,function(m){
+    const n=parseInt(m);
+    if(n>=1&&n<=600){hasAlt=true;return(n*100).toLocaleString()}
+    return m;
+  });
+  if(hasAlt){
+    result=result.replace(/(\d),?(\d{3})-(\d)/g,'$1,$2 - $3');
+    if(!/ ft/i.test(result))result+=' ft';
+  }
+  return result;
+}
+
+/* ── TS COVERAGE PERCENTAGES ── */
+function tsCovPct(cov){
+  if(!cov)return'';
+  const u=cov.toUpperCase();
+  if(u==='ISOLATED'||u==='ISOLD')return'ISOLATED (1-10%)';
+  if(u==='SCATTERED'||u==='SCT')return'SCATTERED (25-50%)';
+  if(u==='BROKEN'||u==='BKN')return'BROKEN (50-90%)';
+  if(u==='OVERCAST'||u==='OVC')return'OVERCAST (>90%)';
+  return cov;
+}
+
+/* ── FRESHNESS CHECK ── */
+function isForecastFresh(mefDate){
+  if(!mefDate)return false;
+  const today=new Date();
+  const d=parseInt(mefDate);
+  return d===today.getUTCDate();
+}
+
+function metarAgeMinutes(){
+  const m=DATA?.metar;
+  if(!m||!m.reportTime)return 999;
+  // Parse "09 Mar 1452Z"
+  const match=m.reportTime.match(/(\d{2})\s+\w+\s+(\d{2})(\d{2})Z/);
+  if(!match)return 999;
+  const day=parseInt(match[1]),hr=parseInt(match[2]),mn=parseInt(match[3]);
+  const now=new Date();
+  const obsMin=day*1440+hr*60+mn;
+  const nowMin=now.getUTCDate()*1440+now.getUTCHours()*60+now.getUTCMinutes();
+  return Math.abs(nowMin-obsMin);
+}
+
+/* ── CORE FUNCTIONS ── */
+function ceilNum(cl){if(!cl)return 99999;let c=99999;cl.forEach(l=>{if((l.cover==='BKN'||l.cover==='OVC')&&l.base!=null&&l.base<c)c=l.base});return c}
+function tsIcon(info){if(!info||info==='--')return'';if(/^Trainable$/i.test(info)||/weather is trainable/i.test(info))return'\u2705 ';if(/trainable in/i.test(info))return'\uD83D\uDD50 ';if(/untrainable in/i.test(info))return'\u26A0\uFE0F ';if(/untrainable/i.test(info))return'\u274C ';return''}
+function tsInfoCol(info){if(!info||info==='--')return'var(--text-dim)';if(/^Trainable$/i.test(info)||/weather is trainable/i.test(info))return'var(--go)';if(/trainable in/i.test(info))return'var(--accent)';if(/untrainable in/i.test(info))return'#e08040';return'var(--nogo)'}
+function advBadges(advs,areaName){return advs.filter(a=>(a.criteria||'').toUpperCase().includes(areaName.toUpperCase())).map(a=>{const w=a.type==='TWA'||a.type==='WARNING';return'<span style="font-size:10px;padding:2px 6px;border-radius:2px;margin-left:4px;font-weight:700;color:#fff;background:'+(w?'var(--nogo)':'#cc9900')+'">'+a.type+' '+a.number+'</span>'}).join('')}
+
+function landingRwy(wdir,wspd,rwys){
+  if(!wdir||wdir===0||!wspd)return null;
+  let best=null,bestHW=-999;
+  rwys.forEach(function(pair){
+    [pair[0],pair[1]].forEach(function(rh){
+      const hw=Math.round(Math.cos((wdir-rh)*Math.PI/180)*wspd);
+      if(hw>bestHW){
+        bestHW=hw;
+        const rawXw=Math.round(Math.sin((wdir-rh)*Math.PI/180)*wspd);
+        const xw=Math.abs(rawXw);
+        const fromRight=rawXw>0;
+        const rn=String(Math.round(rh/10)).padStart(2,'0');
+        best={rwy:'RWY '+rn,hw:hw,xw:xw,fromRight:fromRight};
+      }
+    });
+  });
+  return best;
+}
+
+/* ── RENDER ── */
 function render(){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent===currentPeriod));
   const fc=DATA.forecasts.find(f=>f.type===currentPeriod);if(!fc)return;
   const exp=new Date(DATA.exportedAt);
   document.getElementById('lastUpdated').textContent='EXPORTED '+exp.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false,timeZoneName:'short'}).toUpperCase();
-  rTS(fc);rAdv(fc);rMETAR();rKW(fc);rArea(fc);rHaz(fc);rEn(fc);rSp(fc);rW(fc);rSol(fc);rTO(fc);rAero(fc);rSD();
+  rMEFHdr(fc);rTS(fc);rAdv(fc);rArea(fc);rAero(fc);rMETAR(fc);rKW(fc);rHaz(fc);rFWBHdr(fc);rEn(fc);rSp(fc);rW(fc);rSol(fc);rTO(fc);rSD();
   document.getElementById('footerText').textContent='Data exported from My Weather Pal \u00B7 '+exp.toLocaleString();
 }
 
-function ceilNum(cl){if(!cl)return 99999;let c=99999;cl.forEach(l=>{if((l.cover==='BKN'||l.cover==='OVC')&&l.base!=null&&l.base<c)c=l.base});return c}
-function tsIcon(info){if(!info||info==='--')return'';if(/^Trainable$/i.test(info)||/weather is trainable/i.test(info))return'\u2705 ';if(/trainable in/i.test(info))return'\uD83D\uDD50 ';if(/untrainable in/i.test(info))return'\u26A0\uFE0F ';if(/untrainable/i.test(info))return'\u274C ';return''}
-function tsInfoCol(info){if(!info||info==='--')return'var(--text-dim)';if(/^Trainable$/i.test(info)||/weather is trainable/i.test(info))return'var(--go)';if(/trainable in/i.test(info))return'var(--accent)';if(/untrainable in/i.test(info))return'#e08040';return'var(--nogo)'}
-function advBadges(advs,areaName){return advs.filter(a=>(a.criteria||'').toUpperCase().includes(areaName.toUpperCase())).map(a=>{const w=a.type==='TWA'||a.type==='WARNING';return'<span style="font-size:10px;padding:2px 6px;border-radius:2px;margin-left:4px;font-weight:700;color:#fff;background:'+(w?'var(--nogo)':'#cc9900')+'">'+a.type+' '+a.number+'</span>'}).join('')}
-function landingRwy(wdir,rwys){if(!wdir||wdir===0)return null;let best=null,bestHW=-999;rwys.forEach(([r1,r2])=>{[r1,r2].forEach(rh=>{const hw=Math.round(Math.cos((wdir-rh)*Math.PI/180)*10);if(hw>bestHW){bestHW=hw;const rawXw=Math.round(Math.sin((wdir-rh)*Math.PI/180)*10);const xw=Math.abs(rawXw);const fromRight=rawXw>0;const rn=String(Math.round(rh/10)).padStart(2,'0');best={rwy:'RWY '+rn,hw:hw,xw:xw,fromRight:fromRight}}})});return best}
+/* ── MEF HEADER ── */
+function rMEFHdr(fc){
+  const c=document.getElementById('mefHdrCard'),m=fc.mef;
+  if(!m){c.style.display='none';return}
+  c.style.display='block';
+  const fresh=isForecastFresh(m.date);
+  const dotCls=fresh?'fresh':'stale';
+  const fcstr=m.forecasterInitials?'<span>FCSTR: '+esc(m.forecasterInitials)+'</span>':'';
+  c.innerHTML='<div class="card" style="border-top:2px solid var(--accent)"><div class="mef-hdr"><span class="mef-title"><span class="freshness-dot '+dotCls+'"></span>Mission Execution Forecast</span><div class="mef-meta"><span>'+esc(m.validPeriod||'')+'</span>'+fcstr+'</div></div></div>';
+}
+
+/* ── FWB HEADER ── */
+function rFWBHdr(fc){
+  const c=document.getElementById('fwbHdrCard'),fb=fc.flightBriefing;
+  if(!fb){c.style.display='none';return}
+  c.style.display='block';
+  const amd=fb.amendedAt?'<span style="color:var(--accent)">AMD '+esc(fb.amendedAt)+'</span>':'';
+  c.innerHTML='<div class="card" style="border-top:2px solid var(--accent)"><div class="mef-hdr"><span class="mef-title">Flight Weather Briefing (DD Form 175-1)</span><div class="mef-meta"><span>'+esc(fb.date||'')+'</span>'+amd+'</div></div></div>';
+}
+
+/* ── TRAINING STATUS ── */
 function rTS(fc){
   const ts=fc.trainingStatus,g=document.getElementById('tsGrid');
   const m=DATA.metar,advs=fc.mef?.weatherAdvisories||[];
   const areas=fc.mef?.areaForecasts||[];
-  const areaMap={};areas.forEach(a=>{areaMap[a.name.toUpperCase()]=areaColor(a.amendmentText||a.forecast||'')});
+  // Build area color map using active segment
+  const areaMap={};areas.forEach(a=>{
+    const txt=a.amendmentText||a.forecast||'';
+    areaMap[a.name.toUpperCase()]=activeAreaColor(txt);
+  });
   // Cairns info from METAR
   const mCeil=m?ceilNum(m.clouds):99999,mVis=m?parseFloat(m.visib)||99:99;
   const cairnsGo=mCeil>=1000&&mVis>=3;
   const cairnsInfo=m?(cairnsGo?'Weather is Trainable':'Weather is Untrainable'):'--';
   const cairnsCat=m?(m.fltCat||'VFR'):'VFR';
-  // Wind for landing calc
-  const wdir=m?m.wdir:0,wspd2=m?m.wspd:0;
-  const cairnsLand=wspd2>0?landingRwy(wdir,[[60,240],[180,360]]):null;
+  // Use 1000ft flight level wind for landing calcs (matching iOS app)
+  const flw=fc.mef?.flightLevelWinds||[];
+  const w1000=flw.find(w=>w.level==='010');
+  const pw=w1000?parseWindStr(w1000.wind):{dir:0,spd:0};
+  const wdir=pw.dir,wspd2=pw.spd;
+  const cairnsLand=wspd2>0?landingRwy(wdir,wspd2,[[60,240],[180,360]]):null;
   const sfRwys={ALLEN:[[120,300]],TOTH:[[70,250]],HIGHBLUFF:[[100,280]],LUCAS:[[180,360]]};
   const st=[
     {n:'CAIRNS',a:'KOZR',s:cairnsGo?'GO':'NO-GO',i:cairnsInfo,c:true,cat:cairnsCat,area:null,land:cairnsLand},
-    {n:'ALLEN',a:ts.allen.area,s:ts.allen.status,i:ts.allen.info,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,sfRwys.ALLEN):null},
-    {n:'TOTH',a:ts.toth.area,s:ts.toth.status,i:ts.toth.info,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,sfRwys.TOTH):null},
-    {n:'HIGHBLUFF',a:ts.highbluff.area,s:ts.highbluff.status,i:ts.highbluff.info,area:'BEARCAT',land:wspd2>0?landingRwy(wdir,sfRwys.HIGHBLUFF):null},
-    {n:'LUCAS',a:ts.lucas.area,s:ts.lucas.status,i:ts.lucas.info,area:'VANGUARD C',land:wspd2>0?landingRwy(wdir,sfRwys.LUCAS):null},
+    {n:'ALLEN',a:ts.allen.area,s:ts.allen.status,i:ts.allen.info,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.ALLEN):null},
+    {n:'TOTH',a:ts.toth.area,s:ts.toth.status,i:ts.toth.info,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.TOTH):null},
+    {n:'HIGHBLUFF',a:ts.highbluff.area,s:ts.highbluff.status,i:ts.highbluff.info,area:'BEARCAT',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.HIGHBLUFF):null},
+    {n:'LUCAS',a:ts.lucas.area,s:ts.lucas.status,i:ts.lucas.info,area:'VANGUARD C',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.LUCAS):null},
   ];
   g.innerHTML=st.map(s=>{
     const ic=s.s==='GO'?'\uD83D\uDE81':'\u2601\uFE0F';
@@ -645,36 +890,53 @@ function rTS(fc){
     const lnd=s.land?'<div style="font-size:11px;color:var(--text-dim);margin-top:2px">\uD83D\uDEEC '+s.land.rwy+(s.land.hw!==0||s.land.xw!==0?' <span style="color:'+(s.land.hw>=0?'var(--go)':'var(--nogo)')+'">'+( s.land.hw>=0?'\u2193':'\u2191')+Math.abs(s.land.hw)+'kt</span> <span style="color:'+(s.land.xw>=15?'#e08040':'var(--text-dim)')+'">'+( s.land.fromRight?'\u2190':'\u2192')+s.land.xw+'kt</span>':' CALM')+'</div>':'';
     return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px">'+ic+'</td><td class="stn" style="vertical-align:top"><span style="color:'+nameCol+'">'+s.n+'</span>'+ab+lnd+'</td><td class="area" style="vertical-align:top">'+s.a+'</td><td class="info" style="color:'+infoC+';vertical-align:top">'+icon+esc(s.i)+'</td><td style="vertical-align:top"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
   }).join('');
-  g.innerHTML+='<tr><td colspan="5"><div class="ts-legend"><span>CAIRNS \u22651000/3 \u00A0\u00B7\u00A0 STAGEFIELDS \u2265700/1</span><span style="font-weight:800;font-size:13px;color:'+(ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)')+'">'+ts.goCount+'/5 GO</span></div></td></tr>';
+  g.innerHTML+='<tr><td colspan="5"><div class="ts-legend"><span>CAIRNS \u22651000/3 \u00A0\u00B7\u00A0 STAGEFIELDS \u2265700/1 \u00A0\u00B7\u00A0 \uD83D\uDEEC 1000ft winds</span><span style="font-weight:800;font-size:13px;color:'+(ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)')+'">'+ts.goCount+'/5 GO</span></div></td></tr>';
   const cc=ts.goCount>=4?'var(--go)':ts.goCount>=2?'var(--accent)':'var(--nogo)';
   document.getElementById('goCountHdr').innerHTML='<span style="color:'+cc+';font-weight:900;font-size:14px">'+ts.goCount+'/5</span>';
   document.getElementById('heroGoCount').innerHTML='<span style="color:'+cc+'">'+ts.goCount+'/5</span>';
 }
 
+/* ── ADVISORIES ── */
 function rAdv(fc){
   const c=document.getElementById('advCard'),adv=fc.mef?.weatherAdvisories||[];
   if(!adv.length){c.style.display='none';return}c.style.display='block';
   const warn=adv.some(a=>a.type==='TWA'||a.type==='WARNING');
-  c.innerHTML='<div class="card adv-banner'+(warn?'':' gold')+'"><div class="card-hdr" style="cursor:default"><span>\u26A0\uFE0F Advisories</span><span style="font-size:11px;color:var(--nogo)">'+adv.length+' ACTIVE</span></div><div style="padding:0">'+adv.map(a=>{
+  c.innerHTML='<div class="card adv-banner'+(warn?'':' gold')+'"><div class="card-hdr" style="cursor:default"><span>\u26A0\uFE0F Weather Watches, Warnings & Advisories</span><span style="font-size:11px;color:var(--nogo)">'+adv.length+' ACTIVE</span></div><div style="padding:0">'+adv.map(a=>{
     const w=a.type==='TWA'||a.type==='WARNING';
     return'<div class="adv-item"><span class="adv-type '+(w?'warn':'watch')+'">'+a.type+' '+a.number+'</span><div style="flex:1">'+esc(a.criteria)+'<div class="adv-times">'+a.validFrom+' \u2014 '+a.validTo+'</div></div></div>';
   }).join('')+'</div></div>';
 }
 
-function rMETAR(){
+/* ── METAR ── */
+function rMETAR(fc){
   const m=DATA.metar,b=document.getElementById('metarBody');
-  if(!m){b.innerHTML='<div class="no-data">No METAR</div>';return}
-  const fc=m.fltCat||'VFR',ceil=m.clouds?ceilFromClouds(m.clouds):'--',w=fmtWind(m),v=m.visib||'--';
+  if(!m){b.innerHTML='<div class="no-data">No METAR</div>';document.getElementById('metarStation').textContent='';document.getElementById('metarStale').innerHTML='';document.getElementById('metarTsBadge').innerHTML='';return}
+  const fcat=m.fltCat||'VFR',ceil=ceilFromClouds(m.clouds),w=fmtWind(m),v=m.visib||'--';
   const t=m.temp!=null?Math.round(m.temp)+'\u00B0C':'--',d=m.dewp!=null?Math.round(m.dewp)+'\u00B0C':'--';
   const alt=m.altim?(m.altim/33.8639).toFixed(2)+'"':'--',em=wxEmoji(m.wxString);
+  // Station name
+  document.getElementById('metarStation').textContent=m.name||'Cairns AAF';
+  // Report time
   document.getElementById('metarTime').textContent=m.reportTime||'';
-  document.getElementById('metarCat').innerHTML='<span class="flt-cat '+fc+'">'+fc+'</span>';
+  // Flight category badge
+  document.getElementById('metarCat').innerHTML='<span class="flt-cat '+fcat+'">'+fcat+'</span>';
+  // Weather emojis
   document.getElementById('metarEmojis').innerHTML=em?'<span style="font-size:14px">'+em+'</span>':'';
+  // Staleness indicator
+  const age=metarAgeMinutes();
+  const fresh=age<90;
+  document.getElementById('metarStale').innerHTML='<span class="stale-dot '+(fresh?'fresh':'stale')+'" title="'+(fresh?'Current':'Stale: '+age+' min old')+'"></span>';
+  // Training badge
+  const cairnsGo=fc.trainingStatus?.cairns||'--';
+  document.getElementById('metarTsBadge').innerHTML=cairnsGo!=='--'?'<span class="'+bc(cairnsGo)+'" style="font-size:10px;padding:2px 8px">'+cairnsGo+'</span>':'';
+  // Full cloud layers
+  const skyStr=m.clouds&&m.clouds.length?m.clouds.map(l=>l.cover+(l.base!=null?String(Math.round(l.base/100)).padStart(3,'0'):'')).join(' '):'CLR';
   b.innerHTML=(m.rawOb?'<div class="metar-raw">'+esc(m.rawOb)+'</div>':'')+
-    '<div class="metar-grid">'+di('Wind',w)+di('Vis',v+' SM')+di('Ceil',ceil)+di('Temp',t)+di('Dewpt',d)+di('Altim',alt)+(m.wxString?di('Wx',m.wxString+' '+em):'')+'</div>';
+    '<div class="metar-grid">'+di('Wind',w)+di('Vis',v+' SM')+di('Ceil',ceil)+di('Sky',skyStr)+di('Temp',t)+di('Dewpt',d)+di('Altim',alt)+(m.wxString?di('Wx',m.wxString+' '+em):'')+'</div>';
 }
 function ceilFromClouds(cl){let c=null;cl.forEach(l=>{if((l.cover==='BKN'||l.cover==='OVC')&&l.base!=null){if(c===null||l.base<c)c=l.base}});return c!=null?c.toLocaleString()+' ft':'CLR'}
 
+/* ── KEY WEATHER ── */
 function rKW(fc){
   const c=document.getElementById('kwCard'),b=document.getElementById('kwBody'),m=fc.mef;
   if(!m||!m.maxTemp){c.style.display='none';return}c.style.display='block';
@@ -683,44 +945,99 @@ function rKW(fc){
     {l:'Max Dewpt',k:m.maxDewpoint?.kozr,a:m.maxDewpoint?.area,u:'\u00B0C'},{l:'Min Altim',k:m.minAltimeterSetting?.kozr,a:m.minAltimeterSetting?.area,u:'"'},
     {l:'Max PA',k:m.maxPressureAlt?.kozr,a:m.maxPressureAlt?.area,u:' ft'},{l:'Max DA',k:m.maxDensityAlt?.kozr,a:m.maxDensityAlt?.area,u:' ft'},
     {l:'Min Ceil',k:m.minCeiling?.kozr,a:m.minCeiling?.area,u:' ft'},{l:'Min Vis',k:m.minVisibility?.kozr,a:m.minVisibility?.area,u:' SM'},
-  ].filter(r=>r.k||r.a);
-  if(!rows.length){c.style.display='none';return}
-  b.innerHTML='<div class="kw-grid"><div class="kw-h"></div><div class="kw-h" style="text-align:center">KOZR</div><div class="kw-h" style="text-align:center">AREA</div>'+rows.map(r=>'<div class="kw-l">'+r.l+'</div><div class="kw-v">'+(r.k?r.k+r.u:'--')+'</div><div class="kw-v">'+(r.a?r.a+r.u:'--')+'</div>').join('')+'</div>';
+  ];
+  if(m.minWeather)rows.push({l:'Min Wx',k:m.minWeather?.kozr||null,a:m.minWeather?.area||null,u:''});
+  const filtered=rows.filter(r=>r.k||r.a);
+  if(!filtered.length){c.style.display='none';return}
+  b.innerHTML='<div class="kw-grid"><div class="kw-h"></div><div class="kw-h" style="text-align:center">KOZR</div><div class="kw-h" style="text-align:center">AREA</div>'+filtered.map(r=>'<div class="kw-l">'+r.l+'</div><div class="kw-v">'+(r.k?r.k+r.u:'--')+'</div><div class="kw-v">'+(r.a?r.a+r.u:'--')+'</div>').join('')+'</div>';
 }
 
+/* ── AREA FORECASTS ── */
 function rArea(fc){
   const g=document.getElementById('areaGrid'),vp=document.getElementById('validPeriod');
   if(!fc.mef){g.innerHTML='<div class="no-data">No MEF data</div>';return}
   vp.textContent=fc.mef.validPeriod||'';
+  // Map stagefield area → training status for per-area badges
+  const sfMap={'GOLDFISH':[],'BEARCAT':[],'VANGUARD N':[],'VANGUARD C':[],'VANGUARD S':[],'HAWK':[]};
+  const ts=fc.trainingStatus;
+  if(ts){
+    if(ts.allen)sfMap[ts.allen.area]=[...(sfMap[ts.allen.area]||[]),{name:'Allen',status:ts.allen.status,info:ts.allen.info}];
+    if(ts.toth)sfMap[ts.toth.area]=[...(sfMap[ts.toth.area]||[]),{name:'Toth',status:ts.toth.status,info:ts.toth.info}];
+    if(ts.highbluff)sfMap[ts.highbluff.area]=[...(sfMap[ts.highbluff.area]||[]),{name:'Highbluff',status:ts.highbluff.status,info:ts.highbluff.info}];
+    if(ts.lucas)sfMap[ts.lucas.area]=[...(sfMap[ts.lucas.area]||[]),{name:'Lucas',status:ts.lucas.status,info:ts.lucas.info}];
+  }
   const rmk=fc.mef.remarks;
-  const hasAmd=(fc.mef.areaForecasts||[]).some(a=>a.amendmentNumber);
-  const rmkHtml=hasAmd&&rmk?'<div style="grid-column:1/-1;padding:10px 14px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:12px;color:var(--accent);text-align:center"><span style="font-weight:800;letter-spacing:1px;margin-right:6px">REMARKS:</span>'+esc(rmk)+'</div>':'';
+  const rmkHtml=rmk?'<div style="grid-column:1/-1;padding:10px 14px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:12px;color:var(--accent);text-align:center"><span style="font-weight:800;letter-spacing:1px;margin-right:6px">REMARKS:</span>'+esc(rmk)+'</div>':'';
   g.innerHTML=(fc.mef.areaForecasts||[]).map(a=>{
-    const txt=a.amendmentText||a.forecast||'',col=areaColor(txt);
-    const ts=a.tsCoverage&&a.tsCoverage.toUpperCase()!=='NONE'?'<div><span class="ts-tag active">TS: '+esc(a.tsCoverage)+'</span></div>':'';
+    const txt=a.amendmentText||a.forecast||'';
+    const col=activeAreaColor(txt);
+    // Per-area GO/NO-GO from active segment
+    const go=areaIsGo(txt);
+    const goB='<span class="'+(go?'badge go':'badge nogo')+'" style="font-size:10px;padding:2px 8px">'+(go?'GO':'NO-GO')+'</span>';
+    // TS coverage with percentage
+    const tsCov=a.tsCoverage&&a.tsCoverage.toUpperCase()!=='NONE'?'<div><span class="ts-tag active">TS: '+tsCovPct(a.tsCoverage)+'</span></div>':'';
     const amd=a.amendmentNumber?'<span class="amd-badge">\u26A0 '+a.amendmentNumber+(a.amendmentTime?' '+a.amendmentTime:'')+'</span>':'';
-    return'<div class="area-card"><div class="area-hdr"><span class="area-name" style="color:'+col+'">'+a.name+'</span>'+amd+'</div><div class="area-text">'+fmtArea(txt)+'</div>'+ts+'</div>';
+    // Trainability info from stagefields in this area
+    const sfs=sfMap[a.name.toUpperCase()]||[];
+    const infoHtml=sfs.length?'<div class="area-info">'+sfs.map(sf=>{
+      const ic=tsIcon(sf.info);
+      const c2=tsInfoCol(sf.info);
+      return'<span style="color:'+c2+';margin-right:8px">'+ic+sf.name+'</span>';
+    }).join('')+'</div>':'';
+    return'<div class="area-card"><div class="area-hdr"><span class="area-name" style="color:'+col+'">'+a.name+'</span><span style="display:flex;align-items:center;gap:6px">'+amd+goB+'</span></div>'+infoHtml+'<div class="area-text">'+fmtArea(txt)+'</div>'+tsCov+'</div>';
   }).join('')+rmkHtml;
 }
-function areaColor(t){
-  if(!t)return'var(--text)';const s=t.split(/AFT\s+\d{4}Z:/)[0];
-  const ch=s.match(/(OVC|BKN)(\d{3})/),vh=s.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);
-  let c=99999,v=99;if(ch)c=parseInt(ch[2])*100;
-  if(vh){const vs=vh[1];if(vs.includes('/')){const p=vs.trim().split(/\s+/);if(p.length===2){const f=p[1].split('/');v=parseInt(p[0])+parseInt(f[0])/parseInt(f[1])}else{const f=vs.split('/');v=parseInt(f[0])/parseInt(f[1])}}else v=parseFloat(vs)||99}
-  if(/P6SM/i.test(s))v=7;
+
+function segFC(s){
+  var m=s.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|$))/gi,'');
+  var c=99999,v=99;
+  var ch=m.match(/(OVC|BKN)(\d{3})/);
+  var vh=m.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);
+  if(ch)c=parseInt(ch[2])*100;
+  if(vh){var vs=vh[1];if(vs.includes('/')){var p=vs.trim().split(/\s+/);if(p.length===2){var f2=p[1].split('/');v=parseInt(p[0])+parseInt(f2[0])/parseInt(f2[1])}else{var f3=vs.split('/');v=parseInt(f3[0])/parseInt(f3[1])}}else v=parseFloat(vs)||99}
+  if(/P6SM/i.test(m))v=7;
   if(c<500||v<1)return'var(--lifr)';if(c<1000||v<3)return'var(--ifr)';if(c<=3000||v<=5)return'var(--mvfr)';return'var(--vfr)';
 }
-function segFC(s){var m=s.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|$))/gi,'');var c=99999,v=99;var ch=m.match(/(OVC|BKN)(\d{3})/);var vh=m.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);if(ch)c=parseInt(ch[2])*100;if(vh){var vs=vh[1];if(vs.includes('/')){var p=vs.trim().split(/\s+/);if(p.length===2){var f2=p[1].split('/');v=parseInt(p[0])+parseInt(f2[0])/parseInt(f2[1])}else{var f3=vs.split('/');v=parseInt(f3[0])/parseInt(f3[1])}}else v=parseFloat(vs)||99}if(/P6SM/i.test(m))v=7;if(c<500||v<1)return'var(--lifr)';if(c<1000||v<3)return'var(--ifr)';if(c<=3000||v<=5)return'var(--mvfr)';return'var(--vfr)'}
-function fmtArea(t){if(!t)return'';var raw=esc(t),segs=raw.split(/(AFT\s+\d{4}Z:)/),html='';for(var i=0;i<segs.length;i++){var s=segs[i];if(!s.trim())continue;if(/^AFT\s+\d{4}Z:/.test(s.trim())){html+='<br><strong style="color:var(--accent)">$1</strong>'.replace('$1',s);continue}var col=segFC(s);var f=s.replace(/((?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?)(?=(?:ISOLD|TEMPO|$))/g,'<span class="dim">$1</span>');html+='<span style="color:'+col+'">'+f+'</span>'}return html}
+function fmtArea(t){
+  if(!t)return'';
+  var raw=esc(t),segs=raw.split(/(AFT\s+\d{4}Z:)/),html='';
+  // Determine active segment index for highlighting
+  var parsedSegs=parseSegments(t);
+  var activeIdx=getActiveSegIndex(parsedSegs);
+  var segCount=0;
+  for(var i=0;i<segs.length;i++){
+    var s=segs[i];if(!s.trim())continue;
+    if(/^AFT\s+\d{4}Z:/.test(s.trim())){
+      segCount++;
+      html+='<br><strong style="color:var(--accent)">'+s+'</strong>';
+      continue;
+    }
+    var col=segFC(s);
+    var isActive=(segCount===activeIdx);
+    var f=s.replace(/((?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?)(?=(?:ISOLD|TEMPO|$))/g,'<span class="dim">$1</span>');
+    if(isActive){
+      html+='<span style="color:'+col+';font-weight:700">'+f+'</span>';
+    }else{
+      html+='<span style="color:'+col+';opacity:0.6">'+f+'</span>';
+    }
+  }
+  return html;
+}
 
+/* ── HAZARDS (MEF) ── */
 function rHaz(fc){
   const g=document.getElementById('hazGrid'),be=document.getElementById('hazBadge'),h=fc.mef?.flightHazards;
   if(!h){g.innerHTML='<div class="no-data" style="padding:6px">No data</div>';be.innerHTML='';return}
   const items=[{l:'Turbulence',v:h.turbulence},{l:'Icing',v:h.icing},{l:'Thunderstorms',v:h.thunderstorms},{l:'LLWS',v:h.llws}];
   be.innerHTML=items.some(i=>i.v&&i.v.toUpperCase()!=='NONE')?'<span class="haz-badge">HAZARDS</span>':'';
-  g.innerHTML=items.map(i=>{const n=!i.v||i.v.toUpperCase()==='NONE';return'<div class="haz-item"><span class="dl">'+i.l+'</span><span class="haz-val '+(n?'none':'active')+'">'+(i.v||'NONE')+'</span></div>'}).join('');
+  g.innerHTML=items.map(i=>{
+    const n=!i.v||i.v.toUpperCase()==='NONE';
+    const displayVal=n?(i.v||'NONE'):cvtHazVal(i.v);
+    return'<div class="haz-item"><span class="dl">'+i.l+'</span><span class="haz-val '+(n?'none':'active')+'">'+displayVal+'</span></div>';
+  }).join('');
 }
 
+/* ── ENROUTE HAZARDS ── */
 function rEn(fc){
   const c=document.getElementById('enCard'),b=document.getElementById('enBody'),be=document.getElementById('enBadge'),en=fc.flightBriefing?.enrouteData;
   if(!en){c.style.display='none';return}c.style.display='block';
@@ -728,7 +1045,7 @@ function rEn(fc){
   if(en.thunderstorms){const t=en.thunderstorms,a=t.coverage&&t.coverage.toUpperCase()!=='NONE';if(a)hz=true;cards.push(enC('Thunderstorms',[{l:'Coverage',v:t.coverage},{l:'Type',v:t.type},{l:'Max Tops',v:t.maxTops?cvtAlt(t.maxTops):null},{l:'Location',v:t.location}]))}
   if(en.turbulence){const t=en.turbulence,a=t.severity&&t.severity.toUpperCase()!=='NONE';if(a)hz=true;cards.push(enC('Turbulence',[{l:'Severity',v:t.severity},{l:'Levels',v:t.levels?cvtLvl(t.levels):null},{l:'Location',v:t.location}]))}
   if(en.icing){const i=en.icing,a=i.severity&&i.severity.toUpperCase()!=='NONE';if(a)hz=true;cards.push(enC('Icing',[{l:'Severity',v:i.severity},{l:'Type',v:i.type},{l:'Levels',v:i.levels?cvtLvl(i.levels):null},{l:'Location',v:i.location}]))}
-  if(en.precipitation){const p=en.precipitation,a=p.intensity&&p.intensity.toUpperCase()!=='NONE';if(a)hz=true;cards.push(enC('Precip',[{l:'Intensity',v:p.intensity},{l:'Type',v:p.type},{l:'Freezing',v:p.freezing},{l:'Location',v:p.location}]))}
+  if(en.precipitation){const p=en.precipitation,a=p.intensity&&p.intensity.toUpperCase()!=='NONE';if(a)hz=true;cards.push(enC('Precipitation',[{l:'Intensity',v:p.intensity},{l:'Type',v:p.type},{l:'Freezing',v:p.freezing},{l:'Location',v:p.location}]))}
   const misc=[];
   if(en.obscurations){const a=en.obscurations.toUpperCase()!=='NONE';if(a)hz=true;misc.push({l:'Obscurations',v:en.obscurations})}
   if(en.minCeiling)misc.push({l:'Min Ceil',v:cvtAlt(en.minCeiling)+' AGL'+(en.minCeilingLocation?' ('+en.minCeilingLocation+')':'')});
@@ -741,14 +1058,16 @@ function rEn(fc){
 function enC(title,rows){const f=rows.filter(r=>r.v!=null);if(!f.length)return'';return'<div class="en-card"><div class="en-title">'+title+'</div>'+f.map(r=>{const n=!r.v||r.v.toUpperCase()==='NONE';return'<div class="en-row"><span class="l">'+r.l+'</span><span class="v '+(n?'none':'active')+'">'+esc(r.v||'NONE')+'</span></div>'}).join('')+'</div>'}
 function cvtLvl(l){if(!l)return l;return l.replace(/(\d{3})/g,m=>cvtAlt(m).replace(' ft',''))+' ft'}
 
+/* ── SPACE WEATHER ── */
 function rSp(fc){
   const c=document.getElementById('spCard'),g=document.getElementById('spGrid'),be=document.getElementById('spBadge'),sw=fc.flightBriefing?.enrouteData?.spaceWeather;
   if(!sw){c.style.display='none';return}c.style.display='block';
-  const items=[{l:'FREQ',v:sw.frequency},{l:'GPS',v:sw.gps},{l:'RAD',v:sw.radiation}];
+  const items=[{l:'HF Radio (FREQ)',v:sw.frequency},{l:'GPS',v:sw.gps},{l:'Radiation (RAD)',v:sw.radiation}];
   be.innerHTML=items.some(i=>i.v&&i.v.toUpperCase()!=='NONE')?'<span style="font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(187,102,255,0.15);color:#bb66ff;font-weight:700">CHECK IMPACTS</span>':'';
   g.innerHTML=items.map(i=>{const n=!i.v||i.v.toUpperCase()==='NONE';return'<div class="sp-item"><div class="sp-lbl">'+i.l+'</div><div class="sp-val '+(n?'none':'active')+'">'+(i.v||'NONE')+'</div></div>'}).join('');
 }
 
+/* ── FLIGHT LEVEL WINDS ── */
 function rW(fc){
   const b=document.getElementById('wBody'),se=document.getElementById('wSum'),ws=fc.mef?.flightLevelWinds||fc.flightBriefing?.enrouteData?.flightLevelWinds||[];
   if(!ws.length){b.innerHTML='<div class="no-data" style="padding:6px">No data</div>';se.innerHTML='';return}
@@ -759,6 +1078,7 @@ function rW(fc){
   b.innerHTML='<table class="w-tbl"><thead><tr><th>Level</th><th>Wind</th><th>Temp</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 
+/* ── SOLAR/LUNAR ── */
 function rSol(fc){
   const c=document.getElementById('solCard'),g=document.getElementById('solGrid'),se=document.getElementById('solSum'),sl=fc.mef?.solarLunar||fc.flightBriefing?.enrouteData?.solarLunar;
   if(!sl){c.style.display='none';return}c.style.display='block';
@@ -767,6 +1087,7 @@ function rSol(fc){
   g.innerHTML=items.map(i=>'<div class="sol-item"><span class="sol-icon">'+i.i+'</span><div><div class="dl">'+i.l+'</div><div style="font-weight:600">'+i.v+'</div></div></div>').join('');
 }
 
+/* ── TAKEOFF DATA ── */
 function rTO(fc){
   const c=document.getElementById('toCard'),b=document.getElementById('toBody'),fb=document.getElementById('fogBadge'),td=fc.flightBriefing?.takeoffData;
   if(!td){c.style.display='none';fb.innerHTML='';return}c.style.display='block';
@@ -779,24 +1100,99 @@ function rTO(fc){
   b.innerHTML=h;
 }
 
+/* ── AERODROME FORECASTS ── */
 function rAero(fc){
   const c=document.getElementById('aeroCard'),g=document.getElementById('aeroGrid'),aeros=fc.flightBriefing?.aerodromeForecasts||[];
   if(!aeros.length){c.style.display='none';return}c.style.display='block';
+  // Arrival Time Assistant
+  rATA(fc);
+  // Get arrival times
+  const ataEnabled=localStorage.getItem('ataEnabled')==='true';
+  const arr1=ataEnabled?parseInt(localStorage.getItem('ataMin1')||'0'):0;
+  const arr2=ataEnabled?parseInt(localStorage.getItem('ataMin2')||'0'):0;
   g.innerHTML=aeros.map(a=>{
     const mp=a.periods.find(p=>p.periodType!=='TEMPO')||a.periods[0];
     const fc2=mp?detFC(mp.skyCondition,mp.visibility):'VFR',hc=fcColor(fc2);
     const ph=a.periods.map(p=>{
       const tmp=p.periodType==='TEMPO',pfc=detFC(p.skyCondition,p.visibility),pc=tmp?'var(--text-dim)':fcColor(pfc);
       const parts=[p.surfaceWind,p.visibility,p.weather,p.skyCondition,p.altimeter].filter(Boolean).join(' \u00B7 ');
-      const ts=p.validFrom&&p.validTo?p.validFrom+'\u2013'+p.validTo:'';
+      const ts2=p.validFrom&&p.validTo?p.validFrom+'\u2013'+p.validTo:'';
       const pfx=p.periodType?'<span class="pt">'+p.periodType+'</span> ':'';
-      return'<div class="aero-p'+(tmp?' tempo':'')+'" style="color:'+pc+'">'+pfx+ts+'<br>'+parts+'</div>';
+      // Arrival time highlighting
+      let hlCls='';
+      if(ataEnabled&&arr1&&arr2){
+        const m1=isPeriodActive(p,arr1),m2=isPeriodActive(p,arr2);
+        if(m1&&m2)hlCls=' arr-both';
+        else if(m1)hlCls=' arr1-hl';
+        else if(m2)hlCls=' arr2-hl';
+      }else if(ataEnabled&&arr1){
+        if(isPeriodActive(p,arr1))hlCls=' arr1-hl';
+      }else if(ataEnabled&&arr2){
+        if(isPeriodActive(p,arr2))hlCls=' arr2-hl';
+      }
+      return'<div class="aero-p'+(tmp?' tempo':'')+hlCls+'" style="color:'+pc+'">'+pfx+ts2+'<br>'+parts+'</div>';
     }).join('');
     const sa=a.sameAs&&a.sameAs.length?'<div class="aero-same">Same as: '+a.sameAs.join(', ')+'</div>':'';
     return'<div class="aero-card"><div class="aero-icao" style="color:'+hc+'">'+a.icao+' <span class="flt-cat '+fc2+'" style="font-size:9px">'+fc2+'</span></div>'+ph+sa+'</div>';
   }).join('');
 }
 
+/* ── ARRIVAL TIME ASSISTANT ── */
+function isPeriodActive(p,zuluMin){
+  if(!p.validFrom||!p.validTo)return false;
+  // Parse "09/1200Z" → 720 minutes
+  const parseT=function(t){const m=t.match(/(\d{2})(\d{2})Z/);return m?parseInt(m[1])*60+parseInt(m[2]):0};
+  const from=parseT(p.validFrom),to=parseT(p.validTo);
+  if(to>from)return zuluMin>=from&&zuluMin<to;
+  // Cross-midnight
+  return zuluMin>=from||zuluMin<to;
+}
+
+function localToZuluMin(localTimeStr){
+  // "14:30" → Zulu minutes
+  if(!localTimeStr)return 0;
+  const parts=localTimeStr.split(':');
+  if(parts.length<2)return 0;
+  const h=parseInt(parts[0]),m=parseInt(parts[1]);
+  const now=new Date();
+  const local=new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,m);
+  return local.getUTCHours()*60+local.getUTCMinutes();
+}
+
+function zuluStr(min){
+  const h=Math.floor(min/60)%24,m=min%60;
+  return String(h).padStart(2,'0')+String(m).padStart(2,'0')+'Z';
+}
+
+function rATA(fc){
+  const c=document.getElementById('ataCard');
+  if(!fc.flightBriefing?.aerodromeForecasts?.length){c.style.display='none';return}
+  c.style.display='block';
+  const enabled=localStorage.getItem('ataEnabled')==='true';
+  const t1=localStorage.getItem('ataTime1')||'';
+  const t2=localStorage.getItem('ataTime2')||'';
+  const z1=t1?localToZuluMin(t1):0;
+  const z2=t2?localToZuluMin(t2):0;
+  c.innerHTML='<div class="ata-card"><div class="ata-toggle"><label class="ata-switch"><input type="checkbox" id="ataToggle" '+(enabled?'checked':'')+' onchange="ataToggleChanged()"><span class="ata-slider"></span></label><span style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text-secondary)">\u2708\uFE0F ARRIVAL TIME ASSISTANT</span></div>'+(enabled?'<div class="ata-rows"><div class="ata-row"><span class="ata-dot gold"></span><input type="time" id="ataTime1" value="'+t1+'" onchange="ataTimeChanged()"><span class="ata-zulu">'+(z1?zuluStr(z1):'--')+'</span></div><div class="ata-row"><span class="ata-dot green"></span><input type="time" id="ataTime2" value="'+t2+'" onchange="ataTimeChanged()"><span class="ata-zulu">'+(z2?zuluStr(z2):'--')+'</span></div></div>':'')+'</div>';
+}
+
+function ataToggleChanged(){
+  const on=document.getElementById('ataToggle').checked;
+  localStorage.setItem('ataEnabled',on?'true':'false');
+  render();
+}
+
+function ataTimeChanged(){
+  const t1=document.getElementById('ataTime1');
+  const t2=document.getElementById('ataTime2');
+  if(t1)localStorage.setItem('ataTime1',t1.value);
+  if(t2)localStorage.setItem('ataTime2',t2.value);
+  if(t1){const z=localToZuluMin(t1.value);localStorage.setItem('ataMin1',String(z))}
+  if(t2){const z=localToZuluMin(t2.value);localStorage.setItem('ataMin2',String(z))}
+  render();
+}
+
+/* ── 7-DAY OUTLOOK ── */
 function rSD(){
   const c=document.getElementById('sdCard'),g=document.getElementById('sdGrid'),te=document.getElementById('sdTitle'),sd=DATA.sevenDay;
   if(!sd){c.style.display='none';return}c.style.display='block';te.textContent=sd.title||'';
@@ -807,7 +1203,8 @@ function rSD(){
   let hr='<td style="color:var(--nogo)">HIGH</td>',lr='<td style="color:var(--mvfr)">LOW</td>';
   (sd.highTemps||[]).forEach((t,i)=>{const sp=ppd[i]||1;hr+='<td colspan="'+sp+'" style="color:var(--nogo)">'+t+'\u00B0</td>';lr+='<td colspan="'+sp+'" style="color:var(--mvfr)">'+((sd.lowTemps||[])[i]||'--')+'\u00B0</td>'});
   const tid='thr-'+Date.now();
-  g.innerHTML='<table class="sd-tbl"><thead><tr>'+hdr+'</tr><tr>'+sub+'</tr></thead><tbody>'+cats+'<tr class="temps-row">'+hr+'</tr><tr class="temps-row">'+lr+'</tr></tbody></table>'+(sd.synopsis?'<div class="sd-syn">'+esc(sd.synopsis)+'</div>':'')+
+  const legend='<div class="sd-legend"><div class="sd-legend-item"><span class="dot go" style="width:10px;height:10px"></span> GO</div><div class="sd-legend-item"><span class="dot marginal" style="width:10px;height:10px"></span> MARGINAL</div><div class="sd-legend-item"><span class="dot noGo" style="width:10px;height:10px"></span> NO GO</div></div>';
+  g.innerHTML='<table class="sd-tbl"><thead><tr>'+hdr+'</tr><tr>'+sub+'</tr></thead><tbody>'+cats+'<tr class="temps-row">'+hr+'</tr><tr class="temps-row">'+lr+'</tr></tbody></table>'+legend+(sd.synopsis?'<div class="sd-syn">'+esc(sd.synopsis)+'</div>':'')+
     '<div class="thr-toggle" onclick="togThr(\''+tid+'\',this)">\u25B6 THRESHOLDS</div><div id="'+tid+'" style="display:none"><table class="thr-tbl"><thead><tr><th></th><th style="color:var(--go)">GO</th><th style="color:var(--accent)">MARG</th><th style="color:var(--nogo)">NO GO</th></tr></thead><tbody><tr><td>CIG/VIS</td><td>\u22651000\'/3SM</td><td>700\'/2SM</td><td>\u2264500\'/1SM</td></tr><tr><td>WIND</td><td>&lt;20KT</td><td>20-29KT</td><td>\u226530KT</td></tr><tr><td>TURB</td><td>NONE</td><td>LGT</td><td>\u2265MDT</td></tr><tr><td>ICE</td><td>NONE</td><td>4\u00B0/MOIST</td><td>0\u00B0/MOIST</td></tr><tr><td>TS</td><td>&lt;30KT</td><td>30-44KT</td><td>\u226545KT</td></tr><tr><td>UAS</td><td>&lt;10KT</td><td>10KT</td><td>&gt;10KT</td></tr></tbody></table></div>';
 }
 function togThr(id,el){const d=document.getElementById(id);if(!d)return;const v=d.style.display!=='none';d.style.display=v?'none':'block';el.textContent=(v?'\u25B6':'\u25BC')+' THRESHOLDS'}
