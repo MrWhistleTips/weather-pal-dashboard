@@ -673,13 +673,13 @@ function rArea(fc){
   vp.textContent=fc.mef.validPeriod||'';
   const rmk=fc.mef.remarks;
   const hasAmd=(fc.mef.areaForecasts||[]).some(a=>a.amendmentNumber);
-  const rmkHtml=hasAmd&&rmk?'<div style="margin-bottom:8px;padding:6px 10px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:10px;color:var(--accent)"><span style="font-weight:800;letter-spacing:1px;margin-right:6px">REMARKS:</span>'+esc(rmk)+'</div>':'';
-  g.innerHTML=rmkHtml+(fc.mef.areaForecasts||[]).map(a=>{
+  const rmkHtml=hasAmd&&rmk?'<div style="grid-column:1/-1;padding:8px 12px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:10px;color:var(--accent);text-align:center"><span style="font-weight:800;letter-spacing:1px;margin-right:6px">REMARKS:</span>'+esc(rmk)+'</div>':'';
+  g.innerHTML=(fc.mef.areaForecasts||[]).map(a=>{
     const txt=a.amendmentText||a.forecast||'',col=areaColor(txt);
     const ts=a.tsCoverage&&a.tsCoverage.toUpperCase()!=='NONE'?'<div><span class="ts-tag active">TS: '+esc(a.tsCoverage)+'</span></div>':'';
     const amd=a.amendmentNumber?'<span class="amd-badge">\u26A0 '+a.amendmentNumber+(a.amendmentTime?' '+a.amendmentTime:'')+'</span>':'';
     return'<div class="area-card"><div class="area-hdr"><span class="area-name" style="color:'+col+'">'+a.name+'</span>'+amd+'</div><div class="area-text">'+fmtArea(txt)+'</div>'+ts+'</div>';
-  }).join('');
+  }).join('')+rmkHtml;
 }
 function areaColor(t){
   if(!t)return'var(--text)';const s=t.split(/AFT\s+\d{4}Z:/)[0];
