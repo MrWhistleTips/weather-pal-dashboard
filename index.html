@@ -1259,8 +1259,8 @@ function rSD(){
     row+='</div></div>';return row;
   }).join('');
   // Temperature rows
-  let highRow='<div class="sd-row"><div class="sd-label" style="color:var(--nogo)">HIGH</div><div class="sd-groups">';
-  let lowRow='<div class="sd-row"><div class="sd-label" style="color:var(--mvfr)">LOW</div><div class="sd-groups">';
+  let highRow='<div class="sd-row"><div class="sd-label" style="color:#fff">HIGH</div><div class="sd-groups">';
+  let lowRow='<div class="sd-row"><div class="sd-label" style="color:#fff">LOW</div><div class="sd-groups">';
   (sd.highTemps||[]).forEach((t,i)=>{
     const p=ppd[i]||1;
     highRow+='<div class="sd-group" style="flex:'+p+'"><span class="sd-temp" style="color:#fff">'+t+'\u00B0</span></div>';
