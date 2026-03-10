@@ -566,7 +566,7 @@ let currentPeriod = 'AM';
 
 async function loadData() {
   try {
-    const resp = await fetch('data.json');
+    const resp = await fetch('data.json?t=' + Date.now());
     DATA = await resp.json();
     initTabs();
     render();
