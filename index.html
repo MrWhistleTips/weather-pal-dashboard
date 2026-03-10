@@ -673,7 +673,7 @@ function rArea(fc){
   g.innerHTML=(fc.mef.areaForecasts||[]).map(a=>{
     const txt=a.amendmentText||a.forecast||'',col=areaColor(txt);
     const ts=a.tsCoverage&&a.tsCoverage.toUpperCase()!=='NONE'?'<div><span class="ts-tag active">TS: '+esc(a.tsCoverage)+'</span></div>':'';
-    const amd=a.amendmentNumber?'<span class="amd-badge">\u26A0 AMD '+a.amendmentNumber+(a.amendmentTime?' '+a.amendmentTime:'')+'</span>':'';
+    const amd=a.amendmentNumber?'<span class="amd-badge">\u26A0 '+a.amendmentNumber+(a.amendmentTime?' '+a.amendmentTime:'')+'</span>':'';
     return'<div class="area-card"><div class="area-hdr"><span class="area-name" style="color:'+col+'">'+a.name+'</span>'+amd+'</div><div class="area-text">'+fmtArea(txt)+'</div>'+ts+'</div>';
   }).join('');
 }
