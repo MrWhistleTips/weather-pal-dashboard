@@ -434,7 +434,6 @@ body {
     </div>
     <div class="nav-center" id="navSolar"></div>
     <div class="nav-right">
-      <span class="nav-meta" id="lastUpdated"></span>
       <div class="tabs" id="periodTabs"></div>
     </div>
   </div>
@@ -852,7 +851,6 @@ function render(){
   const fc=DATA.forecasts.find(f=>f.type===currentPeriod);if(!fc)return;
   const exp=new Date(DATA.exportedAt);
   const expStr='EXPORTED '+exp.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false,timeZoneName:'short'}).toUpperCase();
-  document.getElementById('lastUpdated').textContent=expStr;
   document.getElementById('heroExported').textContent=expStr;
   rMEFHdr(fc);rTS(fc);rAdv(fc);rArea(fc);rAero(fc);rMETAR(fc);rKW(fc);rHaz(fc);rFWBHdr(fc);rEn(fc);rSp(fc);rW(fc);rSol(fc);rTO(fc);rSD();
   document.getElementById('footerText').textContent='Data exported from My Weather Pal \u00B7 '+exp.toLocaleString();
