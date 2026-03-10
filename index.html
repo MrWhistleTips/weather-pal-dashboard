@@ -541,9 +541,8 @@ body {
     <!-- METAR -->
     <div class="card drag-section" data-section="metar" draggable="true">
       <div class="card-hdr" onclick="tog('metarBody')">
-        <span>METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
+        <span style="display:flex;align-items:center;gap:8px"><span id="metarCat"></span> METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
         <span style="display:flex;align-items:center;gap:8px">
-          <span id="metarCat"></span>
           <span class="ci" id="metarBody-icon">&#x25BC;</span>
         </span>
       </div>
@@ -957,7 +956,7 @@ function rMETAR(fc){
   document.getElementById('metarEmojis').innerHTML=em?'<span style="font-size:14px">'+em+'</span>':'';
   // Full cloud layers
   const skyStr=m.clouds&&m.clouds.length?m.clouds.map(l=>l.cover+(l.base!=null?String(Math.round(l.base/100)).padStart(3,'0'):'')).join(' '):'CLR';
-  b.innerHTML=(m.rawOb?'<div class="metar-raw">'+esc(m.rawOb)+'</div>':'')+
+  b.innerHTML=(m.rawOb?'<div class="metar-raw" style="color:'+fcColor(fcat)+';border-left-color:'+fcColor(fcat)+'">'+esc(m.rawOb)+'</div>':'')+
     '<div class="metar-grid">'+di('Wind',w)+di('Vis',v+' SM')+di('Ceil',ceil)+di('Sky',skyStr)+di('Temp',t)+di('Dewpt',d)+di('Altim',alt)+(m.wxString?di('Wx',m.wxString+' '+em):'')+'</div>';
 }
 function ceilFromClouds(cl){let c=null;cl.forEach(l=>{if((l.cover==='BKN'||l.cover==='OVC')&&l.base!=null){if(c===null||l.base<c)c=l.base}});return c!=null?c.toLocaleString()+' ft':'CLR'}
