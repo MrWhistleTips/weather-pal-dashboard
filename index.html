@@ -390,6 +390,17 @@ body {
 .thr-tbl td { padding: 4px 8px; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.02); }
 .thr-toggle { font-size: 11px; color: var(--accent); cursor: pointer; margin-top: 6px; letter-spacing: 1px; font-weight: 600; }
 
+/* ── DRAG & DROP ── */
+.drag-section { transition: opacity 0.2s, transform 0.2s; }
+.drag-section .card-hdr { cursor: grab; }
+.drag-section.dragging { opacity: 0.4; transform: scale(0.98); }
+.drag-section.drag-over-top { border-top: 2px solid var(--accent) !important; }
+.drag-section.drag-over-bottom { border-bottom: 2px solid var(--accent) !important; }
+.drag-handle { font-size: 12px; color: var(--text-dim); opacity: 0.4; margin-right: 6px; cursor: grab; letter-spacing: 2px; }
+.drag-section:hover .drag-handle { opacity: 0.8; }
+.reset-layout { font-size: 10px; color: var(--text-dim); cursor: pointer; letter-spacing: 1px; text-transform: uppercase; opacity: 0.5; transition: opacity 0.2s; }
+.reset-layout:hover { opacity: 1; color: var(--accent); }
+
 /* ── FOOTER ── */
 .footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
 .footer-line { width: 40px; height: 2px; background: var(--accent); margin: 0 auto 8px; border-radius: 1px; }
@@ -444,7 +455,7 @@ body {
   <div class="hero-left">
 
     <!-- Takeoff Data -->
-    <div class="card" id="toCard" style="display:none">
+    <div class="card drag-section" id="toCard" data-section="takeoff" draggable="true" style="display:none">
       <div class="card-hdr" onclick="tog('toBody')">
         <span>Takeoff Data (KOZR)</span>
         <span style="display:flex;align-items:center;gap:6px">
@@ -455,10 +466,10 @@ body {
     </div>
 
     <!-- MEF Header -->
-    <div id="mefHdrCard" style="display:none"></div>
+    <div class="drag-section" id="mefHdrCard" data-section="mef-hdr" draggable="true" style="display:none"></div>
 
     <!-- Training Status + Key Weather / Winds side by side -->
-    <div class="ts-sd-row">
+    <div class="ts-sd-row drag-section" data-section="ts-row" draggable="true">
       <!-- Training Status -->
       <div class="card gold-top ts-card-narrow">
         <div class="card-hdr" onclick="tog('tsBody')">
@@ -496,10 +507,10 @@ body {
     </div>
 
     <!-- Advisories -->
-    <div id="advCard" style="display:none"></div>
+    <div class="drag-section" id="advCard" data-section="advisories" draggable="true" style="display:none"></div>
 
     <!-- Area Forecasts -->
-    <div class="card">
+    <div class="card drag-section" data-section="area" draggable="true">
       <div class="card-hdr" onclick="tog('areaBody')">
         <span>Area Forecasts <span style="font-size:9px;font-weight:600;color:var(--text-dim);letter-spacing:0.5px;margin-left:8px">Area Forecasts Are Time Aware And Adjust Status Based On Current Time</span></span>
         <span style="display:flex;align-items:center;gap:8px">
@@ -511,7 +522,7 @@ body {
     </div>
 
     <!-- Aerodrome Forecasts -->
-    <div class="card" id="aeroCard" style="display:none">
+    <div class="card drag-section" id="aeroCard" data-section="aero" draggable="true" style="display:none">
       <div class="card-hdr" onclick="tog('aeroBody')">
         <span>Aerodrome Forecasts</span>
         <span class="ci" id="aeroBody-icon">&#x25BC;</span>
@@ -523,7 +534,7 @@ body {
     </div>
 
     <!-- METAR -->
-    <div class="card">
+    <div class="card drag-section" data-section="metar" draggable="true">
       <div class="card-hdr" onclick="tog('metarBody')">
         <span>METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
         <span style="display:flex;align-items:center;gap:8px">
@@ -538,7 +549,7 @@ body {
     </div>
 
     <!-- 7-Day Outlook + Hazards side by side -->
-    <div class="two-col">
+    <div class="two-col drag-section" data-section="sd-haz" draggable="true">
       <div class="card" id="sdCard" style="display:none">
         <div class="card-hdr" onclick="tog('sdBody')">
           <span>7-Day Outlook</span>
@@ -626,6 +637,7 @@ body {
 <div class="footer">
   <div class="footer-line"></div>
   <div id="footerText">Data exported from My Weather Pal</div>
+  <div class="reset-layout" onclick="resetLayout()">Reset Card Layout</div>
 </div>
 
 <script>
@@ -1293,6 +1305,88 @@ function rSD(){
     '<div class="thr-toggle" onclick="togThr(\''+tid+'\',this)">\u25B6 THRESHOLDS</div><div id="'+tid+'" style="display:none"><table class="thr-tbl"><thead><tr><th></th><th style="color:var(--go)">GO</th><th style="color:var(--accent)">MARG</th><th style="color:var(--nogo)">NO GO</th></tr></thead><tbody><tr><td>CIG/VIS</td><td>\u22651000\'/3SM</td><td>700\'/2SM</td><td>\u2264500\'/1SM</td></tr><tr><td>WIND</td><td>&lt;20KT</td><td>20-29KT</td><td>\u226530KT</td></tr><tr><td>TURB</td><td>NONE</td><td>LGT</td><td>\u2265MDT</td></tr><tr><td>ICE</td><td>NONE</td><td>4\u00B0/MOIST</td><td>0\u00B0/MOIST</td></tr><tr><td>TS</td><td>&lt;30KT</td><td>30-44KT</td><td>\u226545KT</td></tr><tr><td>UAS</td><td>&lt;10KT</td><td>10KT</td><td>&gt;10KT</td></tr></tbody></table></div>';
 }
 function togThr(id,el){const d=document.getElementById(id);if(!d)return;const v=d.style.display!=='none';d.style.display=v?'none':'block';el.textContent=(v?'\u25B6':'\u25BC')+' THRESHOLDS'}
+
+/* ── DRAG & DROP REORDER ── */
+(function(){
+  const container=()=>document.querySelector('.hero-left');
+  let dragEl=null;
+
+  function sections(){return[...container().querySelectorAll(':scope > .drag-section')]}
+
+  function applyOrder(){
+    const saved=JSON.parse(localStorage.getItem('cardOrder')||'null');
+    if(!saved||!saved.length)return;
+    const c=container();
+    const els={};sections().forEach(el=>{els[el.dataset.section]=el});
+    // Append in saved order, then append any new sections not in saved order
+    saved.forEach(id=>{if(els[id])c.appendChild(els[id])});
+    sections().forEach(el=>{if(!saved.includes(el.dataset.section))c.appendChild(el)});
+  }
+
+  function saveOrder(){
+    const order=sections().map(el=>el.dataset.section);
+    localStorage.setItem('cardOrder',JSON.stringify(order));
+  }
+
+  function getDragAfter(y){
+    const els=sections().filter(el=>el!==dragEl);
+    let closest=null,closestOff=Number.NEGATIVE_INFINITY;
+    els.forEach(el=>{
+      const box=el.getBoundingClientRect();
+      const off=y-box.top-box.height/2;
+      if(off<0&&off>closestOff){closestOff=off;closest=el}
+    });
+    return closest;
+  }
+
+  document.addEventListener('dragstart',e=>{
+    const sec=e.target.closest('.drag-section');
+    if(!sec)return;
+    dragEl=sec;
+    sec.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain',sec.dataset.section);
+  });
+
+  document.addEventListener('dragend',e=>{
+    if(dragEl)dragEl.classList.remove('dragging');
+    dragEl=null;
+    sections().forEach(el=>{el.classList.remove('drag-over-top','drag-over-bottom')});
+  });
+
+  document.addEventListener('dragover',e=>{
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+    const c=container();
+    if(!c.contains(e.target))return;
+    sections().forEach(el=>el.classList.remove('drag-over-top','drag-over-bottom'));
+    const after=getDragAfter(e.clientY);
+    if(after){after.classList.add('drag-over-top')}
+    else{const all=sections();if(all.length)all[all.length-1].classList.add('drag-over-bottom')}
+  });
+
+  document.addEventListener('drop',e=>{
+    e.preventDefault();
+    if(!dragEl)return;
+    const c=container();
+    const after=getDragAfter(e.clientY);
+    if(after){c.insertBefore(dragEl,after)}
+    else{c.appendChild(dragEl)}
+    dragEl.classList.remove('dragging');
+    sections().forEach(el=>el.classList.remove('drag-over-top','drag-over-bottom'));
+    saveOrder();
+    dragEl=null;
+  });
+
+  // Apply saved order after DOM ready
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',applyOrder)}
+  else{applyOrder()}
+})();
+
+function resetLayout(){
+  localStorage.removeItem('cardOrder');
+  location.reload();
+}
 
 loadData();
 setInterval(()=>{if(DATA)render()},300000);
