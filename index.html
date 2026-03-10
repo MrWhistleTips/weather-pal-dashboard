@@ -618,17 +618,6 @@ body {
     <div class="cbd" id="spBody"><div id="spGrid"></div></div>
   </div>
 
-  <!-- Solar / Lunar -->
-  <div class="card" id="solCard" style="display:none">
-    <div class="card-hdr" onclick="tog('solBody')">
-      <span>Solar / Lunar</span>
-      <span style="display:flex;align-items:center;gap:6px">
-        <span id="solSum"></span>
-        <span class="ci" id="solBody-icon">&#x25BC;</span>
-      </span>
-    </div>
-    <div class="cbd" id="solBody"><div id="solGrid"></div></div>
-  </div>
 
 
 
@@ -1138,15 +1127,10 @@ function rW(fc){
 
 /* ── SOLAR/LUNAR ── */
 function rSol(fc){
-  const c=document.getElementById('solCard'),g=document.getElementById('solGrid'),se=document.getElementById('solSum'),ns=document.getElementById('navSolar'),sl=fc.mef?.solarLunar||fc.flightBriefing?.enrouteData?.solarLunar;
-  if(!sl){c.style.display='none';ns.innerHTML='';return}c.style.display='block';
+  const ns=document.getElementById('navSolar'),sl=fc.mef?.solarLunar||fc.flightBriefing?.enrouteData?.solarLunar;
+  if(!sl){ns.innerHTML='';return}
   const items=[{l:'BMNT',v:sl.bmnt},{l:'BMCT',v:sl.bmct},{l:'Sunrise',v:sl.sunrise},{l:'Sunset',v:sl.sunset},{l:'EECT',v:sl.eect},{l:'EENT',v:sl.eent},{l:'Moonrise',v:sl.moonrise},{l:'Moonset',v:sl.moonset},{l:'Illum',v:sl.illumination}].filter(i=>i.v);
-  const itemsE=[{i:'\uD83C\uDF05',l:'BMNT',v:sl.bmnt},{i:'\uD83C\uDF05',l:'BMCT',v:sl.bmct},{i:'\u2600\uFE0F',l:'Sunrise',v:sl.sunrise},{i:'\uD83C\uDF07',l:'Sunset',v:sl.sunset},{i:'\uD83C\uDF07',l:'EECT',v:sl.eect},{i:'\uD83C\uDF07',l:'EENT',v:sl.eent},{i:'\uD83C\uDF19',l:'Moonrise',v:sl.moonrise},{i:'\uD83C\uDF19',l:'Moonset',v:sl.moonset},{i:'\uD83C\uDF15',l:'Illum',v:sl.illumination}].filter(i=>i.v);
-  se.innerHTML=sl.sunrise&&sl.sunset?'<span style="font-size:9px;color:var(--text-dim)">\u2600\uFE0F '+sl.sunrise+' \u00A0\uD83C\uDF07 '+sl.sunset+'</span>':'';
-  // Navbar solar (no emojis)
   ns.innerHTML=items.map(i=>'<span class="sol-pair"><span class="sol-pl">'+i.l+'</span><span class="sol-pv">'+i.v+'</span></span>').join('');
-  // Card solar (with emojis)
-  g.innerHTML='<div class="sol-compact">'+itemsE.map(i=>'<span class="sol-it"><span class="sol-ic">'+i.i+'</span><span class="sol-l">'+i.l+'</span><span class="sol-v">'+i.v+'</span></span>').join('')+'</div>';
 }
 
 /* ── TAKEOFF DATA ── */
