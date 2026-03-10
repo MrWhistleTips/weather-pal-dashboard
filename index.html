@@ -1355,8 +1355,30 @@ function resetLayout(){
   location.reload();
 }
 
+async function fetchMETAR(){
+  try{
+    const r=await fetch('https://aviationweather.gov/api/data/metar?ids=KOZR&format=json&taf=false');
+    const d=await r.json();
+    if(d&&d.length){
+      const m=d[0];
+      DATA.metar={
+        icaoId:m.icaoId||'KOZR',name:m.name||'Ozark/Cairns AAF, AL, US',
+        rawOb:m.rawOb||'',reportTime:m.reportTime||'',
+        temp:m.temp,dewp:m.dewp,wdir:m.wdir,wspd:m.wspd,wgst:m.wgst||null,
+        visib:m.visib!=null?String(m.visib):'--',
+        altim:m.altim,slp:m.slp,fltCat:m.fltCat||'VFR',
+        cover:m.cover||'CLR',metarType:m.metarType||'METAR',
+        wxString:m.wxString||null,
+        clouds:(m.clouds||[]).map(c=>({cover:c.cover,base:c.base}))
+      };
+      render();
+    }
+  }catch(e){console.log('METAR fetch error:',e)}
+}
+
 loadData();
-setInterval(()=>{loadData()},300000);
+setInterval(()=>{loadData().then(()=>fetchMETAR())},300000);
+setTimeout(()=>{if(DATA)fetchMETAR()},3000);
 </script>
 </body>
 </html>
