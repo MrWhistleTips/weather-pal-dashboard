@@ -704,7 +704,25 @@ function parseSegments(forecastText){
   return segs;
 }
 
-function getActiveSegIndex(segs){
+function parseValidPeriodZ(vp){
+  // Parse "AM 1200Z-1800Z" or "N1 0030Z-0730Z" → {start, end} in minutes
+  if(!vp)return null;
+  const m=vp.match(/(\d{2})(\d{2})Z\s*-\s*(\d{2})(\d{2})Z/);
+  if(!m)return null;
+  return{start:parseInt(m[1])*60+parseInt(m[2]),end:parseInt(m[3])*60+parseInt(m[4])};
+}
+
+function isWithinValidPeriod(vp){
+  const p=parseValidPeriodZ(vp);
+  if(!p)return true; // no valid period info, assume current
+  const now=currentZuluMinutes();
+  if(p.start<=p.end) return now>=p.start&&now<=p.end;
+  // Wraps midnight (e.g. 0030Z-0730Z means start>end won't happen, but 2300Z-0600Z would)
+  return now>=p.start||now<=p.end;
+}
+
+function getActiveSegIndex(segs,validPeriod){
+  if(validPeriod&&!isWithinValidPeriod(validPeriod))return 0;
   const now=currentZuluMinutes();
   let active=0;
   for(let i=segs.length-1;i>0;i--){
@@ -713,10 +731,10 @@ function getActiveSegIndex(segs){
   return active;
 }
 
-function getActiveSegmentCeilVis(forecastText){
+function getActiveSegmentCeilVis(forecastText,validPeriod){
   // Get ceiling and visibility from the currently active segment
   const segs=parseSegments(forecastText);
-  const ai=getActiveSegIndex(segs);
+  const ai=getActiveSegIndex(segs,validPeriod);
   const s=segs[ai].text;
   // Strip ISOLD/TEMPO from the segment
   const clean=s.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|AFT|$))/gi,'');
@@ -733,24 +751,24 @@ function getActiveSegmentCeilVis(forecastText){
   return{ceil:c,vis:v};
 }
 
-function activeAreaColor(forecastText){
-  const cv=getActiveSegmentCeilVis(forecastText);
+function activeAreaColor(forecastText,validPeriod){
+  const cv=getActiveSegmentCeilVis(forecastText,validPeriod);
   if(cv.ceil<500||cv.vis<1)return'var(--lifr)';
   if(cv.ceil<1000||cv.vis<3)return'var(--ifr)';
   if(cv.ceil<=3000||cv.vis<=5)return'var(--mvfr)';
   return'var(--vfr)';
 }
 
-function activeAreaFC(forecastText){
-  const cv=getActiveSegmentCeilVis(forecastText);
+function activeAreaFC(forecastText,validPeriod){
+  const cv=getActiveSegmentCeilVis(forecastText,validPeriod);
   if(cv.ceil<500||cv.vis<1)return'LIFR';
   if(cv.ceil<1000||cv.vis<3)return'IFR';
   if(cv.ceil<=3000||cv.vis<=5)return'MVFR';
   return'VFR';
 }
 
-function areaIsGo(forecastText){
-  const cv=getActiveSegmentCeilVis(forecastText);
+function areaIsGo(forecastText,validPeriod){
+  const cv=getActiveSegmentCeilVis(forecastText,validPeriod);
   return cv.ceil>=700&&cv.vis>=1;
 }
 
@@ -872,9 +890,10 @@ function rTS(fc){
   const m=DATA.metar,advs=fc.mef?.weatherAdvisories||[];
   const areas=fc.mef?.areaForecasts||[];
   // Build area color map using active segment
+  const vp=fc.mef?.validPeriod||'';
   const areaMap={};areas.forEach(a=>{
     const txt=a.amendmentText||a.forecast||'';
-    areaMap[a.name.toUpperCase()]=activeAreaColor(txt);
+    areaMap[a.name.toUpperCase()]=activeAreaColor(txt,vp);
   });
   // Time-aware active advisory filtering (match iOS app)
   const nowMin=currentZuluMinutes();
@@ -995,11 +1014,12 @@ function rArea(fc){
   }
   const rmk=fc.mef.remarks;
   const rmkHtml=rmk?'<div style="grid-column:1/-1;padding:10px 14px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:12px;color:var(--accent);text-align:center"><span style="font-weight:800;letter-spacing:1px;margin-right:6px">REMARKS:</span>'+esc(rmk)+'</div>':'';
+  const vpStr=fc.mef.validPeriod||'';
   g.innerHTML=(fc.mef.areaForecasts||[]).map(a=>{
     const txt=a.amendmentText||a.forecast||'';
-    const col=activeAreaColor(txt);
+    const col=activeAreaColor(txt,vpStr);
     // Per-area GO/NO-GO from active segment
-    const go=areaIsGo(txt);
+    const go=areaIsGo(txt,vpStr);
     const goB='<span class="'+(go?'badge go':'badge nogo')+'" style="font-size:10px;padding:2px 8px">'+(go?'GO':'NO-GO')+'</span>';
     // TS coverage with percentage
     const tsCov=a.tsCoverage&&a.tsCoverage.toUpperCase()!=='NONE'?'<div><span class="ts-tag active">TS: '+tsCovPct(a.tsCoverage)+'</span></div>':'';
@@ -1011,7 +1031,7 @@ function rArea(fc){
       const c2=tsInfoCol(sf.info);
       return'<span style="color:'+c2+';margin-right:8px">'+ic+sf.name+'</span>';
     }).join('')+'</div>':'';
-    return'<div class="area-card"><div class="area-hdr"><span class="area-name" style="color:'+col+'">'+a.name+'</span><span style="display:flex;align-items:center;gap:6px">'+amd+goB+'</span></div>'+infoHtml+'<div class="area-text">'+fmtArea(txt)+'</div>'+tsCov+'</div>';
+    return'<div class="area-card"><div class="area-hdr"><span class="area-name" style="color:'+col+'">'+a.name+'</span><span style="display:flex;align-items:center;gap:6px">'+amd+goB+'</span></div>'+infoHtml+'<div class="area-text">'+fmtArea(txt,vpStr)+'</div>'+tsCov+'</div>';
   }).join('')+rmkHtml;
 }
 
@@ -1025,12 +1045,12 @@ function segFC(s){
   if(/P6SM/i.test(m))v=7;
   if(c<500||v<1)return'var(--lifr)';if(c<1000||v<3)return'var(--ifr)';if(c<=3000||v<=5)return'var(--mvfr)';return'var(--vfr)';
 }
-function fmtArea(t){
+function fmtArea(t,validPeriod){
   if(!t)return'';
   var raw=esc(t),segs=raw.split(/(AFT\s+\d{4}Z:)/),html='';
   // Determine active segment index for highlighting
   var parsedSegs=parseSegments(t);
-  var activeIdx=getActiveSegIndex(parsedSegs);
+  var activeIdx=getActiveSegIndex(parsedSegs,validPeriod);
   var segCount=0;
   for(var i=0;i<segs.length;i++){
     var s=segs[i];if(!s.trim())continue;
