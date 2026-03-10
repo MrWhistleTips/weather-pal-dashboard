@@ -70,8 +70,16 @@ body {
   color: var(--accent);
 }
 .header-logo {
-  font-size: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
   filter: drop-shadow(0 0 8px rgba(229,214,51,0.3));
+  animation: mascotFloat 4s ease-in-out infinite;
+}
+@keyframes mascotFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 .header-right {
   display: flex;
@@ -664,7 +672,7 @@ body {
 <div class="header">
   <div class="header-inner">
     <div class="header-title">
-      <span class="header-logo">&#x1F681;</span>
+      <img src="angrycloud.png" alt="Weather Pal" class="header-logo">
       <h1>Fort Novosel Training Status</h1>
     </div>
     <div class="header-right">
@@ -834,6 +842,7 @@ body {
 
 <div class="footer">
   <div class="footer-line"></div>
+  <img src="angrycloud.png" alt="Weather Pal" style="width:48px;height:48px;border-radius:50%;margin-bottom:8px;opacity:0.6">
   <div id="footerText">Data exported from My Weather Pal</div>
 </div>
 
