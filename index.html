@@ -442,7 +442,6 @@ body {
       <div class="card-hdr" onclick="tog('toBody')">
         <span>Takeoff Data (KOZR)</span>
         <span style="display:flex;align-items:center;gap:6px">
-          <span id="fogBadge"></span>
           <span class="ci" id="toBody-icon">&#x25BC;</span>
         </span>
       </div>
@@ -1128,15 +1127,16 @@ function rSol(fc){
 
 /* ── TAKEOFF DATA ── */
 function rTO(fc){
-  const c=document.getElementById('toCard'),b=document.getElementById('toBody'),fb=document.getElementById('fogBadge'),td=fc.flightBriefing?.takeoffData;
-  if(!td){c.style.display='none';fb.innerHTML='';return}c.style.display='block';
+  const c=document.getElementById('toCard'),b=document.getElementById('toBody'),td=fc.flightBriefing?.takeoffData;
+  if(!td){c.style.display='none';return}c.style.display='block';
   const rt=parseFloat(td.runwayTemp),dp=parseFloat(td.dewpoint),fog=!isNaN(rt)&&!isNaN(dp)&&(rt-dp)<=2;
-  fb.innerHTML=fog?'<span class="fog-badge">POSSIBLE FOG</span>':'';
-  function ti(l,v){return'<span class="to-item"><span class="to-lbl">'+l+'</span><span class="to-val">'+v+'</span></span>'}
-  const main=[{l:'Rwy',v:td.runwayTemp?td.runwayTemp+'\u00B0C':null},{l:'Dew',v:td.dewpoint?td.dewpoint+'\u00B0C':null},{l:'Dev',v:td.tempDeviation?td.tempDeviation+'\u00B0C':null},{l:'PA',v:td.pressureAlt?td.pressureAlt+'ft':null},{l:'DA',v:td.densityAlt?td.densityAlt+'ft':null},{l:'Wind',v:td.surfaceWind}].filter(i=>i.v);
+  const fc2=fog?'color:var(--mvfr)':'';
+  function ti(l,v,s){return'<span class="to-item"><span class="to-lbl">'+l+'</span><span class="to-val"'+(s?' style="'+s+'"':'')+'>'+v+'</span></span>'}
+  const main=[{l:'Rwy',v:td.runwayTemp?td.runwayTemp+'\u00B0C':null,s:fc2},{l:'Dew',v:td.dewpoint?td.dewpoint+'\u00B0C':null,s:fc2},{l:'Dev',v:td.tempDeviation?td.tempDeviation+'\u00B0C':null},{l:'PA',v:td.pressureAlt?td.pressureAlt+'ft':null},{l:'DA',v:td.densityAlt?td.densityAlt+'ft':null},{l:'Wind',v:td.surfaceWind}].filter(i=>i.v);
   const max=[{l:'Max Tmp',v:td.maxTemp?td.maxTemp+'\u00B0C':null},{l:'Max PA',v:td.maxPA?td.maxPA+'ft':null},{l:'Max DA',v:td.maxDA?td.maxDA+'ft':null}].filter(i=>i.v);
-  let h='<div class="to-compact">'+main.map(i=>ti(i.l,i.v)).join('');
+  let h='<div class="to-compact">'+main.map(i=>ti(i.l,i.v,i.s)).join('');
   if(max.length)h+='<span class="to-max-lbl">\u2502</span>'+max.map(i=>ti(i.l,i.v)).join('');
+  if(fog)h+='<span class="fog-badge" style="margin-left:auto">POSSIBLE FOG</span>';
   h+='</div>';
   b.innerHTML=h;
 }
