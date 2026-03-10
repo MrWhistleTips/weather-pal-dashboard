@@ -541,9 +541,8 @@ body {
     <!-- METAR -->
     <div class="card drag-section" data-section="metar" draggable="true">
       <div class="card-hdr" onclick="tog('metarBody')">
-        <span>METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
+        <span style="display:flex;align-items:center;gap:8px"><span id="metarCat"></span> METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
         <span style="display:flex;align-items:center;gap:8px">
-          <span id="metarCat"></span>
           <span class="ci" id="metarBody-icon">&#x25BC;</span>
         </span>
       </div>
@@ -599,6 +598,8 @@ body {
     <div class="mascot-go-label">STATIONS GO</div>
     <a href="https://www.army.mil/rucker#org-weather" target="_blank" rel="noopener" style="margin-top:16px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);text-decoration:none;padding:6px 16px;border:1px solid var(--accent-border);border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='var(--accent-dim)'" onmouseout="this.style.background='transparent'">RUCKER WEATHER</a>
     <div id="heroExported" style="margin-top:10px;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase"></div>
+    <div id="liveClock" style="margin-top:12px;font-size:36px;font-weight:800;font-family:'Courier New',monospace;letter-spacing:4px;color:var(--text)"></div>
+    <div id="liveClockLabel" style="font-size:10px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-top:2px">LOCAL / ZULU</div>
   </div>
 </div>
 
@@ -957,7 +958,7 @@ function rMETAR(fc){
   document.getElementById('metarEmojis').innerHTML=em?'<span style="font-size:14px">'+em+'</span>':'';
   // Full cloud layers
   const skyStr=m.clouds&&m.clouds.length?m.clouds.map(l=>l.cover+(l.base!=null?String(Math.round(l.base/100)).padStart(3,'0'):'')).join(' '):'CLR';
-  b.innerHTML=(m.rawOb?'<div class="metar-raw">'+esc(m.rawOb)+'</div>':'')+
+  b.innerHTML=(m.rawOb?'<div class="metar-raw" style="color:'+fcColor(fcat)+';border-left-color:'+fcColor(fcat)+'">'+esc(m.rawOb)+'</div>':'')+
     '<div class="metar-grid">'+di('Wind',w)+di('Vis',v+' SM')+di('Ceil',ceil)+di('Sky',skyStr)+di('Temp',t)+di('Dewpt',d)+di('Altim',alt)+(m.wxString?di('Wx',m.wxString+' '+em):'')+'</div>';
 }
 function ceilFromClouds(cl){let c=null;cl.forEach(l=>{if((l.cover==='BKN'||l.cover==='OVC')&&l.base!=null){if(c===null||l.base<c)c=l.base}});return c!=null?c.toLocaleString()+' ft':'CLR'}
@@ -1377,6 +1378,16 @@ async function fetchMETAR(){
 loadData();
 setInterval(()=>{loadData().then(()=>fetchMETAR())},300000);
 setTimeout(()=>{if(DATA)fetchMETAR()},3000);
+
+// Live military clock
+function updateClock(){
+  const now=new Date();
+  const L=String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
+  const Z=String(now.getUTCHours()).padStart(2,'0')+String(now.getUTCMinutes()).padStart(2,'0');
+  document.getElementById('liveClock').textContent=L+'L / '+Z+'Z';
+}
+updateClock();
+setInterval(updateClock,1000);
 </script>
 </body>
 </html>
