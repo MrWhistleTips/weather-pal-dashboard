@@ -562,6 +562,7 @@ body {
     <div class="mascot-go-count" id="heroGoCount"></div>
     <div class="mascot-go-label">STATIONS GO</div>
     <a href="https://www.army.mil/rucker#org-weather" target="_blank" rel="noopener" style="margin-top:16px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);text-decoration:none;padding:6px 16px;border:1px solid var(--accent-border);border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='var(--accent-dim)'" onmouseout="this.style.background='transparent'">RUCKER WEATHER</a>
+    <div id="heroExported" style="margin-top:10px;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase"></div>
   </div>
 </div>
 
@@ -850,7 +851,9 @@ function render(){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent===currentPeriod));
   const fc=DATA.forecasts.find(f=>f.type===currentPeriod);if(!fc)return;
   const exp=new Date(DATA.exportedAt);
-  document.getElementById('lastUpdated').textContent='EXPORTED '+exp.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false,timeZoneName:'short'}).toUpperCase();
+  const expStr='EXPORTED '+exp.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false,timeZoneName:'short'}).toUpperCase();
+  document.getElementById('lastUpdated').textContent=expStr;
+  document.getElementById('heroExported').textContent=expStr;
   rMEFHdr(fc);rTS(fc);rAdv(fc);rArea(fc);rAero(fc);rMETAR(fc);rKW(fc);rHaz(fc);rFWBHdr(fc);rEn(fc);rSp(fc);rW(fc);rSol(fc);rTO(fc);rSD();
   document.getElementById('footerText').textContent='Data exported from My Weather Pal \u00B7 '+exp.toLocaleString();
 }
