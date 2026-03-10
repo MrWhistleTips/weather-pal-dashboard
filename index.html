@@ -522,6 +522,18 @@ body {
     <div class="mascot-go-count" id="heroGoCount"></div>
     <div class="mascot-go-label">STATIONS GO</div>
     <a href="https://www.army.mil/rucker#org-weather" target="_blank" rel="noopener" style="margin-top:16px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);text-decoration:none;padding:6px 16px;border:1px solid var(--accent-border);border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='var(--accent-dim)'" onmouseout="this.style.background='transparent'">RUCKER WEATHER</a>
+
+    <!-- 7-Day Outlook -->
+    <div class="card" id="sdCard" style="display:none;margin-top:20px;width:100%">
+      <div class="card-hdr" onclick="tog('sdBody')">
+        <span>7-Day Outlook</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span id="sdTitle"></span>
+          <span class="ci" id="sdBody-icon">&#x25BC;</span>
+        </span>
+      </div>
+      <div class="cbd" id="sdBody"><div class="sd-grid" id="sdGrid"></div></div>
+    </div>
   </div>
 </div>
 
@@ -591,17 +603,7 @@ body {
     <div class="cbd" id="toBody"></div>
   </div>
 
-  <!-- 7-Day Outlook -->
-  <div class="card" id="sdCard" style="display:none">
-    <div class="card-hdr" onclick="tog('sdBody')">
-      <span>7-Day Outlook</span>
-      <span style="display:flex;align-items:center;gap:6px">
-        <span id="sdTitle"></span>
-        <span class="ci" id="sdBody-icon">&#x25BC;</span>
-      </span>
-    </div>
-    <div class="cbd" id="sdBody"><div class="sd-grid" id="sdGrid"></div></div>
-  </div>
+
 </div>
 
 <div class="footer">
