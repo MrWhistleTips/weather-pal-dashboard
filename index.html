@@ -900,7 +900,7 @@ function rTS(fc){
     const infoC=tsInfoCol(s.i);
     const icon=tsIcon(s.i);
     // Area name colored by flight category (muted) + training info on same line
-    const areaLine=s.c?'':'<div style="font-size:11px;margin-top:1px"><span style="color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">'+s.a+'</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>';
+    const areaLine=s.c?'':'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">'+s.a+'</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>';
     // Cairns info line
     const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px;color:'+infoC+'">'+icon+esc(s.i)+'</div>':'';
     // Landing info
