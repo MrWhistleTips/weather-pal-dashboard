@@ -685,7 +685,8 @@ function areaColor(t){
   if(/P6SM/i.test(s))v=7;
   if(c<500||v<1)return'var(--lifr)';if(c<1000||v<3)return'var(--ifr)';if(c<=3000||v<=5)return'var(--mvfr)';return'var(--vfr)';
 }
-function fmtArea(t){if(!t)return'';let f=esc(t);f=f.replace(/(AFT\s+\d{4}Z:)/g,'<br><strong style="color:var(--accent)">$1</strong>');f=f.replace(/(ISOLD?\s+\d{4}-\d{4}Z:.*?)(?=(?:AFT|$))/g,'<span class="dim">$1</span>');f=f.replace(/(TEMPO\s+\d{4}-\d{4}Z:.*?)(?=(?:AFT|$))/g,'<span class="dim">$1</span>');return f}
+function segFC(s){var m=s.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|$))/gi,'');var c=99999,v=99;var ch=m.match(/(OVC|BKN)(\d{3})/);var vh=m.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);if(ch)c=parseInt(ch[2])*100;if(vh){var vs=vh[1];if(vs.includes('/')){var p=vs.trim().split(/\s+/);if(p.length===2){var f2=p[1].split('/');v=parseInt(p[0])+parseInt(f2[0])/parseInt(f2[1])}else{var f3=vs.split('/');v=parseInt(f3[0])/parseInt(f3[1])}}else v=parseFloat(vs)||99}if(/P6SM/i.test(m))v=7;if(c<500||v<1)return'var(--lifr)';if(c<1000||v<3)return'var(--ifr)';if(c<=3000||v<=5)return'var(--mvfr)';return'var(--vfr)'}
+function fmtArea(t){if(!t)return'';var raw=esc(t),segs=raw.split(/(AFT\s+\d{4}Z:)/),html='';for(var i=0;i<segs.length;i++){var s=segs[i];if(!s.trim())continue;if(/^AFT\s+\d{4}Z:/.test(s.trim())){html+='<br><strong style="color:var(--accent)">$1</strong>'.replace('$1',s);continue}var col=segFC(s);var f=s.replace(/((?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?)(?=(?:ISOLD|TEMPO|$))/g,'<span class="dim">$1</span>');html+='<span style="color:'+col+'">'+f+'</span>'}return html}
 
 function rHaz(fc){
   const g=document.getElementById('hazGrid'),be=document.getElementById('hazBadge'),h=fc.mef?.flightHazards;
