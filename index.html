@@ -1123,6 +1123,11 @@ function soloInfoCalc(forecastText){
   return curGo?{go:true,label:'Solo OK'}:{go:false,label:'No Solo'};
 }
 function rSolo(fc){
+  const soloCard=document.querySelector('[data-section="solo"]');
+  // No solo at night
+  const vp=(fc.mef?.validPeriod||'').toUpperCase();
+  if(vp.startsWith('N')){soloCard.style.display='none';return}
+  soloCard.style.display='';
   const g=document.getElementById('soloGrid');
   const wb=document.getElementById('soloWindBar');
   const wwa=document.getElementById('soloWwaBar');
