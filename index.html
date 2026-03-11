@@ -221,6 +221,8 @@ body {
 }
 .badge.go { background: var(--go-bg); color: #fff; border: 1px solid rgba(64,191,64,0.7); }
 .badge.nogo { background: var(--nogo-bg); color: #fff; border: 1px solid rgba(217,38,38,0.7); }
+.badge.solo { background: rgba(45,212,191,0.5); color: #fff; border: 1px solid rgba(45,212,191,0.7); }
+.badge.nosolo { background: rgba(249,115,22,0.5); color: #fff; border: 1px solid rgba(249,115,22,0.7); }
 .badge.unknown { background: rgba(255,255,255,0.05); color: var(--text-dim); }
 .ts-legend {
   display: flex; justify-content: space-between; align-items: center;
@@ -505,6 +507,22 @@ body {
           </div>
           <div class="cbd" id="wBody"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- Solo Operations -->
+    <div class="card drag-section" data-section="solo" draggable="true" style="border-top:2px solid #2dd4bf">
+      <div class="card-hdr" onclick="tog('soloBody')">
+        <span style="color:#2dd4bf">&#x2708; Solo Operations</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span id="soloGoCountHdr"></span>
+          <span class="ci" id="soloBody-icon">&#x25BC;</span>
+        </span>
+      </div>
+      <div class="cbd" id="soloBody">
+        <div id="soloWindBar"></div>
+        <div id="soloWwaBar"></div>
+        <table class="ts-table" id="soloGrid"></table>
       </div>
     </div>
 
@@ -906,7 +924,7 @@ function render(){
   const exp=new Date(DATA.exportedAt);
   const expStr='EXPORTED '+exp.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false,timeZoneName:'short'}).toUpperCase();
   document.getElementById('heroExported').textContent=expStr;
-  rMEFHdr(fc);rTS(fc);rAdv(fc);rArea(fc);rAero(fc);rMETAR(fc);rKW(fc);rHaz(fc);rFWBHdr(fc);rEn(fc);rSp(fc);rW(fc);rSol(fc);rTO(fc);rSD();
+  rMEFHdr(fc);rTS(fc);rSolo(fc);rAdv(fc);rArea(fc);rAero(fc);rMETAR(fc);rKW(fc);rHaz(fc);rFWBHdr(fc);rEn(fc);rSp(fc);rW(fc);rSol(fc);rTO(fc);rSD();
   document.getElementById('footerText').textContent='Data exported from My Weather Pal \u00B7 '+exp.toLocaleString();
 }
 
@@ -1006,6 +1024,154 @@ function rTS(fc){
   const cc=liveGoCount>=4?'var(--go)':liveGoCount>=2?'var(--accent)':'var(--nogo)';
   document.getElementById('goCountHdr').innerHTML='<span style="color:'+cc+';font-weight:900;font-size:14px">'+liveGoCount+'/5</span>';
   document.getElementById('heroGoCount').innerHTML='<span style="color:'+cc+'">'+liveGoCount+'/5</span>';
+}
+
+/* ── SOLO OPERATIONS ── */
+function parseSegWind(text){
+  const m=text.match(/(?:(\d{3})|VRB)(\d{2,3})(?:G(\d{2,3}))?KT/);
+  if(!m)return null;
+  const spd=parseInt(m[2]),gst=m[3]?parseInt(m[3]):spd;
+  return{spd,gst};
+}
+function segMeetsSoloCeilVis(text){
+  const cv=segCeilVis(text);
+  return cv.ceil>=1200&&cv.vis>=3;
+}
+function windMeetsSolo(spd,gst){
+  if(gst>15)return{go:false,reason:'Wind G'+gst+'kt'};
+  if(spd>15)return{go:false,reason:'Wind '+spd+'kt'};
+  if((gst-spd)>10)return{go:false,reason:'Spread '+(gst-spd)+'kt'};
+  return{go:true,reason:'OK'};
+}
+function hasWindAdvisory(advs){
+  const now=currentZuluMinutes();
+  for(const a of advs){
+    const fm=a.validFrom?.replace('Z',''),tm=a.validTo?.replace('Z','');
+    if(!fm||!tm||fm.length<4||tm.length<4)continue;
+    const fromMin=parseInt(fm.substring(0,2))*60+parseInt(fm.substring(2,4));
+    const toMin=parseInt(tm.substring(0,2))*60+parseInt(tm.substring(2,4));
+    let active=false;
+    if(toMin>fromMin)active=now>=fromMin&&now<toMin;
+    else active=now>=fromMin||now<toMin;
+    if(!active)continue;
+    const c=(a.criteria||'').toUpperCase();
+    if(c.includes('WIND')){
+      const wm=c.match(/(\d{2,3})\s*(?:KT|KNOT)/);
+      if(wm&&parseInt(wm[1])>15)return true;
+      if(c.includes('>15')||c.includes('> 15')||c.includes('EXCEED'))return true;
+    }
+  }
+  return false;
+}
+function soloEval(forecastText,metar,advisories,isCairns){
+  // WWA gate
+  if(hasWindAdvisory(advisories))return{go:false,reason:'AWA Wind'};
+  // METAR check (Cairns only)
+  if(isCairns&&metar){
+    const ceil=ceilNum(metar.clouds),vis=parseFloat(metar.visib)||99;
+    const spd=metar.wspd||0,gst=metar.wgst||spd,spread=gst-spd;
+    if(ceil<1200)return{go:false,reason:'Obs Ceil '+ceil+'ft'};
+    if(vis<3)return{go:false,reason:'Obs Vis '+vis+'SM'};
+    if(gst>15)return{go:false,reason:'Obs Wind G'+gst+'kt'};
+    if(spd>15)return{go:false,reason:'Obs Wind '+spd+'kt'};
+    if(spread>10)return{go:false,reason:'Obs Spread '+spread+'kt'};
+  }
+  // Forecast ceiling/vis (time-aware)
+  const cv=getActiveSegmentCeilVis(forecastText);
+  if(cv.ceil<1200)return{go:false,reason:'Fcst Ceil '+cv.ceil+'ft'};
+  if(cv.vis<3)return{go:false,reason:'Fcst Vis '+cv.vis+'SM'};
+  // Forecast wind (time-aware)
+  const segs=parseSegments(forecastText);
+  const ai=getActiveSegIndex(segs);
+  const w=parseSegWind(segs[ai].text);
+  if(w){
+    const wr=windMeetsSolo(w.spd,w.gst);
+    if(!wr.go)return{go:false,reason:'Fcst '+wr.reason};
+  }
+  return{go:true,reason:'OK'};
+}
+function soloInfoCalc(forecastText){
+  if(!forecastText)return{go:true,label:'Solo OK'};
+  const segs=parseSegments(forecastText);
+  const main=segs.filter(s=>!(/^(ISOLD|TEMPO)/i.test(s.text)));
+  if(!main.length)return{go:true,label:'Solo OK'};
+  const ai=getActiveSegIndex(segs);
+  const curSeg=segs[ai];
+  const curCVGo=segMeetsSoloCeilVis(curSeg.text);
+  const curW=parseSegWind(curSeg.text);
+  const curWGo=curW?windMeetsSolo(curW.spd,curW.gst).go:true;
+  const curGo=curCVGo&&curWGo;
+  const now=currentZuluMinutes();
+  // Check future segments
+  for(let i=ai+1;i<segs.length;i++){
+    if(/^(ISOLD|TEMPO)/i.test(segs[i].text))continue;
+    const fCVGo=segMeetsSoloCeilVis(segs[i].text);
+    const fW=parseSegWind(segs[i].text);
+    const fWGo=fW?windMeetsSolo(fW.spd,fW.gst).go:true;
+    const fGo=fCVGo&&fWGo;
+    if(fGo!==curGo&&segs[i].startMin>0){
+      let diff=segs[i].startMin-now;
+      if(diff<0)diff+=1440;
+      if(diff>0){
+        const h=Math.floor(diff/60),m=diff%60;
+        const ts=(h?h+'h ':'')+(m?m+'m':'');
+        return curGo?{go:true,label:'No Solo in '+ts}:{go:false,label:'Solo in '+ts};
+      }
+      break;
+    }
+  }
+  return curGo?{go:true,label:'Solo OK'}:{go:false,label:'No Solo'};
+}
+function rSolo(fc){
+  const g=document.getElementById('soloGrid');
+  const wb=document.getElementById('soloWindBar');
+  const wwa=document.getElementById('soloWwaBar');
+  const m=DATA.metar;
+  const advs=fc.mef?.weatherAdvisories||[];
+  const areas=fc.mef?.areaForecasts||[];
+  const areaTextMap={};areas.forEach(a=>{areaTextMap[a.name.toUpperCase()]=a.amendmentText||a.forecast||''});
+  const goldfish=areaTextMap['GOLDFISH']||'';
+  const windAdv=hasWindAdvisory(advs);
+  // Wind status bar
+  const mSpd=m?(m.wspd||0):0,mGst=m?(m.wgst||mSpd):0,mDir=m?(m.wdir||0):0;
+  const mWStr=m?(mSpd===0?'CALM':(String(mDir).padStart(3,'0')+'/'+mSpd+(mGst>mSpd?'G'+mGst:'')+'KT')):'--';
+  const segs=parseSegments(goldfish);const ai=getActiveSegIndex(segs);
+  const fW=parseSegWind(segs[ai]?.text||'');
+  const fWStr=fW?(fW.spd+(fW.gst>fW.spd?'G'+fW.gst:'')+'KT'):'--';
+  const spread=m&&m.wgst?(m.wgst-mSpd):null;
+  const mWindOk=mSpd<=15&&mGst<=15&&(spread===null||spread<=10);
+  const fWindOk=fW?windMeetsSolo(fW.spd,fW.gst).go:true;
+  wb.innerHTML='<div style="display:flex;gap:16px;padding:6px 8px;background:rgba(0,0,0,0.3);border-radius:4px;margin-bottom:6px;font-family:monospace;font-size:11px">'+
+    '<div><div style="font-size:9px;color:var(--text-dim);font-weight:700">OBS WIND</div><span style="color:'+(mWindOk?'#fff':'#f97316')+';font-weight:700">'+mWStr+'</span></div>'+
+    '<div style="border-left:1px solid var(--border);padding-left:12px"><div style="font-size:9px;color:var(--text-dim);font-weight:700">FCST WIND</div><span style="color:'+(fWindOk?'#fff':'#f97316')+';font-weight:700">'+fWStr+'</span></div>'+
+    (spread!==null?'<div style="border-left:1px solid var(--border);padding-left:12px"><div style="font-size:9px;color:var(--text-dim);font-weight:700">GUST SPREAD</div><span style="color:'+(spread>10?'#f97316':'#fff')+';font-weight:700">'+spread+'kt</span></div>':'')+'</div>';
+  // WWA bar
+  wwa.innerHTML=windAdv?'<div style="padding:4px 8px;background:rgba(217,38,38,0.15);border-radius:4px;margin-bottom:6px;font-size:11px;font-weight:700;color:var(--nogo)">⚠️ WIND ADVISORY ACTIVE — NO SOLO</div>':'';
+  // Stations
+  const sfDefs=[
+    {n:'CAIRNS',area:'GOLDFISH',cairns:true},
+    {n:'ALLEN',area:'GOLDFISH',cairns:false},
+    {n:'TOTH',area:'GOLDFISH',cairns:false},
+    {n:'HIGHBLUFF',area:'BEARCAT',cairns:false},
+    {n:'LUCAS',area:'VANGUARD C',cairns:false}
+  ];
+  let soloCount=0;
+  g.innerHTML=sfDefs.map(sf=>{
+    const txt=areaTextMap[sf.area]||'';
+    const res=soloEval(txt,m,advs,sf.cairns);
+    const info=windAdv?{go:false,label:'AWA Wind'}:soloInfoCalc(txt);
+    if(res.go)soloCount++;
+    const ic=res.go?'✈️':'⛔';
+    const bc2=res.go?'badge solo':'badge nosolo';
+    const nameCol=res.go?'#2dd4bf':'#f97316';
+    const infoCol=info.go?'#2dd4bf':(info.label.includes('Solo in')?'var(--accent)':'#f97316');
+    const infoIcon=info.go&&!info.label.includes('No Solo in')?'✅':(info.label.includes('Solo in')?'🕐':(info.label.includes('No Solo in')?'⚠️':'⛔'));
+    const reasonLine=!res.go&&res.reason!=='OK'&&res.reason!=='AWA Wind'?'<div style="font-size:10px;color:#f97316;opacity:0.8;font-family:monospace;margin-top:1px">'+esc(res.reason)+'</div>':'';
+    return'<tr><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+sf.n+'</span></div><div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">'+sf.area+'</span> <span style="color:'+infoCol+'">'+infoIcon+' '+esc(info.label)+'</span></div>'+reasonLine+'</td><td style="vertical-align:middle;text-align:right;padding:6px 10px"><span class="'+bc2+'">'+(res.go?'SOLO':'NO SOLO')+'</span></td></tr>';
+  }).join('');
+  // Legend
+  g.innerHTML+='<tr><td colspan="3"><div class="ts-legend"><span>Solo = ≥1200/3 + Wind ≤15kt + Spread ≤10kt</span><span style="font-weight:800;font-size:13px;color:'+(soloCount>=4?'#2dd4bf':soloCount>=2?'#f97316':'var(--nogo)')+'">'+soloCount+'/5</span></div></td></tr>';
+  document.getElementById('soloGoCountHdr').innerHTML='<span style="color:'+(soloCount>=4?'#2dd4bf':soloCount>=2?'#f97316':'var(--nogo)')+';font-weight:900;font-size:14px">'+soloCount+'/5</span>';
 }
 
 /* ── ADVISORIES ── */
