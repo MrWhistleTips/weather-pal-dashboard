@@ -75,7 +75,7 @@ body {
 .navbar {
   background: linear-gradient(180deg, rgba(16,21,16,0.95), rgba(10,13,8,0.9));
   border-bottom: 1px solid var(--od-border);
-  padding: 14px 28px;
+  padding: 8px 16px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -84,70 +84,71 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
 }
 
-.brand { display: flex; align-items: center; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; }
 .brand-logo {
-  width: 40px; height: 40px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--od), var(--od-dark));
   border: 2px solid var(--tan);
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  box-shadow: 0 0 16px rgba(192,168,120,0.2);
+  font-size: 18px;
+  box-shadow: 0 0 12px rgba(192,168,120,0.2);
 }
 .brand-title { display: flex; flex-direction: column; line-height: 1; }
 .brand-name {
-  font-size: 19px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 .brand-sub {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--tan);
-  letter-spacing: 2.5px;
+  letter-spacing: 2px;
   margin-top: 2px;
   text-transform: uppercase;
 }
 
-.nav-center { display: flex; gap: 24px; align-items: center; }
+.nav-center { display: flex; gap: 18px; align-items: center; }
 .nav-datum { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
 .nav-datum-label {
-  font-size: 9px; color: var(--tan);
-  letter-spacing: 2px; text-transform: uppercase;
+  font-size: 8px; color: var(--tan);
+  letter-spacing: 1.5px; text-transform: uppercase;
 }
 .nav-datum-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 15px; font-weight: 500;
-  margin-top: 2px;
+  font-size: 13px; font-weight: 500;
+  margin-top: 1px;
 }
 
-.nav-actions { display: flex; gap: 12px; align-items: center; }
+.nav-actions { display: flex; gap: 8px; align-items: center; }
 .nav-btn {
   background: var(--bg-2);
   border: 1px solid var(--od-border);
   color: var(--tan);
-  padding: 8px 14px;
-  border-radius: 4px;
+  padding: 5px 11px;
+  border-radius: 3px;
   cursor: pointer;
   text-decoration: none;
   font-family: 'Rajdhani', sans-serif;
-  font-size: 12px; font-weight: 600;
-  letter-spacing: 1.5px; text-transform: uppercase;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 1.2px; text-transform: uppercase;
   transition: all 0.15s;
   display: inline-block;
 }
 .nav-btn:hover { background: var(--od); border-color: var(--tan); color: var(--text); }
 
 /* LAYOUT */
-.container { max-width: 1600px; margin: 0 auto; padding: 24px; }
-.grid { display: grid; gap: 16px; }
+.container { max-width: 1700px; margin: 0 auto; padding: 12px 16px; }
+.grid { display: grid; gap: 10px; }
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
 @media (max-width: 1100px) {
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
 }
 
 /* PERIOD SELECTOR */
@@ -155,21 +156,21 @@ body {
   display: flex; gap: 0;
   background: var(--bg-1);
   border: 1px solid var(--od-border);
-  border-radius: 6px;
-  padding: 4px;
-  margin-bottom: 20px;
+  border-radius: 4px;
+  padding: 3px;
+  margin-bottom: 10px;
   width: fit-content;
   margin-inline: auto;
 }
 .period-btn {
   background: transparent; border: none;
   color: var(--text-dim);
-  padding: 10px 28px;
+  padding: 6px 22px;
   cursor: pointer;
   font-family: 'Rajdhani', sans-serif;
-  font-size: 14px; font-weight: 700;
+  font-size: 13px; font-weight: 700;
   letter-spacing: 2px; text-transform: uppercase;
-  border-radius: 4px;
+  border-radius: 3px;
   transition: all 0.15s;
 }
 .period-btn:hover { color: var(--text); }
@@ -199,68 +200,68 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
 }
 .card-title {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--tan);
   display: flex; align-items: center; gap: 10px;
 }
-.card-title-icon { font-size: 16px; }
+.card-title-icon { font-size: 14px; }
 .card-subtitle {
-  font-size: 11px; color: var(--text-dim);
+  font-size: 10px; color: var(--text-dim);
   letter-spacing: 1px;
 }
-.card-body { padding: 18px; }
+.card-body { padding: 10px 12px; }
 
 /* TRAINING STATUS */
-.training-hero { padding: 24px; }
+.training-hero { padding: 10px 12px; }
 .training-row {
   display: grid;
-  grid-template-columns: 40px 1fr auto;
+  grid-template-columns: 26px 1fr auto;
   align-items: center;
-  gap: 14px;
-  padding: 14px 8px;
+  gap: 10px;
+  padding: 6px 4px;
   border-bottom: 1px solid var(--border);
   transition: background 0.15s;
 }
 .training-row:last-child { border-bottom: none; }
 .training-row:hover { background: rgba(192,168,120,0.03); }
 .training-row.cairns {
-  background: rgba(61,77,51,0.1);
-  border-radius: 6px;
+  background: rgba(61,77,51,0.12);
+  border-radius: 4px;
   border: 1px solid var(--od-border);
-  margin-bottom: 10px;
-  padding: 18px 14px;
+  margin-bottom: 6px;
+  padding: 8px 10px;
 }
 .training-icon {
-  font-size: 22px; text-align: center;
+  font-size: 16px; text-align: center;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
 }
-.training-name { display: flex; flex-direction: column; line-height: 1.2; }
-.training-station { font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
+.training-name { display: flex; flex-direction: column; line-height: 1.1; }
+.training-station { font-size: 14px; font-weight: 600; letter-spacing: 0.3px; }
 .training-area {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-dim);
-  letter-spacing: 1.5px;
-  margin-top: 3px;
+  letter-spacing: 1.2px;
+  margin-top: 2px;
   text-transform: uppercase;
 }
 
 /* BADGES */
 .badge {
   display: inline-flex; align-items: center;
-  padding: 6px 14px;
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   white-space: nowrap;
   border: 1px solid transparent;
@@ -270,26 +271,26 @@ body {
 .badge.unknown { background: var(--unknown-bg); color: var(--unknown); border-color: var(--unknown-border); }
 .badge.solo { background: rgba(61,212,191,0.18); color: var(--solo); border-color: rgba(61,212,191,0.4); }
 .badge.nosolo { background: rgba(237,137,54,0.18); color: var(--nosolo); border-color: rgba(237,137,54,0.4); }
-.badge.cairns { font-size: 11px; padding: 8px 14px; }
+.badge.cairns { font-size: 10px; padding: 4px 10px; }
 
 /* METAR CARD */
 .metar-hero {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 24px;
-  padding: 24px;
+  gap: 14px;
+  padding: 12px 14px;
   background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
 }
 .metar-category {
-  font-size: 42px;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: 2px;
   line-height: 1;
-  padding: 18px 28px;
-  border-radius: 6px;
+  padding: 10px 16px;
+  border-radius: 4px;
   text-align: center;
-  min-width: 130px;
+  min-width: 90px;
 }
 .metar-category.vfr  { background: rgba(95,186,79,0.12); color: var(--vfr); border: 2px solid var(--vfr); }
 .metar-category.mvfr { background: rgba(74,144,226,0.12); color: var(--mvfr); border: 2px solid var(--mvfr); }
@@ -297,50 +298,50 @@ body {
 .metar-category.lifr { background: rgba(179,71,217,0.12); color: var(--lifr); border: 2px solid var(--lifr); }
 .metar-category.unknown { background: var(--unknown-bg); color: var(--unknown); border: 2px solid var(--unknown); }
 
-.metar-details { display: flex; flex-direction: column; gap: 8px; }
-.metar-station { font-size: 22px; font-weight: 600; letter-spacing: 2px; }
+.metar-details { display: flex; flex-direction: column; gap: 4px; }
+.metar-station { font-size: 16px; font-weight: 600; letter-spacing: 1.5px; }
 .metar-time {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-dim);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 .metar-old {
   display: inline-block;
-  font-size: 10px; font-weight: 700;
+  font-size: 9px; font-weight: 700;
   color: #000;
   background: var(--warning);
-  padding: 3px 10px;
-  border-radius: 3px;
-  letter-spacing: 1.5px;
-  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+  margin-left: 6px;
 }
 .metar-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 1px;
   background: var(--border);
   border-top: 1px solid var(--border);
 }
 .metar-cell {
   background: var(--bg-1);
-  padding: 14px;
+  padding: 8px 4px;
   text-align: center;
-  display: flex; flex-direction: column; gap: 4px;
+  display: flex; flex-direction: column; gap: 2px;
 }
 .metar-label {
-  font-size: 10px; color: var(--tan);
-  letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
+  font-size: 9px; color: var(--tan);
+  letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
 }
 .metar-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 18px; font-weight: 500;
+  font-size: 14px; font-weight: 500;
 }
 .metar-raw {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-dim);
-  padding: 12px 18px;
+  padding: 6px 12px;
   background: var(--bg-0);
   border-top: 1px solid var(--border);
   word-break: break-all;
@@ -348,10 +349,10 @@ body {
 
 /* ADVISORIES */
 .advisory {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  border-radius: 4px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  border-radius: 3px;
   border-left: 3px solid var(--warning);
   background: rgba(230,165,58,0.08);
 }
@@ -361,62 +362,62 @@ body {
 }
 .advisory-type {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; font-weight: 700;
-  padding: 3px 8px;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 6px;
   background: var(--warning);
   color: #000;
-  border-radius: 3px;
-  letter-spacing: 1px;
+  border-radius: 2px;
+  letter-spacing: 0.8px;
   white-space: nowrap;
 }
 .advisory.red .advisory-type { background: var(--nogo); color: #fff; }
-.advisory-content { flex: 1; }
-.advisory-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.advisory-content { flex: 1; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.advisory-title { font-size: 12px; font-weight: 500; }
 .advisory-time {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; color: var(--text-dim);
+  font-size: 10px; color: var(--text-dim);
 }
 
 /* SOLO */
 .solo-row {
   display: grid;
-  grid-template-columns: 24px 1fr auto;
+  grid-template-columns: 14px 1fr auto;
   align-items: center;
-  gap: 12px;
-  padding: 10px 8px;
+  gap: 10px;
+  padding: 5px 4px;
   border-bottom: 1px solid var(--border);
 }
 .solo-row:last-child { border-bottom: none; }
 .solo-dot {
-  width: 12px; height: 12px;
+  width: 10px; height: 10px;
   border-radius: 50%;
   margin: 0 auto;
 }
-.solo-dot.go { background: var(--solo); box-shadow: 0 0 8px rgba(61,212,191,0.5); }
-.solo-dot.nogo { background: var(--nosolo); box-shadow: 0 0 8px rgba(237,137,54,0.5); }
-.solo-name { display: flex; flex-direction: column; }
-.solo-station { font-size: 14px; font-weight: 600; }
-.solo-reason { font-size: 11px; color: var(--nosolo); margin-top: 2px; }
+.solo-dot.go { background: var(--solo); box-shadow: 0 0 6px rgba(61,212,191,0.5); }
+.solo-dot.nogo { background: var(--nosolo); box-shadow: 0 0 6px rgba(237,137,54,0.5); }
+.solo-name { display: flex; align-items: baseline; gap: 8px; }
+.solo-station { font-size: 13px; font-weight: 600; }
+.solo-reason { font-size: 10px; color: var(--nosolo); }
 
 /* AREA FORECASTS */
 .area-card {
-  padding: 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
 }
 .area-card:last-child { border-bottom: none; }
 .area-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .area-name {
-  font-size: 18px; font-weight: 700;
+  font-size: 14px; font-weight: 700;
   color: var(--tan);
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
 }
 .area-text {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  line-height: 1.7;
+  font-size: 11px;
+  line-height: 1.5;
   white-space: pre-wrap;
 }
 .seg-vfr  { color: var(--vfr); }
@@ -429,22 +430,20 @@ body {
 .flw-grid {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 8px 16px;
+  gap: 4px 12px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 12px;
 }
 .flw-header {
-  font-size: 10px; color: var(--tan);
-  letter-spacing: 2px; font-weight: 700;
+  font-size: 9px; color: var(--tan);
+  letter-spacing: 1.5px; font-weight: 700;
   text-transform: uppercase;
-  padding: 6px 0;
+  padding: 3px 0;
   border-bottom: 1px solid var(--border);
 }
 .flw-cell {
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 3px 0;
 }
-.flw-cell:nth-last-child(-n+3) { border-bottom: none; }
 .flw-level { color: var(--tan); font-weight: 600; }
 .flw-wind-high { color: var(--amber); }
 .flw-temp-cold { color: var(--mvfr); }
@@ -452,24 +451,30 @@ body {
 /* SOLAR / LUNAR */
 .solar-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+@media (max-width: 900px) {
+  .solar-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 500px) {
+  .solar-grid { grid-template-columns: repeat(2, 1fr); }
 }
 .solar-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 4px;
   background: var(--bg-2);
-  border-radius: 4px;
+  border-radius: 3px;
+  text-align: center;
 }
-.solar-icon { font-size: 16px; }
+.solar-icon { font-size: 14px; }
 .solar-label {
-  font-size: 10px; color: var(--tan);
-  letter-spacing: 1.5px; text-transform: uppercase;
+  font-size: 9px; color: var(--tan);
+  letter-spacing: 1px; text-transform: uppercase;
 }
 .solar-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  margin-top: 2px;
+  font-size: 11px;
 }
 
 /* HAZARDS */
@@ -477,17 +482,17 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 5px 0;
   border-bottom: 1px solid var(--border);
 }
 .hazard-row:last-child { border-bottom: none; }
 .hazard-label {
-  font-size: 12px; color: var(--tan);
-  letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+  font-size: 11px; color: var(--tan);
+  letter-spacing: 1.2px; text-transform: uppercase; font-weight: 600;
 }
 .hazard-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 12px;
 }
 .hazard-value.none { color: var(--text-ghost); }
 .hazard-value.active { color: var(--amber); font-weight: 600; }
@@ -504,13 +509,14 @@ body {
   text-transform: uppercase;
 }
 .alert {
-  padding: 14px 18px;
+  padding: 8px 12px;
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   color: var(--text-dim);
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
+  font-size: 12px;
 }
 .alert.warning {
   border-color: var(--warning);
@@ -521,13 +527,13 @@ body {
 /* FOOTER */
 .footer {
   text-align: center;
-  padding: 24px;
+  padding: 12px;
   color: var(--text-ghost);
-  font-size: 11px;
-  letter-spacing: 2px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   border-top: 1px solid var(--border);
-  margin-top: 40px;
+  margin-top: 16px;
 }
 .footer a { color: var(--tan); text-decoration: none; }
 .footer a:hover { color: var(--text); }
@@ -600,7 +606,7 @@ body {
 
   <div id="data-alert" class="alert" style="display:none;"></div>
 
-  <div class="grid grid-2" style="margin-bottom: 16px;">
+  <div class="grid grid-2" style="margin-bottom: 10px;">
     <div class="card">
       <div class="card-header">
         <div class="card-title"><span class="card-title-icon">🎯</span>Training Status</div>
@@ -618,7 +624,7 @@ body {
     </div>
   </div>
 
-  <div id="advisories-card" class="card" style="display:none; margin-bottom:16px;">
+  <div id="advisories-card" class="card" style="display:none; margin-bottom:10px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">⚠️</span>Active Advisories</div>
       <div class="card-subtitle" id="advisories-count">0 active</div>
@@ -626,15 +632,15 @@ body {
     <div class="card-body" id="advisories-body"></div>
   </div>
 
-  <div id="solo-card" class="card" style="display:none; margin-bottom:16px;">
-    <div class="card-header">
-      <div class="card-title"><span class="card-title-icon">🎓</span>Solo Operations</div>
-      <div class="card-subtitle">≥1200/3 · Wind ≤15kt · Spread ≤10kt</div>
+  <div class="grid grid-3" style="margin-bottom: 10px;">
+    <div id="solo-card" class="card" style="display:none;">
+      <div class="card-header">
+        <div class="card-title"><span class="card-title-icon">🎓</span>Solo Operations</div>
+        <div class="card-subtitle">≥1200/3 · ≤15kt</div>
+      </div>
+      <div class="card-body" id="solo-body"></div>
     </div>
-    <div class="card-body" id="solo-body"></div>
-  </div>
 
-  <div class="grid grid-2" style="margin-bottom: 16px;">
     <div class="card">
       <div class="card-header">
         <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
@@ -650,7 +656,7 @@ body {
     </div>
   </div>
 
-  <div class="card" style="margin-bottom: 16px;">
+  <div class="card" style="margin-bottom: 10px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🗺️</span>Area Forecasts</div>
       <div class="card-subtitle">Color-coded by flight category</div>
@@ -658,7 +664,7 @@ body {
     <div id="areas-body">—</div>
   </div>
 
-  <div class="card" style="margin-bottom: 16px;">
+  <div class="card" style="margin-bottom: 10px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🌅</span>Solar / Lunar</div>
     </div>
