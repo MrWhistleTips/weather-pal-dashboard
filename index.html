@@ -556,6 +556,58 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--od); border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--od-light); }
 
+/* TV MODE — larger fonts for distance viewing */
+body.tv { font-size: 20px; }
+body.tv .brand-name { font-size: 22px; }
+body.tv .brand-sub { font-size: 12px; }
+body.tv .nav-datum-label { font-size: 11px; }
+body.tv .nav-datum-value { font-size: 19px; }
+body.tv .brand-logo { width: 44px; height: 44px; font-size: 26px; }
+body.tv .nav-btn { font-size: 14px; padding: 8px 16px; }
+
+body.tv .card-title { font-size: 15px; letter-spacing: 2.5px; }
+body.tv .card-subtitle { font-size: 13px; }
+body.tv .card-title-icon { font-size: 18px; }
+
+body.tv .training-station { font-size: 18px; }
+body.tv .training-area { font-size: 11px; }
+body.tv .training-icon { font-size: 22px; }
+body.tv .badge { font-size: 14px; padding: 6px 14px; letter-spacing: 1.8px; }
+body.tv .badge.cairns { font-size: 14px; padding: 8px 16px; }
+
+body.tv .metar-category { font-size: 40px; padding: 16px 24px; min-width: 120px; }
+body.tv .metar-station { font-size: 22px; }
+body.tv .metar-time { font-size: 14px; }
+body.tv .metar-label { font-size: 11px; }
+body.tv .metar-value { font-size: 20px; }
+body.tv .metar-raw { font-size: 13px; padding: 10px 16px; }
+
+body.tv .solo-station { font-size: 16px; }
+body.tv .solo-reason { font-size: 12px; }
+body.tv .solo-dot { width: 14px; height: 14px; }
+
+body.tv .area-name { font-size: 17px; }
+body.tv .area-text { font-size: 14px; line-height: 1.6; }
+
+body.tv .flw-grid { font-size: 14px; }
+body.tv .flw-header { font-size: 11px; }
+
+body.tv .solar-icon { font-size: 18px; }
+body.tv .solar-label { font-size: 11px; }
+body.tv .solar-value { font-size: 14px; }
+
+body.tv .hazard-label { font-size: 13px; }
+body.tv .hazard-value { font-size: 15px; }
+
+body.tv .advisory-title { font-size: 15px; }
+body.tv .advisory-type { font-size: 12px; padding: 4px 8px; }
+body.tv .advisory-time { font-size: 12px; }
+
+body.tv .period-btn { font-size: 16px; padding: 10px 36px; letter-spacing: 3px; }
+
+/* Cursor auto-hide */
+body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .navbar { flex-wrap: wrap; padding: 12px 16px; }
@@ -599,6 +651,10 @@ body {
     <div class="nav-datum">
       <div class="nav-datum-label">Sunset</div>
       <div class="nav-datum-value" id="sunset">—</div>
+    </div>
+    <div class="nav-datum">
+      <div class="nav-datum-label">Fetched</div>
+      <div class="nav-datum-value" id="fetched-ago">—</div>
     </div>
   </div>
 
@@ -698,7 +754,9 @@ body {
 const METAR_STATION = "KOZR";
 const METAR_REFRESH_MS = 5 * 60 * 1000;
 const DATA_REFRESH_MS = 5 * 60 * 1000;
+const TV_MODE = /[?&]tv=(1|true)/i.test(location.search);
 let DATA = null;
+let lastFetchedAt = null;
 
 /// Auto-select the active forecast period based on local time:
 ///   AM:  04:00 - 10:44
@@ -1247,7 +1305,19 @@ async function loadData() {
     if (!DATA) DATA = { forecasts: [], metar: null };
     DATA.metar = liveMetar;
   }
+  lastFetchedAt = new Date();
   renderAll();
+  updateFetchedLabel();
+}
+
+function updateFetchedLabel() {
+  const el = document.getElementById('fetched-ago');
+  if (!el) return;
+  if (!lastFetchedAt) { el.textContent = '—'; return; }
+  const secs = Math.floor((Date.now() - lastFetchedAt.getTime()) / 1000);
+  if (secs < 60) el.textContent = secs + 's ago';
+  else if (secs < 3600) el.textContent = Math.floor(secs / 60) + 'm ago';
+  else el.textContent = Math.floor(secs / 3600) + 'h ago';
 }
 
 async function refresh() { await loadData(); }
@@ -1281,12 +1351,40 @@ function updateClock() {
   fmtTime(document.getElementById('local-time'), localTimeHHMM() + 'L');
 }
 
+// TV mode — add ?tv=1 to the URL to enable large-font kiosk display.
+if (TV_MODE) document.body.classList.add('tv');
+
+// Cursor auto-hide after 3s of inactivity (useful when displayed on a TV).
+let cursorTimer;
+function resetCursorTimer() {
+  document.body.classList.remove('cursor-hidden');
+  clearTimeout(cursorTimer);
+  cursorTimer = setTimeout(() => document.body.classList.add('cursor-hidden'), 3000);
+}
+document.addEventListener('mousemove', resetCursorTimer, { passive: true });
+document.addEventListener('keydown', resetCursorTimer);
+resetCursorTimer();
+
+// Schedule a once-a-day reload at 03:00 local to prevent long-running
+// browser memory bloat on TV displays left running for weeks.
+function scheduleDailyReload() {
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(3, 0, 0, 0);
+  if (next <= now) next.setDate(next.getDate() + 1);
+  const ms = next - now;
+  setTimeout(() => location.reload(), ms);
+}
+scheduleDailyReload();
+
 setupPeriodButtons();
 updateClock();
 setInterval(updateClock, 30 * 1000);
 // Re-check auto period every minute so the page snaps to the
 // correct forecast at 04:00, 10:45, and 17:00 local.
 setInterval(applyAutoPeriod, 60 * 1000);
+// "Fetched Xm ago" label tick
+setInterval(updateFetchedLabel, 30 * 1000);
 loadData();
 setInterval(loadData, DATA_REFRESH_MS);
 </script>
