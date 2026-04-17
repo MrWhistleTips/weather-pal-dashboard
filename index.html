@@ -3,1629 +3,1247 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fort Rucker Training Status</title>
+<title>Fort Rucker Weather Pal — Training Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* ============================================================
+   MILITARY THEME — OD Green + Tactical Tan + High-Contrast Data
+   ============================================================ */
 :root {
-  --bg: #000000;
-  --bg-card: #141414;
-  --bg-card-hover: #1a1a1a;
-  --accent: #E5D633;
-  --accent-dim: rgba(229,214,51,0.45);
-  --accent-border: rgba(229,214,51,0.3);
-  --border: #1F1F1F;
-  --border-light: #2a2a2a;
-  --text: #FFFFFF;
-  --text-secondary: rgba(255,255,255,0.5);
-  --text-dim: rgba(255,255,255,0.3);
-  --go: #40BF40;
-  --go-bg: rgba(64,191,64,0.5);
-  --nogo: #D92626;
-  --nogo-bg: rgba(217,38,38,0.5);
-  --marginal: #E5D633;
-  --marginal-bg: rgba(229,214,51,0.5);
-  --vfr: #40BF40;
-  --mvfr: #4488ff;
-  --ifr: #D92626;
-  --lifr: #ff44ff;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  font-family: 'SF Mono','Fira Code','Cascadia Code','Courier New',monospace;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  line-height: 1.5;
-  font-size: 14px;
+  --bg-0: #0a0d08;
+  --bg-1: #101510;
+  --bg-2: #161c15;
+  --bg-3: #1e271d;
+
+  --od-dark: #2a3524;
+  --od: #3d4d33;
+  --od-light: #5d7046;
+  --od-border: #455739;
+
+  --tan: #c0a878;
+  --tan-dim: rgba(192,168,120,0.4);
+  --amber: #e6a53a;
+
+  --text: #e9e6d8;
+  --text-dim: rgba(233,230,216,0.6);
+  --text-ghost: rgba(233,230,216,0.4);
+
+  --go: #5fba4f;
+  --go-bg: rgba(95,186,79,0.18);
+  --go-border: rgba(95,186,79,0.5);
+  --nogo: #d64545;
+  --nogo-bg: rgba(214,69,69,0.18);
+  --nogo-border: rgba(214,69,69,0.5);
+  --unknown: #e6a53a;
+  --unknown-bg: rgba(230,165,58,0.18);
+  --unknown-border: rgba(230,165,58,0.5);
+  --warning: #e6a53a;
+
+  --vfr: #5fba4f;
+  --mvfr: #4a90e2;
+  --ifr: #d64545;
+  --lifr: #b347d9;
+
+  --solo: #3dd4bf;
+  --nosolo: #ed8936;
+
+  --border: rgba(192,168,120,0.15);
+  --border-strong: rgba(192,168,120,0.3);
 }
 
-/* ── NAV BAR ── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  background: var(--bg-0);
+  background-image:
+    radial-gradient(ellipse at top, rgba(61,77,51,0.08), transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(192,168,120,0.03), transparent 60%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace; }
+
+/* NAVBAR */
 .navbar {
-  background: rgba(13,18,13,0.85);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 24px;
+  background: linear-gradient(180deg, rgba(16,21,16,0.95), rgba(10,13,8,0.9));
+  border-bottom: 1px solid var(--od-border);
+  padding: 14px 28px;
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-.navbar-inner {
-  max-width: 1400px;
-  margin: 0 auto;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 24px;
 }
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.nav-brand img { width: 32px; height: 32px; }
-.nav-brand span { font-size: 14px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
-.nav-center { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; font-size: 10px; color: var(--text-dim); letter-spacing: 0.5px; }
-.nav-center .sol-pair { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
-.nav-center .sol-pl { font-weight: 600; text-transform: uppercase; font-size: 9px; opacity: 0.7; }
-.nav-center .sol-pv { font-weight: 700; font-size: 11px; color: var(--text-secondary); }
-.nav-right { display: flex; align-items: center; gap: 14px; }
-.nav-meta { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
-.tabs { display: flex; gap: 2px; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 2px; border: 1px solid var(--border); }
-.tab {
-  padding: 6px 18px; border-radius: 5px; cursor: pointer; font-size: 13px;
-  font-weight: 700; font-family: inherit; color: var(--text-dim);
-  background: transparent; border: none; transition: all 0.2s; letter-spacing: 1px;
-}
-.tab.active { background: var(--accent); color: #000; }
-.tab:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.05); }
 
-/* ── HERO SECTION ── */
-.hero {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 32px 24px 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 40px;
-  min-height: 60vh;
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-logo {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--od), var(--od-dark));
+  border: 2px solid var(--tan);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 0 16px rgba(192,168,120,0.2);
 }
-.hero-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-.ts-sd-row { display: flex; gap: 16px; align-items: flex-start; }
-.ts-card-narrow { flex: 0 0 380px; min-width: 0; }
-.sd-card-side { flex: 1; min-width: 0; }
-.hero-right {
-  flex: 0 0 340px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding-top: 20px;
-  position: sticky;
-  top: 70px;
-}
-.mascot {
-  width: 300px;
-  height: 300px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 40px rgba(229,214,51,0.15)) drop-shadow(0 20px 40px rgba(0,0,0,0.4));
-  animation: mascotFloat 6s ease-in-out infinite;
-}
-@keyframes mascotFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-.mascot-label {
-  margin-top: 16px;
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: 6px;
+.brand-title { display: flex; flex-direction: column; line-height: 1; }
+.brand-name {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--accent);
-  text-align: center;
 }
-.mascot-sub {
-  font-size: 11px;
-  letter-spacing: 3px;
+.brand-sub {
+  font-size: 10px;
+  color: var(--tan);
+  letter-spacing: 2.5px;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
+.nav-center { display: flex; gap: 24px; align-items: center; }
+.nav-datum { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.nav-datum-label {
+  font-size: 9px; color: var(--tan);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.nav-datum-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px; font-weight: 500;
+  margin-top: 2px;
+}
+
+.nav-actions { display: flex; gap: 12px; align-items: center; }
+.nav-btn {
+  background: var(--bg-2);
+  border: 1px solid var(--od-border);
+  color: var(--tan);
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  transition: all 0.15s;
+  display: inline-block;
+}
+.nav-btn:hover { background: var(--od); border-color: var(--tan); color: var(--text); }
+
+/* LAYOUT */
+.container { max-width: 1600px; margin: 0 auto; padding: 24px; }
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 1100px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* PERIOD SELECTOR */
+.period-bar {
+  display: flex; gap: 0;
+  background: var(--bg-1);
+  border: 1px solid var(--od-border);
+  border-radius: 6px;
+  padding: 4px;
+  margin-bottom: 20px;
+  width: fit-content;
+  margin-inline: auto;
+}
+.period-btn {
+  background: transparent; border: none;
   color: var(--text-dim);
-  text-transform: uppercase;
-  margin-top: 4px;
-  text-align: center;
+  padding: 10px 28px;
+  cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  border-radius: 4px;
+  transition: all 0.15s;
 }
-.mascot-go-count {
-  margin-top: 20px;
-  font-size: 48px;
-  font-weight: 900;
-  text-align: center;
-  line-height: 1;
-}
-.mascot-go-label {
-  font-size: 13px;
-  letter-spacing: 3px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  text-align: center;
+.period-btn:hover { color: var(--text); }
+.period-btn.active {
+  background: linear-gradient(180deg, var(--od), var(--od-dark));
+  color: var(--tan);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(192,168,120,0.2);
 }
 
-/* ── CONTENT BELOW HERO ── */
-.content {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 16px 24px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* ── COMPACT CARDS ── */
+/* CARD */
 .card {
-  background: var(--bg-card);
+  background: var(--bg-1);
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 0 12px rgba(200,120,0,0.08);
+  position: relative;
 }
-.card.gold-top { border-top: 2px solid var(--accent); }
-.card.fresh { border-color: rgba(64,191,64,0.3); }
-.card.stale { border-color: rgba(217,38,38,0.3); }
-.card-hdr {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--tan-dim), transparent);
+  opacity: 0.6;
+}
+.card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 2px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--accent);
-  cursor: pointer;
-  user-select: none;
+  color: var(--tan);
+  display: flex; align-items: center; gap: 10px;
+}
+.card-title-icon { font-size: 16px; }
+.card-subtitle {
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 1px;
+}
+.card-body { padding: 18px; }
+
+/* TRAINING STATUS */
+.training-hero { padding: 24px; }
+.training-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 8px;
+  border-bottom: 1px solid var(--border);
   transition: background 0.15s;
 }
-.card-hdr:hover { background: var(--bg-card-hover); }
-.card-hdr .ci { font-size: 10px; color: var(--text-dim); transition: transform 0.3s; }
-.card-hdr .ci.collapsed { transform: rotate(-90deg); }
-.cbd { padding: 12px 14px; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; }
-.cbd.collapsed { max-height: 0 !important; padding-top: 0; padding-bottom: 0; }
+.training-row:last-child { border-bottom: none; }
+.training-row:hover { background: rgba(192,168,120,0.03); }
+.training-row.cairns {
+  background: rgba(61,77,51,0.1);
+  border-radius: 6px;
+  border: 1px solid var(--od-border);
+  margin-bottom: 10px;
+  padding: 18px 14px;
+}
+.training-icon {
+  font-size: 22px; text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+.training-name { display: flex; flex-direction: column; line-height: 1.2; }
+.training-station { font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
+.training-area {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 1.5px;
+  margin-top: 3px;
+  text-transform: uppercase;
+}
 
-/* ── MEF/FWB HEADER ── */
-.mef-hdr {
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 6px 14px;
+  border-radius: 4px;
   font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.badge.go { background: var(--go-bg); color: var(--go); border-color: var(--go-border); }
+.badge.nogo { background: var(--nogo-bg); color: var(--nogo); border-color: var(--nogo-border); }
+.badge.unknown { background: var(--unknown-bg); color: var(--unknown); border-color: var(--unknown-border); }
+.badge.solo { background: rgba(61,212,191,0.18); color: var(--solo); border-color: rgba(61,212,191,0.4); }
+.badge.nosolo { background: rgba(237,137,54,0.18); color: var(--nosolo); border-color: rgba(237,137,54,0.4); }
+.badge.cairns { font-size: 11px; padding: 8px 14px; }
+
+/* METAR CARD */
+.metar-hero {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+}
+.metar-category {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 1;
+  padding: 18px 28px;
+  border-radius: 6px;
+  text-align: center;
+  min-width: 130px;
+}
+.metar-category.vfr  { background: rgba(95,186,79,0.12); color: var(--vfr); border: 2px solid var(--vfr); }
+.metar-category.mvfr { background: rgba(74,144,226,0.12); color: var(--mvfr); border: 2px solid var(--mvfr); }
+.metar-category.ifr  { background: rgba(214,69,69,0.12); color: var(--ifr); border: 2px solid var(--ifr); }
+.metar-category.lifr { background: rgba(179,71,217,0.12); color: var(--lifr); border: 2px solid var(--lifr); }
+.metar-category.unknown { background: var(--unknown-bg); color: var(--unknown); border: 2px solid var(--unknown); }
+
+.metar-details { display: flex; flex-direction: column; gap: 8px; }
+.metar-station { font-size: 22px; font-weight: 600; letter-spacing: 2px; }
+.metar-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+.metar-old {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  color: #000;
+  background: var(--warning);
+  padding: 3px 10px;
+  border-radius: 3px;
+  letter-spacing: 1.5px;
+  margin-left: 8px;
+}
+.metar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-top: 1px solid var(--border);
+}
+.metar-cell {
+  background: var(--bg-1);
+  padding: 14px;
+  text-align: center;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.metar-label {
+  font-size: 10px; color: var(--tan);
+  letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
+}
+.metar-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 500;
+}
+.metar-raw {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 12px 18px;
+  background: var(--bg-0);
+  border-top: 1px solid var(--border);
+  word-break: break-all;
+}
+
+/* ADVISORIES */
+.advisory {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  border-left: 3px solid var(--warning);
+  background: rgba(230,165,58,0.08);
+}
+.advisory.red {
+  border-left-color: var(--nogo);
+  background: rgba(214,69,69,0.08);
+}
+.advisory-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 8px;
+  background: var(--warning);
+  color: #000;
+  border-radius: 3px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.advisory.red .advisory-type { background: var(--nogo); color: #fff; }
+.advisory-content { flex: 1; }
+.advisory-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.advisory-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+}
+
+/* SOLO */
+.solo-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
   border-bottom: 1px solid var(--border);
 }
-.mef-title { font-weight: 900; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
-.mef-meta { display: flex; align-items: center; gap: 10px; }
-.mef-meta span { color: var(--text-dim); font-size: 11px; letter-spacing: 1px; }
-.freshness-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
-.freshness-dot.fresh { background: var(--go); box-shadow: 0 0 4px rgba(64,191,64,0.5); }
-.freshness-dot.stale { background: var(--nogo); box-shadow: 0 0 4px rgba(217,38,38,0.5); }
-
-/* ── TRAINING STATUS (compact) ── */
-.ts-table { width: 100%; border-collapse: collapse; }
-.ts-table td { padding: 6px 10px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-.ts-table tr:last-child td { border-bottom: none; }
-.ts-table .stn { font-weight: 700; white-space: nowrap; }
-.ts-table .area { color: var(--text-dim); font-size: 12px; letter-spacing: 0.5px; }
-.ts-table .info { font-size: 12px; }
-.ts-table .cairns-row { background: rgba(229,214,51,0.04); }
-.badge {
-  padding: 6px 16px; border-radius: 4px; font-size: 14px;
-  font-weight: 800; letter-spacing: 1px; text-align: center; display: inline-block;
-  min-width: 52px;
+.solo-row:last-child { border-bottom: none; }
+.solo-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  margin: 0 auto;
 }
-.badge.go { background: var(--go-bg); color: #fff; border: 1px solid rgba(64,191,64,0.7); }
-.badge.nogo { background: var(--nogo-bg); color: #fff; border: 1px solid rgba(217,38,38,0.7); }
-.badge.solo { background: rgba(45,212,191,0.5); color: #fff; border: 1px solid rgba(45,212,191,0.7); }
-.badge.nosolo { background: rgba(249,115,22,0.5); color: #fff; border: 1px solid rgba(249,115,22,0.7); }
-.badge.unknown { background: rgba(255,255,255,0.05); color: var(--text-dim); }
-.ts-legend {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 8px; margin-top: 4px; border-radius: 4px;
-  background: rgba(0,0,0,0.2); font-size: 11px; color: var(--text-dim); letter-spacing: 1px;
+.solo-dot.go { background: var(--solo); box-shadow: 0 0 8px rgba(61,212,191,0.5); }
+.solo-dot.nogo { background: var(--nosolo); box-shadow: 0 0 8px rgba(237,137,54,0.5); }
+.solo-name { display: flex; flex-direction: column; }
+.solo-station { font-size: 14px; font-weight: 600; }
+.solo-reason { font-size: 11px; color: var(--nosolo); margin-top: 2px; }
+
+/* AREA FORECASTS */
+.area-card {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.area-card:last-child { border-bottom: none; }
+.area-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.area-name {
+  font-size: 18px; font-weight: 700;
+  color: var(--tan);
+  letter-spacing: 2px;
+}
+.area-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.seg-vfr  { color: var(--vfr); }
+.seg-mvfr { color: var(--mvfr); }
+.seg-ifr  { color: var(--ifr); }
+.seg-lifr { color: var(--lifr); }
+.seg-tmp  { color: var(--text-ghost); }
+
+/* FLIGHT LEVEL WINDS */
+.flw-grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.flw-header {
+  font-size: 10px; color: var(--tan);
+  letter-spacing: 2px; font-weight: 700;
+  text-transform: uppercase;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.flw-cell {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.flw-cell:nth-last-child(-n+3) { border-bottom: none; }
+.flw-level { color: var(--tan); font-weight: 600; }
+.flw-wind-high { color: var(--amber); }
+.flw-temp-cold { color: var(--mvfr); }
+
+/* SOLAR / LUNAR */
+.solar-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.solar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-2);
+  border-radius: 4px;
+}
+.solar-icon { font-size: 16px; }
+.solar-label {
+  font-size: 10px; color: var(--tan);
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.solar-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  margin-top: 2px;
 }
 
-/* ── ADVISORY BANNER ── */
-.adv-banner {
-  border: 1px solid var(--nogo); border-radius: 6px; overflow: hidden;
-  animation: pulse 2s ease-in-out infinite;
+/* HAZARDS */
+.hazard-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
 }
-@keyframes pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(217,38,38,0); }
-  50% { box-shadow: 0 0 10px 2px rgba(217,38,38,0.25); }
+.hazard-row:last-child { border-bottom: none; }
+.hazard-label {
+  font-size: 12px; color: var(--tan);
+  letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
 }
-.adv-banner.gold { border-color: var(--accent); animation-name: pulseGold; }
-@keyframes pulseGold {
-  0%,100% { box-shadow: 0 0 0 0 rgba(229,214,51,0); }
-  50% { box-shadow: 0 0 10px 2px rgba(229,214,51,0.25); }
+.hazard-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
 }
-.adv-item { display: flex; align-items: flex-start; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
-.adv-item:last-child { border-bottom: none; }
-.adv-type { padding: 3px 10px; border-radius: 3px; font-size: 12px; font-weight: 800; white-space: nowrap; letter-spacing: 0.5px; }
-.adv-type.warn { background: var(--nogo-bg); color: var(--nogo); }
-.adv-type.watch { background: var(--marginal-bg); color: var(--marginal); }
-.adv-times { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.hazard-value.none { color: var(--text-ghost); }
+.hazard-value.active { color: var(--amber); font-weight: 600; }
 
-/* ── METAR (compact inline) ── */
-.metar-raw { font-size: 12px; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 4px; border-left: 2px solid var(--accent); word-break: break-all; margin-bottom: 8px; }
-.metar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 4px 6px; }
-.di { display: flex; flex-direction: column; gap: 2px; }
-.dl { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-.dv { font-size: 15px; font-weight: 700; }
-.flt-cat { display: inline-block; padding: 2px 10px; border-radius: 3px; font-size: 12px; font-weight: 800; letter-spacing: 0.5px; }
-.flt-cat.VFR { background: rgba(64,191,64,0.45); color: #fff; }
-.flt-cat.MVFR { background: rgba(68,136,255,0.45); color: #fff; }
-.flt-cat.IFR { background: rgba(217,38,38,0.45); color: #fff; }
-.flt-cat.LIFR { background: rgba(255,68,255,0.45); color: #fff; }
-.stale-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
-.stale-dot.fresh { background: var(--go); }
-.stale-dot.stale { background: var(--nogo); }
-
-/* ── KEY WEATHER (compact table) ── */
-.kw-grid { display: grid; grid-template-columns: auto 1fr 1fr; font-size: 11px; }
-.kw-h { padding: 2px 6px; font-weight: 800; font-size: 9px; letter-spacing: 1px; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid var(--border); }
-.kw-l { padding: 2px 6px; color: var(--text-secondary); font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.02); }
-.kw-v { padding: 2px 6px; font-weight: 700; text-align: center; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.02); }
-
-/* ── TWO-COLUMN GRID ── */
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-/* ── AREA FORECASTS ── */
-.area-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; }
-.area-card { background: rgba(0,0,0,0.2); border-radius: 5px; padding: 10px 12px; border: 1px solid var(--border); }
-.area-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; gap: 6px; }
-.area-name { font-weight: 800; font-size: 13px; letter-spacing: 1px; }
-.area-info { font-size: 11px; margin-bottom: 4px; }
-.area-text { font-size: 12px; white-space: pre-wrap; line-height: 1.5; }
-.area-text .dim { color: var(--text-dim); }
-.amd-badge { font-size: 11px; padding: 2px 8px; border-radius: 3px; background: var(--accent-dim); color: var(--accent); font-weight: 700; animation: amdPulse 2s ease-in-out infinite; }
-@keyframes amdPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
-.ts-tag { font-size: 11px; margin-top: 4px; padding: 2px 8px; border-radius: 3px; display: inline-block; }
-.ts-tag.active { background: var(--accent-dim); color: var(--accent); font-weight: 700; }
-
-/* ── HAZARDS (compact) ── */
-.haz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 6px; }
-.haz-item { padding: 8px 10px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
-.haz-val { font-size: 13px; font-weight: 700; }
-.haz-val.none { color: var(--text-dim); }
-.haz-val.active { color: var(--accent); }
-.haz-badge { font-size: 11px; padding: 2px 8px; border-radius: 3px; background: var(--accent-dim); color: #fff; font-weight: 700; letter-spacing: 0.5px; }
-
-/* ── ENROUTE HAZARDS ── */
-.en-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
-.en-card { background: rgba(0,0,0,0.2); border-radius: 5px; padding: 10px 12px; border: 1px solid var(--border); }
-.en-title { font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; color: var(--text-secondary); }
-.en-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
-.en-row .l { color: var(--text-dim); }
-.en-row .v { font-weight: 700; }
-.en-row .v.none { color: var(--text-dim); }
-.en-row .v.active { color: var(--accent); }
-
-/* ── SPACE WEATHER ── */
-#spInline { display: inline-flex; align-items: center; gap: 8px; }
-#spInline .sp-it { display: inline-flex; align-items: baseline; gap: 3px; white-space: nowrap; }
-#spInline .sp-l { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-#spInline .sp-v { font-size: 11px; font-weight: 700; }
-#spInline .sp-v.none { color: var(--text-dim); }
-#spInline .sp-v.active { color: #bb66ff; }
-
-/* ── WINDS TABLE ── */
-.w-tbl { width: 100%; border-collapse: collapse; font-size: 11px; }
-.w-tbl th { text-align: left; padding: 2px 6px; font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); font-weight: 700; }
-.w-tbl td { padding: 2px 6px; border-bottom: 1px solid rgba(255,255,255,0.02); }
-.w-tbl tr:last-child td { border-bottom: none; }
-.wb { font-size: 10px; padding: 2px 5px; border-radius: 2px; margin-left: 4px; font-weight: 700; }
-.wb.high { background: var(--accent-dim); color: var(--accent); }
-.wb.ice { background: rgba(68,136,255,0.15); color: var(--mvfr); }
-
-/* ── SOLAR/LUNAR ── */
-.sol-compact { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
-.sol-compact .sol-it { display: flex; align-items: baseline; gap: 3px; white-space: nowrap; }
-.sol-compact .sol-l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-.sol-compact .sol-v { font-size: 13px; font-weight: 700; }
-.sol-compact .sol-ic { font-size: 12px; }
-
-/* ── TAKEOFF DATA ── */
-.to-compact { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
-.to-compact .to-item { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; }
-.to-compact .to-lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-.to-compact .to-val { font-size: 13px; font-weight: 700; }
-.to-max-lbl { font-size: 10px; font-weight: 800; letter-spacing: 1px; color: var(--accent); text-transform: uppercase; margin-left: 4px; }
-.fog-badge { font-size: 11px; padding: 2px 8px; border-radius: 3px; background: rgba(68,136,255,0.45); color: #fff; font-weight: 700; }
-
-/* ── AERODROMES ── */
-.aero-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; }
-.aero-card { background: rgba(0,0,0,0.2); border-radius: 5px; padding: 10px 12px; border: 1px solid var(--border); }
-.aero-icao { font-weight: 800; font-size: 14px; letter-spacing: 1px; margin-bottom: 4px; }
-.aero-p { font-size: 12px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.02); line-height: 1.4; }
-.aero-p:last-child { border-bottom: none; }
-.aero-p.tempo { color: var(--text-dim); padding-left: 12px; font-style: italic; }
-.aero-p .pt { font-weight: 700; margin-right: 3px; }
-.aero-same { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
-.aero-p.arr1-hl { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
-.aero-p.arr2-hl { outline: 2px solid var(--go); outline-offset: 2px; border-radius: 3px; }
-.aero-p.arr-both { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 3px; box-shadow: 0 0 0 2px var(--go); }
-
-/* ── ARRIVAL TIME ASSISTANT ── */
-.ata-card { padding: 12px 14px; }
-.ata-toggle { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.ata-switch { position: relative; width: 36px; height: 20px; cursor: pointer; }
-.ata-switch input { opacity: 0; width: 0; height: 0; }
-.ata-slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.1); border-radius: 10px; transition: 0.3s; }
-.ata-slider::before { content: ''; position: absolute; height: 16px; width: 16px; left: 2px; bottom: 2px; background: #fff; border-radius: 50%; transition: 0.3s; }
-.ata-switch input:checked + .ata-slider { background: var(--accent); }
-.ata-switch input:checked + .ata-slider::before { transform: translateX(16px); }
-.ata-rows { display: flex; flex-direction: column; gap: 8px; }
-.ata-row { display: flex; align-items: center; gap: 10px; }
-.ata-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.ata-dot.gold { background: var(--accent); }
-.ata-dot.green { background: var(--go); }
-.ata-row input[type="time"] {
-  background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px;
-  color: var(--text); font-family: inherit; font-size: 13px; padding: 4px 8px;
+/* DEMO BANNER & ALERTS */
+.demo-banner {
+  background: var(--warning);
+  color: #000;
+  text-align: center;
+  padding: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
 }
-.ata-zulu { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
+.alert {
+  padding: 14px 18px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  text-align: center;
+  margin-bottom: 16px;
+}
+.alert.warning {
+  border-color: var(--warning);
+  background: rgba(230,165,58,0.08);
+  color: var(--text);
+}
 
-/* ── 7-DAY ── */
-.sd-grid { overflow-x: auto; }
-.sd-chart { display: flex; flex-direction: column; gap: 6px; padding: 4px 4px; }
-.sd-row { display: flex; align-items: center; }
-.sd-label { width: 42px; flex-shrink: 0; font-weight: 700; font-size: 10px; color: var(--text-secondary); letter-spacing: 0.5px; }
-.sd-groups { display: flex; gap: 8px; flex: 1; }
-.sd-group { display: flex; gap: 2px; justify-content: center; align-items: center; }
-.sd-group-hdr { font-size: 11px; font-weight: 700; color: var(--text-dim); text-align: center; letter-spacing: 0.5px; }
-.sd-sub { font-size: 8px; color: var(--text-dim); opacity: 0.6; text-align: center; }
-.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-.dot.go { background: var(--go); box-shadow: 0 0 4px rgba(64,191,64,0.4); }
-.dot.marginal { background: var(--accent); box-shadow: 0 0 4px rgba(229,214,51,0.4); }
-.dot.noGo { background: var(--nogo); box-shadow: 0 0 4px rgba(217,38,38,0.4); }
-.sd-temp { font-weight: 700; font-size: 12px; text-align: center; }
-.sd-syn { margin-top: 8px; font-size: 12px; color: var(--text-secondary); line-height: 1.5; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px; }
-.sd-legend { display: flex; align-items: center; gap: 16px; margin-top: 8px; font-size: 11px; color: var(--text-dim); }
-.sd-legend-item { display: flex; align-items: center; gap: 4px; }
-.thr-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
-.thr-tbl th { text-align: left; padding: 4px 8px; color: var(--text-dim); font-weight: 700; border-bottom: 1px solid var(--border); }
-.thr-tbl td { padding: 4px 8px; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.02); }
-.thr-toggle { font-size: 11px; color: var(--accent); cursor: pointer; margin-top: 6px; letter-spacing: 1px; font-weight: 600; }
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-ghost);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+.footer a { color: var(--tan); text-decoration: none; }
+.footer a:hover { color: var(--text); }
 
-/* ── DRAG & DROP ── */
-.drag-section { transition: opacity 0.2s, transform 0.2s; }
-.drag-section .card-hdr { cursor: grab; }
-.drag-section.dragging { opacity: 0.4; transform: scale(0.98); }
-.drag-section.drag-over-top { border-top: 2px solid var(--accent) !important; }
-.drag-section.drag-over-bottom { border-bottom: 2px solid var(--accent) !important; }
-.drag-handle { font-size: 12px; color: var(--text-dim); opacity: 0.4; margin-right: 6px; cursor: grab; letter-spacing: 2px; }
-.drag-section:hover .drag-handle { opacity: 0.8; }
-.reset-layout { font-size: 10px; color: var(--text-dim); cursor: pointer; letter-spacing: 1px; text-transform: uppercase; opacity: 0.5; transition: opacity 0.2s; }
-.reset-layout:hover { opacity: 1; color: var(--accent); }
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-0); }
+::-webkit-scrollbar-thumb { background: var(--od); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--od-light); }
 
-/* ── FOOTER ── */
-.footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
-.footer-line { width: 40px; height: 2px; background: var(--accent); margin: 0 auto 8px; border-radius: 1px; }
-
-/* ── NO DATA ── */
-.no-data { text-align: center; padding: 20px; color: var(--text-dim); font-size: 13px; }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 900px) {
-  .hero { flex-direction: column-reverse; align-items: center; padding: 20px 16px 0; min-height: auto; gap: 20px; }
-  .hero-right { position: static; flex: none; padding-top: 0; }
-  .mascot { width: 200px; height: 200px; }
-  .mascot-label { font-size: 16px; }
-  .mascot-go-count { font-size: 36px; }
-  .ts-sd-row { flex-direction: column; }
-  .ts-card-narrow { flex: none; width: 100%; }
-  .sd-card-side { flex: none; width: 100%; }
-  .two-col { grid-template-columns: 1fr; }
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .navbar { flex-wrap: wrap; padding: 12px 16px; }
   .nav-center { display: none; }
-  .content { padding: 12px 16px; }
-}
-@media (max-width: 600px) {
-  .navbar { padding: 8px 12px; }
-  .nav-brand span { font-size: 12px; letter-spacing: 1px; }
-  .hero { padding: 16px 12px 0; }
-  .mascot { width: 160px; height: 160px; }
-  .mascot-label { font-size: 14px; letter-spacing: 3px; }
-  .content { padding: 8px 12px; }
-  .area-grid, .aero-grid, .en-grid { grid-template-columns: 1fr; }
-  .metar-grid { grid-template-columns: repeat(2, 1fr); }
+  .container { padding: 16px; }
+  .training-row { grid-template-columns: 32px 1fr auto; gap: 10px; }
+  .metar-hero { grid-template-columns: 1fr; text-align: center; }
+  .metar-category { font-size: 32px; padding: 14px 20px; }
+  .period-btn { padding: 10px 20px; }
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<div class="navbar">
-  <div class="navbar-inner">
-    <div class="nav-brand">
-      <img src="angrycloudclear.png" alt="">
-      <span>Fort Rucker Training Status</span>
-    </div>
-    <div class="nav-center" id="navSolar"></div>
-    <div class="nav-right">
-      <div class="tabs" id="periodTabs"></div>
+<div id="demo-banner" class="demo-banner" style="display:none;">
+  🧪 DEMO MODE — <span id="demo-scenario">Sample Data</span>
+</div>
+
+<nav class="navbar">
+  <div class="brand">
+    <div class="brand-logo">⛅</div>
+    <div class="brand-title">
+      <div class="brand-name">Weather Pal</div>
+      <div class="brand-sub">Fort Rucker · USAACE</div>
     </div>
   </div>
-</div>
 
-<!-- HERO: Data Left, Mascot Right -->
-<div class="hero">
-  <div class="hero-left">
-
-    <!-- Takeoff Data -->
-    <div class="card drag-section" id="toCard" data-section="takeoff" draggable="true" style="display:none">
-      <div class="card-hdr" onclick="tog('toBody')">
-        <span>Takeoff Data (KOZR)</span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span id="spInline" style="display:none;font-size:0;line-height:0"></span>
-          <span class="ci" id="toBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="toBody"></div>
+  <div class="nav-center">
+    <div class="nav-datum">
+      <div class="nav-datum-label">Zulu Time</div>
+      <div class="nav-datum-value" id="zulu-time">—</div>
     </div>
-
-    <!-- MEF Header -->
-    <div class="drag-section" id="mefHdrCard" data-section="mef-hdr" draggable="true" style="display:none"></div>
-
-    <!-- Training Status + Key Weather / Winds side by side -->
-    <div class="ts-sd-row drag-section" data-section="ts-row" draggable="true">
-      <!-- Training Status -->
-      <div class="card gold-top ts-card-narrow">
-        <div class="card-hdr" onclick="tog('tsBody')">
-          <span>Training Status</span>
-          <span style="display:flex;align-items:center;gap:8px">
-            <span id="goCountHdr"></span>
-            <span class="ci" id="tsBody-icon">&#x25BC;</span>
-          </span>
-        </div>
-        <div class="cbd" id="tsBody">
-          <table class="ts-table" id="tsGrid"></table>
-        </div>
-      </div>
-
-      <!-- Key Weather + Flight Level Winds stacked -->
-      <div class="sd-card-side" style="display:flex;flex-direction:column;gap:12px">
-        <div class="card" id="kwCard" style="display:none">
-          <div class="card-hdr" onclick="tog('kwBody')">
-            <span>Key Weather</span>
-            <span class="ci" id="kwBody-icon">&#x25BC;</span>
-          </div>
-          <div class="cbd" id="kwBody"></div>
-        </div>
-        <div class="card">
-          <div class="card-hdr" onclick="tog('wBody')">
-            <span>Flight Level Winds</span>
-            <span style="display:flex;align-items:center;gap:6px">
-              <span id="wSum"></span>
-              <span class="ci" id="wBody-icon">&#x25BC;</span>
-            </span>
-          </div>
-          <div class="cbd" id="wBody"></div>
-        </div>
-      </div>
+    <div class="nav-datum">
+      <div class="nav-datum-label">Local</div>
+      <div class="nav-datum-value" id="local-time">—</div>
     </div>
-
-    <!-- Solo Operations -->
-    <div class="card drag-section" data-section="solo" draggable="true" style="border-top:2px solid #2dd4bf">
-      <div class="card-hdr" onclick="tog('soloBody')">
-        <span style="color:#2dd4bf">&#x2708; Solo Operations</span>
-        <span style="display:flex;align-items:center;gap:8px">
-          <span id="soloGoCountHdr"></span>
-          <span class="ci" id="soloBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="soloBody">
-        <div id="soloWindBar"></div>
-        <div id="soloWwaBar"></div>
-        <table class="ts-table" id="soloGrid"></table>
-      </div>
+    <div class="nav-datum">
+      <div class="nav-datum-label">Sunrise</div>
+      <div class="nav-datum-value" id="sunrise">—</div>
     </div>
-
-    <!-- Advisories -->
-    <div class="drag-section" id="advCard" data-section="advisories" draggable="true" style="display:none"></div>
-
-    <!-- Area Forecasts -->
-    <div class="card drag-section" data-section="area" draggable="true">
-      <div class="card-hdr" onclick="tog('areaBody')">
-        <span>Area Forecasts <span style="font-size:9px;font-weight:600;color:var(--text-dim);letter-spacing:0.5px;margin-left:8px">Area Forecasts Are Time Aware And Adjust Status Based On Current Time</span></span>
-        <span style="display:flex;align-items:center;gap:8px">
-          <span id="validPeriod" style="font-weight:600"></span>
-          <span class="ci" id="areaBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="areaBody"><div class="area-grid" id="areaGrid"></div></div>
+    <div class="nav-datum">
+      <div class="nav-datum-label">Sunset</div>
+      <div class="nav-datum-value" id="sunset">—</div>
     </div>
-
-    <!-- FWB Header -->
-    <div id="fwbHdrCard" style="display:none"></div>
-
-    <!-- Aerodrome Forecasts -->
-    <div class="card drag-section" id="aeroCard" data-section="aero" draggable="true" style="display:none">
-      <div class="card-hdr" onclick="tog('aeroBody')">
-        <span>Aerodrome Forecasts</span>
-        <span class="ci" id="aeroBody-icon">&#x25BC;</span>
-      </div>
-      <div class="cbd" id="aeroBody">
-        <div id="ataCard" style="display:none"></div>
-        <div class="aero-grid" id="aeroGrid"></div>
-      </div>
-    </div>
-
-    <!-- METAR -->
-    <div class="card drag-section" data-section="metar" draggable="true">
-      <div class="card-hdr" onclick="tog('metarBody')">
-        <span>METAR <span style="font-weight:600;color:var(--text-dim);font-size:11px" id="metarStation"></span> <span id="metarEmojis"></span></span>
-        <span style="display:flex;align-items:center;gap:8px">
-          <span id="metarCat"></span>
-          <span id="metarTime" style="font-weight:600"></span>
-          <span class="ci" id="metarBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="metarBody"></div>
-    </div>
-
-    <!-- 7-Day Outlook -->
-    <div class="card drag-section" id="sdCard" data-section="sd" draggable="true" style="display:none">
-      <div class="card-hdr" onclick="tog('sdBody')">
-        <span>7-Day Outlook</span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span id="sdTitle"></span>
-          <span class="ci" id="sdBody-icon">&#x25BC;</span>
-        </span>
-      </div>
-      <div class="cbd" id="sdBody"><div class="sd-grid" id="sdGrid"></div></div>
-    </div>
-
-    <!-- MEF Hazards + Enroute Hazards (175-1) side by side -->
-    <div class="two-col drag-section" data-section="hazards" draggable="true">
-      <div class="card">
-        <div class="card-hdr" onclick="tog('hazBody')">
-          <span>Hazards (MEF)</span>
-          <span style="display:flex;align-items:center;gap:6px">
-            <span id="hazBadge"></span>
-            <span class="ci" id="hazBody-icon">&#x25BC;</span>
-          </span>
-        </div>
-        <div class="cbd" id="hazBody">
-          <div class="haz-grid" id="hazGrid"></div>
-        </div>
-      </div>
-      <div class="card" id="enCard" style="display:none">
-        <div class="card-hdr" onclick="tog('enBody')">
-          <span>Hazards (175-1)</span>
-          <span style="display:flex;align-items:center;gap:6px">
-            <span id="enBadge"></span>
-            <span class="ci" id="enBody-icon">&#x25BC;</span>
-          </span>
-        </div>
-        <div class="cbd" id="enBody"></div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- MASCOT RIGHT -->
-  <div class="hero-right">
-    <img src="angrycloudclear.png" alt="My Weather Pal" class="mascot">
-    <div class="mascot-label">My Weather Pal</div>
-    <div class="mascot-sub">Fort Rucker Flight Weather</div>
-    <div class="mascot-go-count" id="heroGoCount"></div>
-    <div class="mascot-go-label">STATIONS GO</div>
-    <a href="https://www.army.mil/rucker#org-weather" target="_blank" rel="noopener" style="margin-top:16px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);text-decoration:none;padding:6px 16px;border:1px solid var(--accent-border);border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='var(--accent-dim)'" onmouseout="this.style.background='transparent'">RUCKER WEATHER</a>
-    <div id="heroExported" style="margin-top:10px;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase"></div>
+  <div class="nav-actions">
+    <button class="nav-btn" onclick="refresh()">↻ Refresh</button>
+    <a class="nav-btn" href="https://www.army.mil/rucker#org-weather" target="_blank">📡 Source</a>
   </div>
+</nav>
+
+<div class="container">
+
+  <div class="period-bar">
+    <button class="period-btn" data-period="AM">AM</button>
+    <button class="period-btn" data-period="PM">PM</button>
+    <button class="period-btn" data-period="N1">N1</button>
+  </div>
+
+  <div id="data-alert" class="alert" style="display:none;"></div>
+
+  <div class="grid grid-2" style="margin-bottom: 16px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-title-icon">🎯</span>Training Status</div>
+        <div class="card-subtitle">Cairns ≥1000/3 · Stagefields ≥700/1</div>
+      </div>
+      <div class="card-body training-hero" id="training-body"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-title-icon">📡</span>Current METAR</div>
+        <div class="card-subtitle" id="metar-subtitle">—</div>
+      </div>
+      <div id="metar-body"></div>
+    </div>
+  </div>
+
+  <div id="advisories-card" class="card" style="display:none; margin-bottom:16px;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">⚠️</span>Active Advisories</div>
+      <div class="card-subtitle" id="advisories-count">0 active</div>
+    </div>
+    <div class="card-body" id="advisories-body"></div>
+  </div>
+
+  <div id="solo-card" class="card" style="display:none; margin-bottom:16px;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">🎓</span>Solo Operations</div>
+      <div class="card-subtitle">≥1200/3 · Wind ≤15kt · Spread ≤10kt</div>
+    </div>
+    <div class="card-body" id="solo-body"></div>
+  </div>
+
+  <div class="grid grid-2" style="margin-bottom: 16px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
+      </div>
+      <div class="card-body" id="hazards-body">—</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-title-icon">💨</span>Flight Level Winds</div>
+      </div>
+      <div class="card-body" id="flw-body">—</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">🗺️</span>Area Forecasts</div>
+      <div class="card-subtitle">Color-coded by flight category</div>
+    </div>
+    <div id="areas-body">—</div>
+  </div>
+
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">🌅</span>Solar / Lunar</div>
+    </div>
+    <div class="card-body">
+      <div class="solar-grid" id="solar-body">—</div>
+    </div>
+  </div>
+
 </div>
 
-<!-- CONTENT: Full-width below the fold -->
-<div class="content">
-
-
-
-
-
-</div>
-
-<div class="footer">
-  <div class="footer-line"></div>
-  <div id="footerText">Data exported from My Weather Pal</div>
-  <div class="reset-layout" onclick="resetLayout()">Reset Card Layout</div>
-</div>
+<footer class="footer">
+  Weather Pal · Fort Rucker · USAACE ·
+  <a href="https://www.army.mil/rucker#org-weather" target="_blank">Rucker Weather Page</a>
+  · Data from <a href="https://aviationweather.gov" target="_blank">aviationweather.gov</a>
+  · <span id="footer-updated">—</span>
+</footer>
 
 <script>
-let DATA=null, currentPeriod=localStorage.getItem('selectedPeriod')||'AM';
+const METAR_STATION = "KOZR";
+const METAR_REFRESH_MS = 5 * 60 * 1000;
+const DATA_REFRESH_MS = 5 * 60 * 1000;
+let DATA = null;
+let selectedPeriod = localStorage.getItem("selectedPeriod") || "AM";
 
-async function loadData(){
-  try{
-    const r=await fetch('data.json?t='+Date.now());
-    DATA=await r.json(); initTabs(); render();
-  }catch(e){
-    document.querySelector('.hero-left').innerHTML='<div class="no-data">UNABLE TO LOAD DATA.JSON<br><br>Export dashboard data from My Weather Pal.</div>';
+function zuluHHMM() {
+  const d = new Date();
+  return String(d.getUTCHours()).padStart(2,'0') +
+         String(d.getUTCMinutes()).padStart(2,'0');
+}
+function zuluMinutes() {
+  const d = new Date();
+  return d.getUTCHours() * 60 + d.getUTCMinutes();
+}
+function localTimeHHMM() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2,'0') + ':' +
+         String(d.getMinutes()).padStart(2,'0');
+}
+function fmtTime(el, v) { if (el) el.textContent = v; }
+
+function parseZuluFromText(s) {
+  if (!s) return null;
+  const digits = String(s).replace(/[^0-9]/g,'');
+  if (digits.length < 4) return null;
+  const hh = parseInt(digits.substring(0,2));
+  const mm = parseInt(digits.substring(2,4));
+  if (isNaN(hh) || isNaN(mm)) return null;
+  return hh * 60 + mm;
+}
+
+function parseCeiling(text) {
+  if (!text) return null;
+  let lowest = null;
+  const re = /(BKN|OVC)(\d{3})/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const ft = parseInt(m[2]) * 100;
+    if (lowest === null || ft < lowest) lowest = ft;
   }
+  return lowest;
 }
 
-function initTabs(){
-  const t=document.getElementById('periodTabs'); t.innerHTML='';
-  DATA.forecasts.forEach(f=>{
-    const b=document.createElement('button');
-    b.className='tab'+(f.type===currentPeriod?' active':'');
-    b.textContent=f.type;
-    b.onclick=()=>{currentPeriod=f.type;localStorage.setItem('selectedPeriod',f.type);render()};
-    t.appendChild(b);
-  });
+function parseVisibility(text) {
+  if (!text) return null;
+  const mixed = text.match(/(\d+)\s+(\d+)\/(\d+)\s*SM/);
+  if (mixed) return parseInt(mixed[1]) + parseInt(mixed[2]) / parseInt(mixed[3]);
+  const frac = text.match(/(\d+)\/(\d+)\s*SM/);
+  if (frac) return parseInt(frac[1]) / parseInt(frac[2]);
+  const integer = text.match(/(\d+)\s*SM/);
+  if (integer) return parseInt(integer[1]);
+  return null;
 }
 
-function tog(id){
-  const b=document.getElementById(id),ic=document.getElementById(id+'-icon');
-  if(b)b.classList.toggle('collapsed');
-  if(ic)ic.classList.toggle('collapsed');
+function flightCategory(ceiling, vis) {
+  if (ceiling === null && vis === null) return 'vfr';
+  const c = ceiling === null ? 99999 : ceiling;
+  const v = vis === null ? 99 : vis;
+  if (c < 500 || v < 1) return 'lifr';
+  if (c < 1000 || v < 3) return 'ifr';
+  if (c <= 3000 || v <= 5) return 'mvfr';
+  return 'vfr';
 }
 
-function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
-function bc(s){return s==='GO'?'badge go':s==='NO-GO'?'badge nogo':'badge unknown'}
-function cvtAlt(c){if(!c)return'--';const n=parseInt(c)*100;return isNaN(n)?c:n.toLocaleString()+' ft'}
-function windSpd(w){if(!w)return 0;const m=w.match(/(\d{3})(\d{2,3})/);return m?parseInt(m[2]):0}
-function fmtWind(m){if(!m.wspd&&!m.wdir)return'CALM';if(m.wspd===0)return'CALM';const d=m.wdir===0?'VRB':String(m.wdir).padStart(3,'0'),s=String(m.wspd||0).padStart(2,'0');return m.wgst?d+'/'+s+'G'+m.wgst+'KT':d+'/'+s+'KT'}
-function fcColor(c){switch((c||'').toUpperCase()){case'VFR':return'var(--vfr)';case'MVFR':return'var(--mvfr)';case'IFR':return'var(--ifr)';case'LIFR':return'var(--lifr)';default:return'var(--text)'}}
-
-function wxEmoji(wx){
-  if(!wx)return'';const e=[];
-  if(/TS/i.test(wx))e.push('\u26C8\uFE0F');if(/RA/i.test(wx))e.push('\uD83C\uDF27\uFE0F');
-  if(/SN/i.test(wx))e.push('\u2744\uFE0F');if(/DZ/i.test(wx))e.push('\uD83C\uDF26\uFE0F');
-  if(/FG/i.test(wx))e.push('\uD83C\uDF2B\uFE0F');if(/BR/i.test(wx))e.push('\uD83C\uDF01');
-  if(/HZ/i.test(wx))e.push('\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F');if(/FZ/i.test(wx))e.push('\uD83E\uDD76');
-  if(/PL/i.test(wx))e.push('\uD83E\uDDCA');if(/GR|GS/i.test(wx))e.push('\uD83E\uDEA8');
-  if(/DU|SA/i.test(wx))e.push('\uD83D\uDCA8');if(/FC/i.test(wx))e.push('\uD83C\uDF2A\uFE0F');
-  return e.join(' ');
-}
-
-function detFC(sky,vis){
-  let c=99999,v=99;
-  if(sky){const ls=sky.match(/(BKN|OVC)(\d{3})/g);if(ls)ls.forEach(l=>{const b=parseInt(l.match(/\d{3}/)[0])*100;if(b<c)c=b})}
-  if(vis){const s=vis.replace(/SM/i,'').trim();if(s.startsWith('P'))v=99;else if(s.includes('/')){const p=s.split(/\s+/);if(p.length===2&&p[1].includes('/')){const f=p[1].split('/');v=parseInt(p[0])+parseInt(f[0])/parseInt(f[1])}else{const f=s.split('/');v=parseInt(f[0])/parseInt(f[1])}}else v=parseFloat(s)||99}
-  if(c<500||v<1)return'LIFR';if(c<1000||v<3)return'IFR';if(c<=3000||v<=5)return'MVFR';return'VFR';
-}
-
-function di(l,v){return'<div class="di"><span class="dl">'+l+'</span><span class="dv">'+v+'</span></div>'}
-
-/* ── TIME-AWARE SEGMENT LOGIC ── */
-function currentZuluMinutes(){
-  const now=new Date();
-  return now.getUTCHours()*60+now.getUTCMinutes();
-}
-
-function parseSegments(forecastText){
-  if(!forecastText)return[{text:'',startMin:0}];
-  // Split by AFT headers
-  const parts=forecastText.split(/(AFT\s+\d{4}Z:)/);
-  const segs=[];
-  let cur='';
-  for(let i=0;i<parts.length;i++){
-    const p=parts[i];
-    if(/^AFT\s+\d{4}Z:/.test(p.trim())){
-      if(cur.trim())segs.push({text:cur.trim(),startMin:0});
-      cur=p;
-    }else{
-      cur+=p;
-    }
+function splitSegments(text) {
+  if (!text) return [];
+  const segs = [];
+  const re = /((?:ISOLD|TEMPO|BECMG)\s+\d{4}-\d{4}Z:?|AFT\s+\d{4}Z:?|\d{4}-\d{4}Z:?)/g;
+  const markers = [];
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    markers.push({ header: m[0], index: m.index, endIndex: m.index + m[0].length });
   }
-  if(cur.trim())segs.push({text:cur.trim(),startMin:0});
-  // Parse start times for AFT segments
-  for(let i=1;i<segs.length;i++){
-    const m=segs[i].text.match(/AFT\s+(\d{2})(\d{2})Z:/);
-    if(m)segs[i].startMin=parseInt(m[1])*60+parseInt(m[2]);
+  if (markers.length === 0) {
+    return [{ text: text.trim(), isTemporary: false, startMin: null }];
+  }
+  if (markers[0].index > 0) {
+    const pre = text.substring(0, markers[0].index).trim();
+    if (pre) segs.push({ text: pre, isTemporary: false, startMin: null });
+  }
+  for (let i = 0; i < markers.length; i++) {
+    const cur = markers[i];
+    const nextIdx = i + 1 < markers.length ? markers[i + 1].index : text.length;
+    const body = text.substring(cur.endIndex, nextIdx).trim();
+    const full = cur.header + ' ' + body;
+    const isTemp = /^(ISOLD|TEMPO|BECMG)/i.test(cur.header);
+    const startMin = parseZuluFromText(cur.header);
+    segs.push({ text: full.trim(), isTemporary: isTemp, startMin });
   }
   return segs;
 }
 
-function getActiveSegIndex(segs){
-  const now=currentZuluMinutes();
-  let active=0;
-  // Detect cross-midnight: all timed segments early morning + current time late evening
-  const timed=segs.filter(s=>s.startMin>0).map(s=>s.startMin);
-  const allEarly=timed.length>0&&timed.every(t=>t<720);
-  const crossMid=allEarly&&now>=1080;
-  if(crossMid){
-    // Pre-midnight: no post-midnight segment has started yet, stay on base (index 0)
-    // Post-midnight: use adjusted comparison
-    for(let i=segs.length-1;i>0;i--){
-      const adj=segs[i].startMin<720?segs[i].startMin+1440:segs[i].startMin;
-      const adjNow=now<720?now+1440:now;
-      if(adjNow>=adj){active=i;break}
+function currentSegmentIndex(segments) {
+  const timed = segments.map((s, i) => ({ ...s, i }))
+    .filter(s => !s.isTemporary && s.startMin !== null);
+  if (timed.length === 0) return 0;
+  const now = zuluMinutes();
+  const allEarly = timed.every(s => s.startMin < 720);
+  const effective = timed.map(s => ({
+    ...s,
+    effectiveStart: (allEarly && now >= 1080) ? s.startMin + 1440 : s.startMin
+  }));
+  let best = effective[0];
+  for (const s of effective) {
+    if (s.effectiveStart <= now && s.effectiveStart >= best.effectiveStart) best = s;
+  }
+  return best.i;
+}
+
+function currentTrainingGo(forecast, amendment) {
+  const text = amendment || forecast || '';
+  const segs = splitSegments(text);
+  const main = segs.filter(s => !s.isTemporary);
+  if (main.length === 0) return false;
+  const idx = currentSegmentIndex(segs);
+  const activeSeg = segs[idx] || main[0];
+  const ceil = parseCeiling(activeSeg.text);
+  const vis = parseVisibility(activeSeg.text);
+  return (ceil === null ? 99999 : ceil) >= 700 && (vis === null ? 99 : vis) >= 1;
+}
+
+function parseSegmentWind(text) {
+  if (!text) return { spd: 0, gust: 0 };
+  const m = text.match(/(\d{3}|VRB)(\d{2,3})(G(\d{2,3}))?KT/);
+  if (!m) return { spd: 0, gust: 0 };
+  return { spd: parseInt(m[2]), gust: m[4] ? parseInt(m[4]) : 0 };
+}
+
+function soloStatus(forecast, amendment) {
+  const text = amendment || forecast || '';
+  const segs = splitSegments(text);
+  if (segs.length === 0) return { go: false, reason: 'No data' };
+  const idx = currentSegmentIndex(segs);
+  const seg = segs[idx] || segs[0];
+  const ceil = parseCeiling(seg.text);
+  const vis = parseVisibility(seg.text);
+  const wind = parseSegmentWind(seg.text);
+  if (ceil !== null && ceil < 1200) return { go: false, reason: `Ceil ${ceil}ft` };
+  if (vis !== null && vis < 3) return { go: false, reason: `Vis ${vis}SM` };
+  if (wind.spd > 15) return { go: false, reason: `Wind ${wind.spd}kt` };
+  if (wind.gust > 15) return { go: false, reason: `Gust G${wind.gust}kt` };
+  if (wind.gust > 0 && (wind.gust - wind.spd) > 10) return { go: false, reason: `Spread ${wind.gust - wind.spd}kt` };
+  return { go: true, reason: 'OK' };
+}
+
+async function fetchMETAR() {
+  try {
+    const url = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const arr = await res.json();
+    if (!arr || arr.length === 0) return null;
+    return arr[0];
+  } catch (e) {
+    console.warn('METAR fetch failed:', e);
+    return null;
+  }
+}
+
+function isMetarStale(metar) {
+  if (!metar || !metar.reportTime) return true;
+  const rep = new Date(metar.reportTime);
+  if (isNaN(rep)) return true;
+  return (Date.now() - rep.getTime()) >= 60 * 60 * 1000;
+}
+
+function metarCeiling(metar) {
+  if (!metar || !metar.clouds || metar.clouds.length === 0) return null;
+  const ceils = metar.clouds
+    .filter(c => c.cover === 'BKN' || c.cover === 'OVC')
+    .map(c => c.base || 0);
+  if (ceils.length === 0) return null;
+  return Math.min(...ceils);
+}
+
+function metarMeetsTraining(metar) {
+  if (!metar) return null;
+  const c = metarCeiling(metar);
+  const ceil = c === null ? 99999 : c;
+  let vis = 99;
+  if (metar.visib) {
+    const num = parseFloat(String(metar.visib).replace('+',''));
+    if (!isNaN(num)) vis = num;
+  }
+  return ceil >= 1000 && vis >= 3;
+}
+
+function renderTraining(metar, forecast) {
+  const body = document.getElementById('training-body');
+  const stagefields = [
+    { name: 'Allen', area: 'GOLDFISH' },
+    { name: 'Toth', area: 'GOLDFISH' },
+    { name: 'Highbluff', area: 'BEARCAT' },
+    { name: 'Lucas', area: 'VANGUARD C' },
+  ];
+
+  let cairnsStatus = 'unknown';
+  let cairnsText = 'UNKNOWN';
+  if (metar && !isMetarStale(metar)) {
+    const ok = metarMeetsTraining(metar);
+    cairnsStatus = ok ? 'go' : 'nogo';
+    cairnsText = ok ? 'GO for Departure' : 'NO GO for Departure';
+  }
+
+  let html = `
+    <div class="training-row cairns">
+      <div class="training-icon">🚁</div>
+      <div class="training-name">
+        <div class="training-station">Cairns AAF</div>
+        <div class="training-area">KOZR · 1000/3 Minimums</div>
+      </div>
+      <span class="badge cairns ${cairnsStatus}">${cairnsText}</span>
+    </div>
+  `;
+
+  for (const sf of stagefields) {
+    let status = 'unknown', text = '—';
+    if (forecast && forecast.mef && forecast.mef.areaForecasts) {
+      const area = forecast.mef.areaForecasts.find(a =>
+        (a.name || '').toUpperCase() === sf.area);
+      if (area) {
+        const isGo = currentTrainingGo(area.forecast, area.amendmentText);
+        status = isGo ? 'go' : 'nogo';
+        text = isGo ? 'GO' : 'NO GO';
+      }
     }
+    html += `
+      <div class="training-row">
+        <div class="training-icon">🚁</div>
+        <div class="training-name">
+          <div class="training-station">${sf.name}</div>
+          <div class="training-area">${sf.area}</div>
+        </div>
+        <span class="badge ${status}">${text}</span>
+      </div>
+    `;
+  }
+
+  body.innerHTML = html;
+}
+
+function renderMETAR(metar) {
+  const body = document.getElementById('metar-body');
+  const subtitle = document.getElementById('metar-subtitle');
+
+  if (!metar) {
+    body.innerHTML = `
+      <div class="metar-hero">
+        <div class="metar-category unknown">—</div>
+        <div class="metar-details">
+          <div class="metar-station">${METAR_STATION}</div>
+          <div class="metar-time">No METAR available</div>
+        </div>
+      </div>
+    `;
+    subtitle.textContent = METAR_STATION;
+    return;
+  }
+
+  const stale = isMetarStale(metar);
+  const cat = (metar.fltCat || '').toLowerCase();
+  const reportDate = new Date(metar.reportTime);
+  const timeStr = isNaN(reportDate) ? metar.reportTime :
+    (String(reportDate.getUTCDate()).padStart(2,'0') + ' ' +
+     ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][reportDate.getUTCMonth()] + ' ' +
+     String(reportDate.getUTCHours()).padStart(2,'0') +
+     String(reportDate.getUTCMinutes()).padStart(2,'0') + 'Z');
+
+  let windStr = 'CALM';
+  if (metar.wspd) {
+    const dir = metar.wdir ? String(metar.wdir).padStart(3,'0') : 'VRB';
+    windStr = `${dir}/${String(metar.wspd).padStart(2,'0')}`;
+    if (metar.wgst) windStr += `G${metar.wgst}`;
+    windStr += 'KT';
+  }
+
+  const ceil = metarCeiling(metar);
+  const ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
+
+  let altimStr = '—';
+  if (metar.altim) altimStr = (metar.altim / 33.8639).toFixed(2) + '"';
+
+  body.innerHTML = `
+    <div class="metar-hero">
+      <div class="metar-category ${cat || 'unknown'}">${metar.fltCat || '—'}</div>
+      <div class="metar-details">
+        <div class="metar-station">${metar.icaoId || METAR_STATION}${stale ? '<span class="metar-old">OLD DATA</span>' : ''}</div>
+        <div class="metar-time">${timeStr}${metar.name ? ' · ' + metar.name : ''}</div>
+      </div>
+    </div>
+    <div class="metar-grid">
+      <div class="metar-cell"><div class="metar-label">Wind</div><div class="metar-value">${windStr}</div></div>
+      <div class="metar-cell"><div class="metar-label">Visibility</div><div class="metar-value">${metar.visib || '—'} SM</div></div>
+      <div class="metar-cell"><div class="metar-label">Ceiling</div><div class="metar-value">${ceilStr}</div></div>
+      <div class="metar-cell"><div class="metar-label">Temp</div><div class="metar-value">${metar.temp != null ? metar.temp + '°C' : '—'}</div></div>
+      <div class="metar-cell"><div class="metar-label">Dewpoint</div><div class="metar-value">${metar.dewp != null ? metar.dewp + '°C' : '—'}</div></div>
+      <div class="metar-cell"><div class="metar-label">Altimeter</div><div class="metar-value">${altimStr}</div></div>
+    </div>
+    ${metar.rawOb ? `<div class="metar-raw">${metar.rawOb}</div>` : ''}
+  `;
+  subtitle.textContent = metar.icaoId || METAR_STATION;
+}
+
+function renderAdvisories(forecast) {
+  const card = document.getElementById('advisories-card');
+  const body = document.getElementById('advisories-body');
+  const count = document.getElementById('advisories-count');
+
+  const advs = (forecast && forecast.mef && forecast.mef.weatherAdvisories) || [];
+  const now = zuluMinutes();
+  const active = advs.filter(a => {
+    const from = parseZuluFromText(a.validFrom);
+    const to = parseZuluFromText(a.validTo);
+    if (from === null || to === null) return true;
+    if (to < from) return now >= from || now <= to;
+    return now >= from && now <= to;
+  });
+
+  if (active.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  count.textContent = `${active.length} active`;
+
+  body.innerHTML = active.map(a => {
+    const red = (a.type === 'TWA' || a.type === 'WARNING');
+    return `
+      <div class="advisory ${red ? 'red' : ''}">
+        <div class="advisory-type">${a.type} ${a.number || ''}</div>
+        <div class="advisory-content">
+          <div class="advisory-title">${a.criteria || ''}</div>
+          <div class="advisory-time">${a.validFrom || ''} — ${a.validTo || ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSolo(forecast) {
+  const card = document.getElementById('solo-card');
+  const body = document.getElementById('solo-body');
+
+  if (!forecast || (forecast.type !== 'AM' && forecast.type !== 'PM')) {
+    card.style.display = 'none';
+    return;
+  }
+
+  const stagefields = [
+    { name: 'Allen', area: 'GOLDFISH' },
+    { name: 'Toth', area: 'GOLDFISH' },
+    { name: 'Highbluff', area: 'BEARCAT' },
+    { name: 'Lucas', area: 'VANGUARD C' },
+  ];
+
+  let html = '';
+  let rendered = false;
+  for (const sf of stagefields) {
+    if (!forecast.mef || !forecast.mef.areaForecasts) continue;
+    const area = forecast.mef.areaForecasts.find(a =>
+      (a.name || '').toUpperCase() === sf.area);
+    if (!area) continue;
+    const solo = soloStatus(area.forecast, area.amendmentText);
+    rendered = true;
+    html += `
+      <div class="solo-row">
+        <div class="solo-dot ${solo.go ? 'go' : 'nogo'}"></div>
+        <div class="solo-name">
+          <div class="solo-station">${sf.name}</div>
+          ${!solo.go ? `<div class="solo-reason">${solo.reason}</div>` : ''}
+        </div>
+        <span class="badge ${solo.go ? 'solo' : 'nosolo'}">${solo.go ? 'GO for Solo' : 'No-Go for Solo'}</span>
+      </div>
+    `;
+  }
+  if (!rendered) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  body.innerHTML = html;
+}
+
+function renderAreas(forecast) {
+  const body = document.getElementById('areas-body');
+  if (!forecast || !forecast.mef || !forecast.mef.areaForecasts) {
+    body.innerHTML = '<div class="card-body" style="color:var(--text-dim)">No forecast data available.</div>';
+    return;
+  }
+  const areas = forecast.mef.areaForecasts;
+  body.innerHTML = areas.map(a => {
+    const text = a.amendmentText || a.forecast || '';
+    const segs = splitSegments(text);
+    const colored = segs.map(s => {
+      if (s.isTemporary) return `<span class="seg-tmp">${s.text}</span>`;
+      const ceil = parseCeiling(s.text);
+      const vis = parseVisibility(s.text);
+      const cat = flightCategory(ceil, vis);
+      return `<span class="seg-${cat}">${s.text}</span>`;
+    }).join('\n');
+    return `
+      <div class="area-card">
+        <div class="area-header">
+          <div class="area-name">${a.name}</div>
+          ${a.amendmentNumber ? `<span class="badge unknown" style="font-size:10px">${a.amendmentNumber}</span>` : ''}
+        </div>
+        <div class="area-text">${colored}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderFLW(forecast) {
+  const body = document.getElementById('flw-body');
+  if (!forecast || !forecast.mef || !forecast.mef.flightLevelWinds || forecast.mef.flightLevelWinds.length === 0) {
+    body.innerHTML = '<div style="color:var(--text-dim)">No data.</div>';
+    return;
+  }
+  const winds = forecast.mef.flightLevelWinds;
+  let html = `
+    <div class="flw-grid">
+      <div class="flw-header">Level</div>
+      <div class="flw-header">Wind</div>
+      <div class="flw-header">Temp</div>
+  `;
+  for (const w of winds) {
+    const levelFt = parseInt(w.level) * 100;
+    const levelStr = levelFt >= 1000 ? (levelFt/1000).toFixed(0) + 'k ft' : levelFt + ' ft';
+    const windMatch = (w.wind || '').match(/(\d{3})(\d{2,3})KT/);
+    const windSpd = windMatch ? parseInt(windMatch[2]) : 0;
+    const windClass = windSpd >= 20 ? 'flw-wind-high' : '';
+    const tempMatch = (w.temp || '').match(/-?\d+/);
+    const tempC = tempMatch ? parseInt(tempMatch[0]) : 99;
+    const tempClass = tempC <= 4 ? 'flw-temp-cold' : '';
+    html += `
+      <div class="flw-cell flw-level">${levelStr}</div>
+      <div class="flw-cell ${windClass}">${w.wind || '—'}</div>
+      <div class="flw-cell ${tempClass}">${w.temp || '—'}</div>
+    `;
+  }
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function renderHazards(forecast) {
+  const body = document.getElementById('hazards-body');
+  if (!forecast || !forecast.mef || !forecast.mef.flightHazards) {
+    body.innerHTML = '<div style="color:var(--text-dim)">No data.</div>';
+    return;
+  }
+  const h = forecast.mef.flightHazards;
+  const rows = [
+    ['Turbulence', h.turbulence],
+    ['Icing', h.icing],
+    ['Thunderstorms', h.thunderstorms],
+    ['Low Level Wind Shear', h.llws],
+  ];
+  body.innerHTML = rows.map(([label, val]) => {
+    const isNone = !val || /^NONE$/i.test(val);
+    const cls = isNone ? 'none' : 'active';
+    return `
+      <div class="hazard-row">
+        <div class="hazard-label">${label}</div>
+        <div class="hazard-value ${cls}">${val || 'NONE'}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSolar(forecast) {
+  const body = document.getElementById('solar-body');
+  const sl = forecast && forecast.mef && forecast.mef.solarLunar;
+  if (!sl) {
+    body.innerHTML = '<div style="color:var(--text-dim)">No data.</div>';
+    return;
+  }
+
+  const items = [
+    { icon: '🌅', label: 'BMNT', value: sl.bmnt },
+    { icon: '☀️', label: 'Sunrise', value: sl.sunrise },
+    { icon: '🌇', label: 'Sunset', value: sl.sunset },
+    { icon: '🌃', label: 'EENT', value: sl.eent },
+    { icon: '🌙', label: 'Moonrise', value: sl.moonrise },
+    { icon: '🌘', label: 'Moonset', value: sl.moonset },
+    { icon: '✨', label: 'Illumination', value: sl.illumination },
+  ].filter(i => i.value);
+
+  body.innerHTML = items.map(i => `
+    <div class="solar-item">
+      <div class="solar-icon">${i.icon}</div>
+      <div>
+        <div class="solar-label">${i.label}</div>
+        <div class="solar-value">${i.value}</div>
+      </div>
+    </div>
+  `).join('');
+
+  if (sl.sunrise) fmtTime(document.getElementById('sunrise'), sl.sunrise);
+  if (sl.sunset) fmtTime(document.getElementById('sunset'), sl.sunset);
+}
+
+function activeForecast() {
+  if (!DATA || !DATA.forecasts) return null;
+  return DATA.forecasts.find(f => f.type === selectedPeriod) || DATA.forecasts[0];
+}
+
+function renderAll() {
+  const forecast = activeForecast();
+  const metar = DATA && DATA.metar;
+  renderTraining(metar, forecast);
+  renderMETAR(metar);
+  renderAdvisories(forecast);
+  renderSolo(forecast);
+  renderAreas(forecast);
+  renderFLW(forecast);
+  renderHazards(forecast);
+  renderSolar(forecast);
+
+  const alertEl = document.getElementById('data-alert');
+  if (!forecast) {
+    alertEl.style.display = 'block';
+    alertEl.className = 'alert warning';
+    alertEl.innerHTML = '⚠️ No forecast data loaded. METAR is live, but area forecasts / training status require exported data (data.json).';
   } else {
-    for(let i=segs.length-1;i>0;i--){
-      if(now>=segs[i].startMin){active=i;break}
-    }
+    alertEl.style.display = 'none';
   }
-  return active;
+
+  document.getElementById('footer-updated').textContent =
+    'Updated ' + localTimeHHMM();
 }
 
-function getActiveSegmentCeilVis(forecastText){
-  // Get ceiling and visibility from the currently active segment
-  const segs=parseSegments(forecastText);
-  const ai=getActiveSegIndex(segs);
-  const s=segs[ai].text;
-  // Strip ISOLD/TEMPO from the segment
-  const clean=s.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|AFT|$))/gi,'');
-  let c=99999,v=99;
-  const ch=clean.match(/(OVC|BKN)(\d{3})/);
-  if(ch)c=parseInt(ch[2])*100;
-  const vh=clean.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);
-  if(vh){
-    const vs=vh[1];
-    if(vs.includes('/')){const p=vs.trim().split(/\s+/);if(p.length===2){const f=p[1].split('/');v=parseInt(p[0])+parseInt(f[0])/parseInt(f[1])}else{const f=vs.split('/');v=parseInt(f[0])/parseInt(f[1])}}
-    else v=parseFloat(vs)||99;
+async function loadData() {
+  try {
+    const res = await fetch('data.json?' + Date.now(), { cache: 'no-store' });
+    if (res.ok) DATA = await res.json();
+  } catch (e) {
+    DATA = DATA || { forecasts: [], metar: null };
   }
-  if(/P6SM/i.test(clean))v=7;
-  return{ceil:c,vis:v};
-}
-
-function activeAreaColor(forecastText){
-  const cv=getActiveSegmentCeilVis(forecastText);
-  if(cv.ceil<500||cv.vis<1)return'var(--lifr)';
-  if(cv.ceil<1000||cv.vis<3)return'var(--ifr)';
-  if(cv.ceil<=3000||cv.vis<=5)return'var(--mvfr)';
-  return'var(--vfr)';
-}
-
-function activeAreaFC(forecastText){
-  const cv=getActiveSegmentCeilVis(forecastText);
-  if(cv.ceil<500||cv.vis<1)return'LIFR';
-  if(cv.ceil<1000||cv.vis<3)return'IFR';
-  if(cv.ceil<=3000||cv.vis<=5)return'MVFR';
-  return'VFR';
-}
-
-function areaIsGo(forecastText){
-  const cv=getActiveSegmentCeilVis(forecastText);
-  return cv.ceil>=700&&cv.vis>=1;
-}
-
-/* Compute time-aware trainability info from area forecast text (matches iOS app logic) */
-function areaTrainInfo(forecastText){
-  if(!forecastText)return{status:'NO-GO',info:'--'};
-  const segs=parseSegments(forecastText);
-  const ai=getActiveSegIndex(segs);
-  const nowMin=currentZuluMinutes();
-  // Check if current segment is GO
-  const curCV=segCeilVis(segs[ai].text);
-  const curGo=curCV.ceil>=700&&curCV.vis>=1;
-  if(curGo){
-    // Currently GO — check if a future segment drops below
-    for(let i=ai+1;i<segs.length;i++){
-      const fCV=segCeilVis(segs[i].text);
-      if(fCV.ceil<700||fCV.vis<1){
-        const diff=segs[i].startMin-nowMin;
-        if(diff>0){const h=Math.floor(diff/60),m=diff%60;return{status:'GO',info:'Untrainable in '+(h?h+'h ':'')+(m?m+'m':'')};}
-        return{status:'GO',info:'Trainable'};
-      }
-    }
-    return{status:'GO',info:'Trainable'};
-  } else {
-    // Currently NO-GO — check if a future segment is GO
-    for(let i=ai+1;i<segs.length;i++){
-      const fCV=segCeilVis(segs[i].text);
-      if(fCV.ceil>=700&&fCV.vis>=1){
-        const diff=segs[i].startMin-nowMin;
-        if(diff>0){const h=Math.floor(diff/60),m=diff%60;return{status:'NO-GO',info:'Trainable in '+(h?h+'h ':'')+(m?m+'m':'')};}
-        return{status:'NO-GO',info:'Untrainable'};
-      }
-    }
-    return{status:'NO-GO',info:'Untrainable'};
+  const liveMetar = await fetchMETAR();
+  if (liveMetar) {
+    if (!DATA) DATA = { forecasts: [], metar: null };
+    DATA.metar = liveMetar;
   }
+  renderAll();
 }
 
-/* Get ceiling/vis from a single segment text (no active-segment lookup) */
-function segCeilVis(segText){
-  const clean=segText.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|AFT|$))/gi,'');
-  let c=99999,v=99;
-  const ch=clean.match(/(OVC|BKN)(\d{3})/);
-  if(ch)c=parseInt(ch[2])*100;
-  const vh=clean.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);
-  if(vh){
-    const vs=vh[1];
-    if(vs.includes('/')){const p=vs.trim().split(/\s+/);if(p.length===2){const f=p[1].split('/');v=parseInt(p[0])+parseInt(f[0])/parseInt(f[1])}else{const f=vs.split('/');v=parseInt(f[0])/parseInt(f[1])}}
-    else v=parseFloat(vs)||99;
-  }
-  if(/P6SM/i.test(clean))v=7;
-  return{ceil:c,vis:v};
-}
+async function refresh() { await loadData(); }
 
-/* ── WIND PARSING ── */
-function parseWindStr(w){
-  if(!w)return{dir:0,spd:0};
-  const m=w.match(/(\d{3})(\d{2,3})(?:G\d+)?\s*KT/);
-  if(!m)return{dir:0,spd:0};
-  return{dir:parseInt(m[1]),spd:parseInt(m[2])};
-}
-
-/* ── HAZARD ALTITUDE CONVERSION ── */
-function cvtHazVal(v){
-  if(!v||v.toUpperCase()==='NONE')return v||'NONE';
-  let hasAlt=false;
-  let result=v.replace(/\b(\d{3})\b/g,function(m){
-    const n=parseInt(m);
-    if(n>=1&&n<=600){hasAlt=true;return(n*100).toLocaleString()}
-    return m;
-  });
-  if(hasAlt){
-    result=result.replace(/(\d),?(\d{3})-(\d)/g,'$1,$2 - $3');
-    if(!/ ft/i.test(result))result+=' ft';
-  }
-  return result;
-}
-
-/* ── TS COVERAGE PERCENTAGES ── */
-function tsCovPct(cov){
-  if(!cov)return'';
-  const u=cov.toUpperCase();
-  if(u==='ISOLATED'||u==='ISOLD')return'ISOLATED (1-10%)';
-  if(u==='SCATTERED'||u==='SCT')return'SCATTERED (25-50%)';
-  if(u==='BROKEN'||u==='BKN')return'BROKEN (50-90%)';
-  if(u==='OVERCAST'||u==='OVC')return'OVERCAST (>90%)';
-  return cov;
-}
-
-/* ── FRESHNESS CHECK ── */
-function isForecastFresh(mefDate){
-  if(!mefDate)return false;
-  const today=new Date();
-  const d=parseInt(mefDate);
-  return d===today.getUTCDate();
-}
-
-function metarAgeMinutes(){
-  const m=DATA?.metar;
-  if(!m||!m.reportTime)return 999;
-  // Parse "09 Mar 1452Z"
-  const match=m.reportTime.match(/(\d{2})\s+\w+\s+(\d{2})(\d{2})Z/);
-  if(!match)return 999;
-  const day=parseInt(match[1]),hr=parseInt(match[2]),mn=parseInt(match[3]);
-  const now=new Date();
-  const obsMin=day*1440+hr*60+mn;
-  const nowMin=now.getUTCDate()*1440+now.getUTCHours()*60+now.getUTCMinutes();
-  return Math.abs(nowMin-obsMin);
-}
-
-/* ── CORE FUNCTIONS ── */
-function ceilNum(cl){if(!cl)return 99999;let c=99999;cl.forEach(l=>{if((l.cover==='BKN'||l.cover==='OVC')&&l.base!=null&&l.base<c)c=l.base});return c}
-function tsIcon(info){if(!info||info==='--')return'';if(/^Trainable$/i.test(info)||/weather is trainable/i.test(info))return'\u2705 ';if(/trainable in/i.test(info))return'\uD83D\uDD50 ';if(/untrainable in/i.test(info))return'\u26A0\uFE0F ';if(/untrainable/i.test(info))return'\u274C ';return''}
-function tsInfoCol(info){if(!info||info==='--')return'var(--text-dim)';if(/^Trainable$/i.test(info)||/weather is trainable/i.test(info))return'var(--go)';if(/trainable in/i.test(info))return'var(--accent)';if(/untrainable in/i.test(info))return'#e08040';return'var(--nogo)'}
-function advBadges(advs,areaName){return advs.filter(a=>(a.criteria||'').toUpperCase().includes(areaName.toUpperCase())).map(a=>{const w=a.type==='TWA'||a.type==='WARNING';return'<span style="font-size:10px;padding:2px 6px;border-radius:2px;margin-left:4px;font-weight:700;color:#fff;background:'+(w?'var(--nogo)':'#cc9900')+'">'+a.type+' '+a.number+'</span>'}).join('')}
-
-function landingRwy(wdir,wspd,rwys){
-  if(!wdir||wdir===0||!wspd)return null;
-  let best=null,bestHW=-999;
-  rwys.forEach(function(pair){
-    [pair[0],pair[1]].forEach(function(rh){
-      const hw=Math.round(Math.cos((wdir-rh)*Math.PI/180)*wspd);
-      if(hw>bestHW){
-        bestHW=hw;
-        const rawXw=Math.round(Math.sin((wdir-rh)*Math.PI/180)*wspd);
-        const xw=Math.abs(rawXw);
-        const fromRight=rawXw>0;
-        const rn=String(Math.round(rh/10)).padStart(2,'0');
-        best={rwy:'RWY '+rn,hw:hw,xw:xw,fromRight:fromRight};
-      }
+function setupPeriodButtons() {
+  const btns = document.querySelectorAll('.period-btn');
+  btns.forEach(btn => {
+    if (btn.dataset.period === selectedPeriod) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedPeriod = btn.dataset.period;
+      localStorage.setItem('selectedPeriod', selectedPeriod);
+      renderAll();
     });
   });
-  return best;
 }
 
-/* ── RENDER ── */
-function render(){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent===currentPeriod));
-  const fc=DATA.forecasts.find(f=>f.type===currentPeriod);if(!fc)return;
-  const exp=new Date(DATA.exportedAt);
-  const expStr='EXPORTED '+exp.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false,timeZoneName:'short'}).toUpperCase();
-  document.getElementById('heroExported').textContent=expStr;
-  rMEFHdr(fc);rTS(fc);rSolo(fc);rAdv(fc);rArea(fc);rAero(fc);rMETAR(fc);rKW(fc);rHaz(fc);rFWBHdr(fc);rEn(fc);rSp(fc);rW(fc);rSol(fc);rTO(fc);rSD();
-  document.getElementById('footerText').textContent='Data exported from My Weather Pal \u00B7 '+exp.toLocaleString();
+function updateClock() {
+  fmtTime(document.getElementById('zulu-time'), zuluHHMM() + 'Z');
+  fmtTime(document.getElementById('local-time'), localTimeHHMM() + 'L');
 }
 
-/* ── MEF HEADER ── */
-function rMEFHdr(fc){
-  const c=document.getElementById('mefHdrCard'),m=fc.mef;
-  if(!m){c.style.display='none';return}
-  c.style.display='block';
-  const fresh=isForecastFresh(m.date);
-  const dotCls=fresh?'fresh':'stale';
-  const fcstr=m.forecasterInitials?'<span>FCSTR: '+esc(m.forecasterInitials)+'</span>':'';
-  c.innerHTML='<div class="card" style="border-top:2px solid var(--accent)"><div class="mef-hdr"><span class="mef-title"><span class="freshness-dot '+dotCls+'"></span>Mission Execution Forecast</span><div class="mef-meta"><span>'+esc(m.validPeriod||'')+'</span>'+fcstr+'</div></div></div>';
-}
-
-/* ── FWB HEADER ── */
-function rFWBHdr(fc){
-  const c=document.getElementById('fwbHdrCard'),fb=fc.flightBriefing;
-  if(!fb){c.style.display='none';return}
-  c.style.display='block';
-  const amd=fb.amendedAt?'<span style="color:var(--accent)">AMD '+esc(fb.amendedAt)+'</span>':'';
-  c.innerHTML='<div class="card" style="border-top:2px solid var(--accent)"><div class="mef-hdr"><span class="mef-title">Flight Weather Briefing (DD Form 175-1)</span><div class="mef-meta"><span>'+esc(fb.date||'')+'</span>'+amd+'</div></div></div>';
-}
-
-/* ── TRAINING STATUS ── */
-function rTS(fc){
-  const ts=fc.trainingStatus,g=document.getElementById('tsGrid');
-  const m=DATA.metar,advs=fc.mef?.weatherAdvisories||[];
-  const areas=fc.mef?.areaForecasts||[];
-  // Build area color map using active segment
-  const areaMap={};areas.forEach(a=>{
-    const txt=a.amendmentText||a.forecast||'';
-    areaMap[a.name.toUpperCase()]=activeAreaColor(txt);
-  });
-  // Time-aware active advisory filtering (match iOS app)
-  const nowMin=currentZuluMinutes();
-  const activeAdvs=advs.filter(a=>{
-    const fm=a.validFrom?.replace('Z',''),tm=a.validTo?.replace('Z','');
-    if(!fm||!tm||fm.length<4||tm.length<4)return false;
-    const fromMin=parseInt(fm.substring(0,2))*60+parseInt(fm.substring(2,4));
-    const toMin=parseInt(tm.substring(0,2))*60+parseInt(tm.substring(2,4));
-    if(toMin>fromMin)return nowMin>=fromMin&&nowMin<toMin;
-    return nowMin>=fromMin||nowMin<toMin;
-  });
-  // Cairns info from METAR
-  const mCeil=m?ceilNum(m.clouds):99999,mVis=m?parseFloat(m.visib)||99:99;
-  const cairnsGo=mCeil>=1000&&mVis>=3;
-  const cairnsInfo=m?(cairnsGo?'Trainable':'Untrainable'):'--';
-  const cairnsCat=m?(m.fltCat||'VFR'):'VFR';
-  // Use 1000ft flight level wind for landing calcs (matching iOS app)
-  const flw=fc.mef?.flightLevelWinds||[];
-  const w1000=flw.find(w=>w.level==='010');
-  const pw=w1000?parseWindStr(w1000.wind):{dir:0,spd:0};
-  const wdir=pw.dir,wspd2=pw.spd;
-  const cairnsLand=wspd2>0?landingRwy(wdir,wspd2,[[60,240],[180,360]]):null;
-  const sfRwys={ALLEN:[[120,300]],TOTH:[[70,250]],HIGHBLUFF:[[100,280]],LUCAS:[[180,360]]};
-  // Build area forecast text map for live time-aware GO/NO-GO computation
-  const areaTextMap={};areas.forEach(a=>{areaTextMap[a.name.toUpperCase()]=a.amendmentText||a.forecast||''});
-  // Compute stagefield status from area forecasts (time-aware, matches iOS logic)
-  function sfStatus(areaName){
-    const txt=areaTextMap[areaName];
-    if(!txt)return{s:'NO-GO',i:'--'};
-    const ti=areaTrainInfo(txt);
-    return{s:ti.status,i:ti.info};
-  }
-  const allenSt=sfStatus('GOLDFISH'),tothSt=sfStatus('GOLDFISH'),hbSt=sfStatus('BEARCAT'),lucasSt=sfStatus('VANGUARD C');
-  // Recompute goCount from live statuses
-  const liveGoCount=(cairnsGo?1:0)+(allenSt.s==='GO'?1:0)+(tothSt.s==='GO'?1:0)+(hbSt.s==='GO'?1:0)+(lucasSt.s==='GO'?1:0);
-  // All active advisory badges (shown on every row, matching iOS app)
-  const allAdvBadges=activeAdvs.map(a=>{const w=a.type==='TWA'||a.type==='WARNING';return'<span style="font-size:10px;padding:2px 6px;border-radius:2px;margin-left:4px;font-weight:700;color:#fff;background:'+(w?'var(--nogo)':'#cc9900')+'">'+a.type+' '+a.number+'</span>'}).join('');
-  const st=[
-    {n:'CAIRNS',a:'KOZR',s:cairnsGo?'GO':'NO-GO',i:cairnsInfo,c:true,cat:cairnsCat,area:null,land:cairnsLand},
-    {n:'ALLEN',a:ts.allen.area,s:allenSt.s,i:allenSt.i,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.ALLEN):null},
-    {n:'TOTH',a:ts.toth.area,s:tothSt.s,i:tothSt.i,area:'GOLDFISH',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.TOTH):null},
-    {n:'HIGHBLUFF',a:ts.highbluff.area,s:hbSt.s,i:hbSt.i,area:'BEARCAT',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.HIGHBLUFF):null},
-    {n:'LUCAS',a:ts.lucas.area,s:lucasSt.s,i:lucasSt.i,area:'VANGUARD C',land:wspd2>0?landingRwy(wdir,wspd2,sfRwys.LUCAS):null},
-  ];
-  // Render matching iOS app layout: name+advs on line 1, area+info on line 2, landing on line 3
-  g.innerHTML=st.map(s=>{
-    const ic=s.s==='GO'?'\uD83D\uDE81':'\u2601\uFE0F';
-    const nameCol=s.c?fcColor(s.cat):(s.area?areaMap[s.area]||'var(--text)':'var(--text)');
-    const infoC=tsInfoCol(s.i);
-    const icon=tsIcon(s.i);
-    // Area name colored by flight category (muted) + training info on same line
-    const areaLine=s.c?'':'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">'+s.a+'</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>';
-    // Cairns info line (with KOZR spacer to align with stagefield area names)
-    const cairnsInfoLine=s.c?'<div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">KOZR</span> <span style="color:'+infoC+'">'+icon+esc(s.i)+'</span></div>':'';
-    // Landing info
-    const lnd=s.land?'<div style="font-size:11px;color:var(--text-dim);margin-top:1px">\uD83D\uDEEC '+s.land.rwy+(s.land.hw!==0||s.land.xw!==0?' <span style="color:'+(s.land.hw>=0?'var(--go)':'var(--nogo)')+'">'+( s.land.hw>=0?'\u2193':'\u2191')+Math.abs(s.land.hw)+'kt</span> <span style="color:'+(s.land.xw>=15?'#e08040':'var(--text-dim)')+'">'+( s.land.fromRight?'\u2190':'\u2192')+s.land.xw+'kt</span>':' CALM')+'</div>':'';
-    return'<tr class="'+(s.c?'cairns-row':'')+'"><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+s.n+'</span>'+allAdvBadges+'</div>'+cairnsInfoLine+areaLine+lnd+'</td><td style="vertical-align:middle;text-align:right;padding:6px 10px"><span class="'+bc(s.s)+'">'+s.s+'</span></td></tr>';
-  }).join('');
-  // Legend row 1: minimums
-  g.innerHTML+='<tr><td colspan="3"><div class="ts-legend"><span>Cairns GO = \u22651000/3</span><span>Stagefield GO = \u2265700/1</span><span style="font-weight:800;font-size:13px;color:'+(liveGoCount>=4?'var(--go)':liveGoCount>=2?'var(--accent)':'var(--nogo)')+'">'+liveGoCount+'/5 GO</span></div></td></tr>';
-  // Legend row 2: wind components (only if wind data exists)
-  if(w1000){
-    g.innerHTML+='<tr><td colspan="3"><div style="display:flex;justify-content:space-between;padding:2px 8px;font-size:10px;color:var(--text-dim);letter-spacing:0.5px"><span>\u2193 = Headwind</span><span>\u2190 \u2192 = Crosswind L/R</span><span>Winds @ 1000ft</span></div></td></tr>';
-  }
-  const cc=liveGoCount>=4?'var(--go)':liveGoCount>=2?'var(--accent)':'var(--nogo)';
-  document.getElementById('goCountHdr').innerHTML='<span style="color:'+cc+';font-weight:900;font-size:14px">'+liveGoCount+'/5</span>';
-  document.getElementById('heroGoCount').innerHTML='<span style="color:'+cc+'">'+liveGoCount+'/5</span>';
-}
-
-/* ── SOLO OPERATIONS ── */
-function parseSegWind(text){
-  const m=text.match(/(?:(\d{3})|VRB)(\d{2,3})(?:G(\d{2,3}))?KT/);
-  if(!m)return null;
-  const spd=parseInt(m[2]),gst=m[3]?parseInt(m[3]):spd;
-  return{spd,gst};
-}
-function segMeetsSoloCeilVis(text){
-  const cv=segCeilVis(text);
-  return cv.ceil>=1200&&cv.vis>=3;
-}
-function windMeetsSolo(spd,gst){
-  if(gst>15)return{go:false,reason:'Wind G'+gst+'kt'};
-  if(spd>15)return{go:false,reason:'Wind '+spd+'kt'};
-  if((gst-spd)>10)return{go:false,reason:'Spread '+(gst-spd)+'kt'};
-  return{go:true,reason:'OK'};
-}
-function hasWindAdvisory(advs){
-  const now=currentZuluMinutes();
-  for(const a of advs){
-    const fm=a.validFrom?.replace('Z',''),tm=a.validTo?.replace('Z','');
-    if(!fm||!tm||fm.length<4||tm.length<4)continue;
-    const fromMin=parseInt(fm.substring(0,2))*60+parseInt(fm.substring(2,4));
-    const toMin=parseInt(tm.substring(0,2))*60+parseInt(tm.substring(2,4));
-    let active=false;
-    if(toMin>fromMin)active=now>=fromMin&&now<toMin;
-    else active=now>=fromMin||now<toMin;
-    if(!active)continue;
-    const c=(a.criteria||'').toUpperCase();
-    if(c.includes('WIND')){
-      const wm=c.match(/(\d{2,3})\s*(?:KT|KNOT)/);
-      if(wm&&parseInt(wm[1])>15)return true;
-      if(c.includes('>15')||c.includes('> 15')||c.includes('EXCEED'))return true;
-    }
-  }
-  return false;
-}
-function soloEval(forecastText,metar,advisories,isCairns){
-  // WWA gate
-  if(hasWindAdvisory(advisories))return{go:false,reason:'AWA Wind'};
-  // METAR check (Cairns only)
-  if(isCairns&&metar){
-    const ceil=ceilNum(metar.clouds),vis=parseFloat(metar.visib)||99;
-    const spd=metar.wspd||0,gst=metar.wgst||spd,spread=gst-spd;
-    if(ceil<1200)return{go:false,reason:'Obs Ceil '+ceil+'ft'};
-    if(vis<3)return{go:false,reason:'Obs Vis '+vis+'SM'};
-    if(gst>15)return{go:false,reason:'Obs Wind G'+gst+'kt'};
-    if(spd>15)return{go:false,reason:'Obs Wind '+spd+'kt'};
-    if(spread>10)return{go:false,reason:'Obs Spread '+spread+'kt'};
-  }
-  // Forecast ceiling/vis (time-aware)
-  const cv=getActiveSegmentCeilVis(forecastText);
-  if(cv.ceil<1200)return{go:false,reason:'Fcst Ceil '+cv.ceil+'ft'};
-  if(cv.vis<3)return{go:false,reason:'Fcst Vis '+cv.vis+'SM'};
-  // Forecast wind (time-aware)
-  const segs=parseSegments(forecastText);
-  const ai=getActiveSegIndex(segs);
-  const w=parseSegWind(segs[ai].text);
-  if(w){
-    const wr=windMeetsSolo(w.spd,w.gst);
-    if(!wr.go)return{go:false,reason:'Fcst '+wr.reason};
-  }
-  return{go:true,reason:'OK'};
-}
-function soloInfoCalc(forecastText){
-  if(!forecastText)return{go:true,label:'Solo OK'};
-  const segs=parseSegments(forecastText);
-  const main=segs.filter(s=>!(/^(ISOLD|TEMPO)/i.test(s.text)));
-  if(!main.length)return{go:true,label:'Solo OK'};
-  const ai=getActiveSegIndex(segs);
-  const curSeg=segs[ai];
-  const curCVGo=segMeetsSoloCeilVis(curSeg.text);
-  const curW=parseSegWind(curSeg.text);
-  const curWGo=curW?windMeetsSolo(curW.spd,curW.gst).go:true;
-  const curGo=curCVGo&&curWGo;
-  const now=currentZuluMinutes();
-  // Check future segments
-  for(let i=ai+1;i<segs.length;i++){
-    if(/^(ISOLD|TEMPO)/i.test(segs[i].text))continue;
-    const fCVGo=segMeetsSoloCeilVis(segs[i].text);
-    const fW=parseSegWind(segs[i].text);
-    const fWGo=fW?windMeetsSolo(fW.spd,fW.gst).go:true;
-    const fGo=fCVGo&&fWGo;
-    if(fGo!==curGo&&segs[i].startMin>0){
-      let diff=segs[i].startMin-now;
-      if(diff<0)diff+=1440;
-      if(diff>0){
-        const h=Math.floor(diff/60),m=diff%60;
-        const ts=(h?h+'h ':'')+(m?m+'m':'');
-        return curGo?{go:true,label:'No Solo in '+ts}:{go:false,label:'Solo in '+ts};
-      }
-      break;
-    }
-  }
-  return curGo?{go:true,label:'Solo OK'}:{go:false,label:'No Solo'};
-}
-function rSolo(fc){
-  const soloCard=document.querySelector('[data-section="solo"]');
-  // No solo at night
-  const vp=(fc.mef?.validPeriod||'').toUpperCase();
-  if(vp.startsWith('N')){soloCard.style.display='none';return}
-  soloCard.style.display='';
-  const g=document.getElementById('soloGrid');
-  const wb=document.getElementById('soloWindBar');
-  const wwa=document.getElementById('soloWwaBar');
-  const m=DATA.metar;
-  const advs=fc.mef?.weatherAdvisories||[];
-  const areas=fc.mef?.areaForecasts||[];
-  const areaTextMap={};areas.forEach(a=>{areaTextMap[a.name.toUpperCase()]=a.amendmentText||a.forecast||''});
-  const goldfish=areaTextMap['GOLDFISH']||'';
-  const windAdv=hasWindAdvisory(advs);
-  // Wind status bar
-  const mSpd=m?(m.wspd||0):0,mGst=m?(m.wgst||mSpd):0,mDir=m?(m.wdir||0):0;
-  const mWStr=m?(mSpd===0?'CALM':(String(mDir).padStart(3,'0')+'/'+mSpd+(mGst>mSpd?'G'+mGst:'')+'KT')):'--';
-  const segs=parseSegments(goldfish);const ai=getActiveSegIndex(segs);
-  const fW=parseSegWind(segs[ai]?.text||'');
-  const fWStr=fW?(fW.spd+(fW.gst>fW.spd?'G'+fW.gst:'')+'KT'):'--';
-  const spread=m&&m.wgst?(m.wgst-mSpd):null;
-  const mWindOk=mSpd<=15&&mGst<=15&&(spread===null||spread<=10);
-  const fWindOk=fW?windMeetsSolo(fW.spd,fW.gst).go:true;
-  wb.innerHTML='<div style="display:flex;gap:16px;padding:6px 8px;background:rgba(0,0,0,0.3);border-radius:4px;margin-bottom:6px;font-family:monospace;font-size:11px">'+
-    '<div><div style="font-size:9px;color:var(--text-dim);font-weight:700">OBS WIND</div><span style="color:'+(mWindOk?'#fff':'#f97316')+';font-weight:700">'+mWStr+'</span></div>'+
-    '<div style="border-left:1px solid var(--border);padding-left:12px"><div style="font-size:9px;color:var(--text-dim);font-weight:700">FCST WIND</div><span style="color:'+(fWindOk?'#fff':'#f97316')+';font-weight:700">'+fWStr+'</span></div>'+
-    (spread!==null?'<div style="border-left:1px solid var(--border);padding-left:12px"><div style="font-size:9px;color:var(--text-dim);font-weight:700">GUST SPREAD</div><span style="color:'+(spread>10?'#f97316':'#fff')+';font-weight:700">'+spread+'kt</span></div>':'')+'</div>';
-  // WWA bar
-  wwa.innerHTML=windAdv?'<div style="padding:4px 8px;background:rgba(217,38,38,0.15);border-radius:4px;margin-bottom:6px;font-size:11px;font-weight:700;color:var(--nogo)">⚠️ WIND ADVISORY ACTIVE — NO SOLO</div>':'';
-  // Stations
-  const sfDefs=[
-    {n:'CAIRNS',area:'GOLDFISH',cairns:true},
-    {n:'ALLEN',area:'GOLDFISH',cairns:false},
-    {n:'TOTH',area:'GOLDFISH',cairns:false},
-    {n:'HIGHBLUFF',area:'BEARCAT',cairns:false},
-    {n:'LUCAS',area:'VANGUARD C',cairns:false}
-  ];
-  let soloCount=0;
-  g.innerHTML=sfDefs.map(sf=>{
-    const txt=areaTextMap[sf.area]||'';
-    const res=soloEval(txt,m,advs,sf.cairns);
-    const info=windAdv?{go:false,label:'AWA Wind'}:soloInfoCalc(txt);
-    if(res.go)soloCount++;
-    const ic=res.go?'✈️':'⛔';
-    const bc2=res.go?'badge solo':'badge nosolo';
-    const nameCol=res.go?'#2dd4bf':'#f97316';
-    const infoCol=info.go?'#2dd4bf':(info.label.includes('Solo in')?'var(--accent)':'#f97316');
-    const infoIcon=info.go&&!info.label.includes('No Solo in')?'✅':(info.label.includes('Solo in')?'🕐':(info.label.includes('No Solo in')?'⚠️':'⛔'));
-    const reasonLine=!res.go&&res.reason!=='OK'&&res.reason!=='AWA Wind'?'<div style="font-size:10px;color:#f97316;opacity:0.8;font-family:monospace;margin-top:1px">'+esc(res.reason)+'</div>':'';
-    return'<tr><td style="vertical-align:top;padding-top:8px;width:28px">'+ic+'</td><td style="vertical-align:top;padding:6px 10px"><div><span style="color:'+nameCol+';font-weight:700;font-size:13px">'+sf.n+'</span></div><div style="font-size:11px;margin-top:1px"><span style="display:inline-block;min-width:90px;color:'+nameCol+';opacity:0.6;font-weight:600;letter-spacing:0.5px">'+sf.area+'</span> <span style="color:'+infoCol+'">'+infoIcon+' '+esc(info.label)+'</span></div>'+reasonLine+'</td><td style="vertical-align:middle;text-align:right;padding:6px 10px"><span class="'+bc2+'">'+(res.go?'SOLO':'NO SOLO')+'</span></td></tr>';
-  }).join('');
-  // Legend
-  g.innerHTML+='<tr><td colspan="3"><div class="ts-legend"><span>Solo = ≥1200/3 + Wind ≤15kt + Spread ≤10kt</span><span style="font-weight:800;font-size:13px;color:'+(soloCount>=4?'#2dd4bf':soloCount>=2?'#f97316':'var(--nogo)')+'">'+soloCount+'/5</span></div></td></tr>';
-  document.getElementById('soloGoCountHdr').innerHTML='<span style="color:'+(soloCount>=4?'#2dd4bf':soloCount>=2?'#f97316':'var(--nogo)')+';font-weight:900;font-size:14px">'+soloCount+'/5</span>';
-}
-
-/* ── ADVISORIES ── */
-function rAdv(fc){
-  const c=document.getElementById('advCard'),adv=fc.mef?.weatherAdvisories||[];
-  if(!adv.length){c.style.display='none';return}c.style.display='block';
-  const warn=adv.some(a=>a.type==='TWA'||a.type==='WARNING');
-  c.innerHTML='<div class="card adv-banner'+(warn?'':' gold')+'"><div class="card-hdr" style="cursor:default"><span>\u26A0\uFE0F Weather Watches, Warnings & Advisories</span><span style="font-size:11px;color:var(--nogo)">'+adv.length+' ACTIVE</span></div><div style="padding:0">'+adv.map(a=>{
-    const w=a.type==='TWA'||a.type==='WARNING';
-    return'<div class="adv-item"><span class="adv-type '+(w?'warn':'watch')+'">'+a.type+' '+a.number+'</span><div style="flex:1">'+esc(a.criteria)+'<div class="adv-times">'+a.validFrom+' \u2014 '+a.validTo+'</div></div></div>';
-  }).join('')+'</div></div>';
-}
-
-/* ── METAR ── */
-function rMETAR(fc){
-  const m=DATA.metar,b=document.getElementById('metarBody');
-  if(!m){b.innerHTML='<div class="no-data">No METAR</div>';document.getElementById('metarStation').textContent='';return}
-  const fcat=m.fltCat||'VFR',ceil=ceilFromClouds(m.clouds),w=fmtWind(m),v=m.visib||'--';
-  const t=m.temp!=null?Math.round(m.temp)+'\u00B0C':'--',d=m.dewp!=null?Math.round(m.dewp)+'\u00B0C':'--';
-  const alt=m.altim?(m.altim/33.8639).toFixed(2)+'"':'--',em=wxEmoji(m.wxString);
-  // Station name
-  document.getElementById('metarStation').textContent=m.name||'Cairns AAF';
-  // Report time
-  document.getElementById('metarTime').textContent=m.reportTime||'';
-  // Flight category badge
-  document.getElementById('metarCat').innerHTML='<span class="flt-cat '+fcat+'">'+fcat+'</span>';
-  // Weather emojis
-  document.getElementById('metarEmojis').innerHTML=em?'<span style="font-size:14px">'+em+'</span>':'';
-  // Full cloud layers
-  const skyStr=m.clouds&&m.clouds.length?m.clouds.map(l=>l.cover+(l.base!=null?String(Math.round(l.base/100)).padStart(3,'0'):'')).join(' '):'CLR';
-  b.innerHTML=(m.rawOb?'<div class="metar-raw">'+esc(m.rawOb)+'</div>':'')+
-    '<div class="metar-grid">'+di('Wind',w)+di('Vis',v+' SM')+di('Ceil',ceil)+di('Sky',skyStr)+di('Temp',t)+di('Dewpt',d)+di('Altim',alt)+(m.wxString?di('Wx',m.wxString+' '+em):'')+'</div>';
-}
-function ceilFromClouds(cl){let c=null;cl.forEach(l=>{if((l.cover==='BKN'||l.cover==='OVC')&&l.base!=null){if(c===null||l.base<c)c=l.base}});return c!=null?c.toLocaleString()+' ft':'CLR'}
-
-/* ── KEY WEATHER ── */
-function rKW(fc){
-  const c=document.getElementById('kwCard'),b=document.getElementById('kwBody'),m=fc.mef;
-  if(!m||!m.maxTemp){c.style.display='none';return}c.style.display='block';
-  const rows=[
-    {l:'Max Temp',k:m.maxTemp?.kozr,a:m.maxTemp?.area,u:'\u00B0C'},{l:'Min Temp',k:m.minTemp?.kozr,a:m.minTemp?.area,u:'\u00B0C'},
-    {l:'Max Dewpt',k:m.maxDewpoint?.kozr,a:m.maxDewpoint?.area,u:'\u00B0C'},{l:'Min Altim',k:m.minAltimeterSetting?.kozr,a:m.minAltimeterSetting?.area,u:'"'},
-    {l:'Max PA',k:m.maxPressureAlt?.kozr,a:m.maxPressureAlt?.area,u:' ft'},{l:'Max DA',k:m.maxDensityAlt?.kozr,a:m.maxDensityAlt?.area,u:' ft'},
-    {l:'Min Ceil',k:m.minCeiling?.kozr,a:m.minCeiling?.area,u:' ft'},{l:'Min Vis',k:m.minVisibility?.kozr,a:m.minVisibility?.area,u:' SM'},
-  ];
-  if(m.minWeather)rows.push({l:'Min Wx',k:m.minWeather?.kozr||null,a:m.minWeather?.area||null,u:''});
-  const filtered=rows.filter(r=>r.k||r.a);
-  if(!filtered.length){c.style.display='none';return}
-  b.innerHTML='<div class="kw-grid"><div class="kw-h"></div><div class="kw-h" style="text-align:center">KOZR</div><div class="kw-h" style="text-align:center">AREA</div>'+filtered.map(r=>'<div class="kw-l">'+r.l+'</div><div class="kw-v">'+(r.k?r.k+r.u:'--')+'</div><div class="kw-v">'+(r.a?r.a+r.u:'--')+'</div>').join('')+'</div>';
-}
-
-/* ── AREA FORECASTS ── */
-function rArea(fc){
-  const g=document.getElementById('areaGrid'),vp=document.getElementById('validPeriod');
-  if(!fc.mef){g.innerHTML='<div class="no-data">No MEF data</div>';return}
-  vp.textContent=fc.mef.validPeriod||'';
-  // Map stagefield area → training status for per-area badges (computed live from area forecasts)
-  const sfMap={'GOLDFISH':[],'BEARCAT':[],'VANGUARD N':[],'VANGUARD C':[],'VANGUARD S':[],'HAWK':[]};
-  const areaTexts={};(fc.mef.areaForecasts||[]).forEach(a=>{areaTexts[a.name.toUpperCase()]=a.amendmentText||a.forecast||''});
-  const sfDefs=[{name:'Allen',area:'GOLDFISH'},{name:'Toth',area:'GOLDFISH'},{name:'Highbluff',area:'BEARCAT'},{name:'Lucas',area:'VANGUARD C'}];
-  sfDefs.forEach(sf=>{
-    const ti=areaTrainInfo(areaTexts[sf.area]||'');
-    sfMap[sf.area]=[...(sfMap[sf.area]||[]),{name:sf.name,status:ti.status,info:ti.info}];
-  });
-  const rmk=fc.mef.remarks;
-  const rmkHtml=rmk?'<div style="grid-column:1/-1;padding:10px 14px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:12px;color:var(--accent);text-align:center"><span style="font-weight:800;letter-spacing:1px;margin-right:6px">REMARKS:</span>'+esc(rmk)+'</div>':'';
-  g.innerHTML=(fc.mef.areaForecasts||[]).map(a=>{
-    const txt=a.amendmentText||a.forecast||'';
-    const col=activeAreaColor(txt);
-    // Per-area GO/NO-GO from active segment
-    const go=areaIsGo(txt);
-    const goB='<span class="'+(go?'badge go':'badge nogo')+'" style="font-size:10px;padding:2px 8px">'+(go?'GO':'NO-GO')+'</span>';
-    // TS coverage with percentage
-    const tsCov=a.tsCoverage&&a.tsCoverage.toUpperCase()!=='NONE'?'<div><span class="ts-tag active">TS: '+tsCovPct(a.tsCoverage)+'</span></div>':'';
-    const amd=a.amendmentNumber?'<span class="amd-badge">\u26A0 '+a.amendmentNumber+(a.amendmentTime?' '+a.amendmentTime:'')+'</span>':'';
-    // Trainability info from stagefields in this area
-    const sfs=sfMap[a.name.toUpperCase()]||[];
-    const infoHtml=sfs.length?'<div class="area-info">'+sfs.map(sf=>{
-      const ic=tsIcon(sf.info);
-      const c2=tsInfoCol(sf.info);
-      return'<span style="color:'+c2+';margin-right:8px">'+ic+sf.name+'</span>';
-    }).join('')+'</div>':'';
-    return'<div class="area-card"><div class="area-hdr"><span class="area-name" style="color:'+col+'">'+a.name+'</span><span style="display:flex;align-items:center;gap:6px">'+amd+goB+'</span></div>'+infoHtml+'<div class="area-text">'+fmtArea(txt)+'</div>'+tsCov+'</div>';
-  }).join('')+rmkHtml;
-}
-
-function segFC(s){
-  var m=s.replace(/(?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?(?=(?:ISOLD|TEMPO|$))/gi,'');
-  var c=99999,v=99;
-  var ch=m.match(/(OVC|BKN)(\d{3})/);
-  var vh=m.match(/(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s*SM/);
-  if(ch)c=parseInt(ch[2])*100;
-  if(vh){var vs=vh[1];if(vs.includes('/')){var p=vs.trim().split(/\s+/);if(p.length===2){var f2=p[1].split('/');v=parseInt(p[0])+parseInt(f2[0])/parseInt(f2[1])}else{var f3=vs.split('/');v=parseInt(f3[0])/parseInt(f3[1])}}else v=parseFloat(vs)||99}
-  if(/P6SM/i.test(m))v=7;
-  if(c<500||v<1)return'var(--lifr)';if(c<1000||v<3)return'var(--ifr)';if(c<=3000||v<=5)return'var(--mvfr)';return'var(--vfr)';
-}
-function fmtArea(t){
-  if(!t)return'';
-  var raw=esc(t),segs=raw.split(/(AFT\s+\d{4}Z:)/),html='';
-  // Determine active segment index for highlighting
-  var parsedSegs=parseSegments(t);
-  var activeIdx=getActiveSegIndex(parsedSegs);
-  var segCount=0;
-  for(var i=0;i<segs.length;i++){
-    var s=segs[i];if(!s.trim())continue;
-    if(/^AFT\s+\d{4}Z:/.test(s.trim())){
-      segCount++;
-      html+='<br><strong style="color:var(--accent)">'+s+'</strong>';
-      continue;
-    }
-    var col=segFC(s);
-    var isActive=(segCount===activeIdx);
-    var f=s.replace(/((?:ISOLD?|TEMPO)\s+\d{4}-\d{4}Z:.*?)(?=(?:ISOLD|TEMPO|$))/g,'<br><span class="dim" style="margin-left:16px;display:inline-block">$1</span>');
-    if(isActive){
-      html+='<span style="color:'+col+';font-weight:700">'+f+'</span>';
-    }else{
-      html+='<span style="color:'+col+';opacity:0.6">'+f+'</span>';
-    }
-  }
-  return html;
-}
-
-/* ── HAZARDS (MEF) ── */
-function rHaz(fc){
-  const g=document.getElementById('hazGrid'),be=document.getElementById('hazBadge'),h=fc.mef?.flightHazards;
-  if(!h){g.innerHTML='<div class="no-data" style="padding:6px">No data</div>';be.innerHTML='';return}
-  const items=[{l:'Turbulence',v:h.turbulence},{l:'Icing',v:h.icing},{l:'Thunderstorms',v:h.thunderstorms},{l:'LLWS',v:h.llws}];
-  be.innerHTML=items.some(i=>i.v&&i.v.toUpperCase()!=='NONE')?'<span class="haz-badge">HAZARDS</span>':'';
-  g.innerHTML=items.map(i=>{
-    const n=!i.v||i.v.toUpperCase()==='NONE';
-    const displayVal=n?(i.v||'NONE'):cvtHazVal(i.v);
-    return'<div class="haz-item"><span class="dl">'+i.l+'</span><span class="haz-val '+(n?'none':'active')+'">'+displayVal+'</span></div>';
-  }).join('');
-}
-
-/* ── ENROUTE HAZARDS ── */
-function rEn(fc){
-  const c=document.getElementById('enCard'),b=document.getElementById('enBody'),be=document.getElementById('enBadge'),en=fc.flightBriefing?.enrouteData;
-  if(!en){c.style.display='none';return}c.style.display='block';
-  let hz=false;const cards=[];
-  if(en.thunderstorms){const t=en.thunderstorms,a=t.coverage&&t.coverage.toUpperCase()!=='NONE';if(a)hz=true;cards.push(enC('Thunderstorms',[{l:'Coverage',v:t.coverage},{l:'Type',v:t.type},{l:'Max Tops',v:t.maxTops?cvtAlt(t.maxTops):null},{l:'Location',v:t.location}]))}
-  if(en.turbulence){const t=en.turbulence,a=t.severity&&t.severity.toUpperCase()!=='NONE';if(a)hz=true;cards.push(enC('Turbulence',[{l:'Severity',v:t.severity},{l:'Levels',v:t.levels?cvtLvl(t.levels):null},{l:'Location',v:t.location}]))}
-  if(en.icing){const i=en.icing,a=i.severity&&i.severity.toUpperCase()!=='NONE';if(a)hz=true;cards.push(enC('Icing',[{l:'Severity',v:i.severity},{l:'Type',v:i.type},{l:'Levels',v:i.levels?cvtLvl(i.levels):null},{l:'Location',v:i.location}]))}
-  if(en.precipitation){const p=en.precipitation,a=p.intensity&&p.intensity.toUpperCase()!=='NONE';if(a)hz=true;cards.push(enC('Precipitation',[{l:'Intensity',v:p.intensity},{l:'Type',v:p.type},{l:'Freezing',v:p.freezing},{l:'Location',v:p.location}]))}
-  const misc=[];
-  if(en.obscurations){const a=en.obscurations.toUpperCase()!=='NONE';if(a)hz=true;misc.push({l:'Obscurations',v:en.obscurations})}
-  if(en.minCeiling)misc.push({l:'Min Ceil',v:cvtAlt(en.minCeiling)+' AGL'+(en.minCeilingLocation?' ('+en.minCeilingLocation+')':'')});
-  if(en.llws){const a=en.llws.toUpperCase()!=='NONE';if(a)hz=true;misc.push({l:'LLWS',v:en.llws})}
-  if(en.minFreezingLevel)misc.push({l:'Min Frz Lvl',v:cvtAlt(en.minFreezingLevel)+' MSL'});
-  if(misc.length)cards.push(enC('Additional',misc));
-  be.innerHTML=hz?'<span class="haz-badge">HAZARDS</span>':'';
-  b.innerHTML='<div class="en-grid">'+cards.join('')+'</div>';
-}
-function enC(title,rows){const f=rows.filter(r=>r.v!=null);if(!f.length)return'';return'<div class="en-card"><div class="en-title">'+title+'</div>'+f.map(r=>{const n=!r.v||r.v.toUpperCase()==='NONE';return'<div class="en-row"><span class="l">'+r.l+'</span><span class="v '+(n?'none':'active')+'">'+esc(r.v||'NONE')+'</span></div>'}).join('')+'</div>'}
-function cvtLvl(l){if(!l)return l;return l.replace(/(\d{3})/g,m=>cvtAlt(m).replace(' ft',''))+' ft'}
-
-/* ── SPACE WEATHER ── */
-function rSp(fc){
-  const c=document.getElementById('spInline'),sw=fc.flightBriefing?.enrouteData?.spaceWeather;
-  if(!sw){c.style.display='none';return}
-  c.style.display='inline-flex';c.style.fontSize='';c.style.lineHeight='';
-  const items=[{l:'HF',v:sw.frequency},{l:'GPS',v:sw.gps},{l:'RAD',v:sw.radiation}];
-  function spNone(v){const u=(v||'').toUpperCase();return !v||u==='NONE'||u==='NO IMPACT'}
-  const hasImpact=items.some(i=>!spNone(i.v));
-  c.innerHTML='<span style="font-size:9px;font-weight:800;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;white-space:nowrap">SPACE WX</span>'+items.map(i=>{const n=spNone(i.v);return'<span class="sp-it"><span class="sp-l">'+i.l+'</span><span class="sp-v '+(n?'none':'active')+'">'+(i.v||'—')+'</span></span>'}).join('')+(hasImpact?'<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(187,102,255,0.15);color:#bb66ff;font-weight:700;white-space:nowrap">⚠️</span>':'');
-}
-
-/* ── FLIGHT LEVEL WINDS ── */
-function rW(fc){
-  const b=document.getElementById('wBody'),se=document.getElementById('wSum'),ws=fc.mef?.flightLevelWinds||fc.flightBriefing?.enrouteData?.flightLevelWinds||[];
-  if(!ws.length){b.innerHTML='<div class="no-data" style="padding:6px">No data</div>';se.innerHTML='';return}
-  let hc=0,ic=0;
-  const rows=ws.map(w=>{const l=(parseInt(w.level)*100).toLocaleString()+' ft',sp=windSpd(w.wind),tv=parseInt(w.temp)||99,hw=sp>=20,ig=tv<=4;if(hw)hc++;if(ig)ic++;return'<tr><td>'+l+'</td><td>'+w.wind+(hw?'<span class="wb high">HIGH</span>':'')+'</td><td>'+w.temp+(ig?'<span class="wb ice">ICE</span>':'')+'</td></tr>'}).join('');
-  let s='';if(hc)s+='<span class="wb high" style="margin-left:0">'+hc+' HIGH</span>';if(ic)s+='<span class="wb ice" style="margin-left:3px">'+ic+' ICE</span>';
-  se.innerHTML=s;
-  b.innerHTML='<table class="w-tbl"><thead><tr><th>Level</th><th>Wind</th><th>Temp</th></tr></thead><tbody>'+rows+'</tbody></table>';
-}
-
-/* ── SOLAR/LUNAR ── */
-function rSol(fc){
-  const ns=document.getElementById('navSolar'),sl=fc.mef?.solarLunar||fc.flightBriefing?.enrouteData?.solarLunar;
-  if(!sl){ns.innerHTML='';return}
-  const items=[{l:'BMNT',v:sl.bmnt},{l:'BMCT',v:sl.bmct},{l:'Sunrise',v:sl.sunrise},{l:'Sunset',v:sl.sunset},{l:'EECT',v:sl.eect},{l:'EENT',v:sl.eent},{l:'Moonrise',v:sl.moonrise},{l:'Moonset',v:sl.moonset},{l:'Illum',v:sl.illumination}].filter(i=>i.v);
-  ns.innerHTML=items.map(i=>'<span class="sol-pair"><span class="sol-pl">'+i.l+'</span><span class="sol-pv">'+i.v+'</span></span>').join('');
-}
-
-/* ── TAKEOFF DATA ── */
-function rTO(fc){
-  const c=document.getElementById('toCard'),b=document.getElementById('toBody'),td=fc.flightBriefing?.takeoffData;
-  if(!td){c.style.display='none';return}c.style.display='block';
-  const rt=parseFloat(td.runwayTemp),dp=parseFloat(td.dewpoint),fog=!isNaN(rt)&&!isNaN(dp)&&(rt-dp)<=2;
-  const fc2=fog?'color:var(--mvfr)':'';
-  function ti(l,v,s){return'<span class="to-item"><span class="to-lbl">'+l+'</span><span class="to-val"'+(s?' style="'+s+'"':'')+'>'+v+'</span></span>'}
-  const main=[{l:'Rwy',v:td.runwayTemp?td.runwayTemp+'\u00B0C':null,s:fc2},{l:'Dew',v:td.dewpoint?td.dewpoint+'\u00B0C':null,s:fc2},{l:'Dev',v:td.tempDeviation?td.tempDeviation+'\u00B0C':null},{l:'PA',v:td.pressureAlt?td.pressureAlt+'ft':null},{l:'DA',v:td.densityAlt?td.densityAlt+'ft':null},{l:'Wind',v:td.surfaceWind}].filter(i=>i.v);
-  const max=[{l:'Max Tmp',v:td.maxTemp?td.maxTemp+'\u00B0C':null},{l:'Max PA',v:td.maxPA?td.maxPA+'ft':null},{l:'Max DA',v:td.maxDA?td.maxDA+'ft':null}].filter(i=>i.v);
-  let h='<div class="to-compact">'+main.map(i=>ti(i.l,i.v,i.s)).join('');
-  if(max.length)h+='<span class="to-max-lbl">\u2502</span>'+max.map(i=>ti(i.l,i.v)).join('');
-  if(fog)h+='<span class="fog-badge" style="margin-left:auto">POSSIBLE FOG</span>';
-  h+='</div>';
-  b.innerHTML=h;
-}
-
-/* ── AERODROME FORECASTS ── */
-function rAero(fc){
-  const c=document.getElementById('aeroCard'),g=document.getElementById('aeroGrid'),aeros=fc.flightBriefing?.aerodromeForecasts||[];
-  if(!aeros.length){c.style.display='none';return}c.style.display='block';
-  // Arrival Time Assistant
-  rATA(fc);
-  // Get arrival times
-  const ataEnabled=localStorage.getItem('ataEnabled')==='true';
-  const arr1=ataEnabled?parseInt(localStorage.getItem('ataMin1')||'0'):0;
-  const arr2=ataEnabled?parseInt(localStorage.getItem('ataMin2')||'0'):0;
-  g.innerHTML=aeros.map(a=>{
-    const mp=a.periods.find(p=>p.periodType!=='TEMPO')||a.periods[0];
-    const fc2=mp?detFC(mp.skyCondition,mp.visibility):'VFR',hc=fcColor(fc2);
-    const ph=a.periods.map(p=>{
-      const tmp=p.periodType==='TEMPO',pfc=detFC(p.skyCondition,p.visibility),pc=tmp?'var(--text-dim)':fcColor(pfc);
-      const parts=[p.surfaceWind,p.visibility,p.weather,p.skyCondition,p.altimeter].filter(Boolean).join(' \u00B7 ');
-      const ts2=p.validFrom&&p.validTo?p.validFrom+'\u2013'+p.validTo:'';
-      const pfx=p.periodType?'<span class="pt">'+p.periodType+'</span> ':'';
-      // Arrival time highlighting
-      let hlCls='';
-      if(ataEnabled&&arr1&&arr2){
-        const m1=isPeriodActive(p,arr1),m2=isPeriodActive(p,arr2);
-        if(m1&&m2)hlCls=' arr-both';
-        else if(m1)hlCls=' arr1-hl';
-        else if(m2)hlCls=' arr2-hl';
-      }else if(ataEnabled&&arr1){
-        if(isPeriodActive(p,arr1))hlCls=' arr1-hl';
-      }else if(ataEnabled&&arr2){
-        if(isPeriodActive(p,arr2))hlCls=' arr2-hl';
-      }
-      return'<div class="aero-p'+(tmp?' tempo':'')+hlCls+'" style="color:'+pc+'">'+pfx+ts2+'<br>'+parts+'</div>';
-    }).join('');
-    const sa=a.sameAs&&a.sameAs.length?'<div class="aero-same">Same as: '+a.sameAs.join(', ')+'</div>':'';
-    return'<div class="aero-card"><div class="aero-icao" style="color:'+hc+'">'+a.icao+' <span class="flt-cat '+fc2+'" style="font-size:9px">'+fc2+'</span></div>'+ph+sa+'</div>';
-  }).join('');
-}
-
-/* ── ARRIVAL TIME ASSISTANT ── */
-function isPeriodActive(p,zuluMin){
-  if(!p.validFrom||!p.validTo)return false;
-  // Parse "09/1200Z" → 720 minutes
-  const parseT=function(t){const m=t.match(/(\d{2})(\d{2})Z/);return m?parseInt(m[1])*60+parseInt(m[2]):0};
-  const from=parseT(p.validFrom),to=parseT(p.validTo);
-  if(to>from)return zuluMin>=from&&zuluMin<to;
-  // Cross-midnight
-  return zuluMin>=from||zuluMin<to;
-}
-
-function localToZuluMin(localTimeStr){
-  // "14:30" → Zulu minutes
-  if(!localTimeStr)return 0;
-  const parts=localTimeStr.split(':');
-  if(parts.length<2)return 0;
-  const h=parseInt(parts[0]),m=parseInt(parts[1]);
-  const now=new Date();
-  const local=new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,m);
-  return local.getUTCHours()*60+local.getUTCMinutes();
-}
-
-function zuluStr(min){
-  const h=Math.floor(min/60)%24,m=min%60;
-  return String(h).padStart(2,'0')+String(m).padStart(2,'0')+'Z';
-}
-
-function rATA(fc){
-  const c=document.getElementById('ataCard');
-  if(!fc.flightBriefing?.aerodromeForecasts?.length){c.style.display='none';return}
-  c.style.display='block';
-  const enabled=localStorage.getItem('ataEnabled')==='true';
-  const t1=localStorage.getItem('ataTime1')||'';
-  const t2=localStorage.getItem('ataTime2')||'';
-  const z1=t1?localToZuluMin(t1):0;
-  const z2=t2?localToZuluMin(t2):0;
-  c.innerHTML='<div class="ata-card"><div class="ata-toggle"><label class="ata-switch"><input type="checkbox" id="ataToggle" '+(enabled?'checked':'')+' onchange="ataToggleChanged()"><span class="ata-slider"></span></label><span style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text-secondary)">\u2708\uFE0F ARRIVAL TIME ASSISTANT</span></div>'+(enabled?'<div class="ata-rows"><div class="ata-row"><span class="ata-dot gold"></span><input type="time" id="ataTime1" value="'+t1+'" onchange="ataTimeChanged()"><span class="ata-zulu">'+(z1?zuluStr(z1):'--')+'</span></div><div class="ata-row"><span class="ata-dot green"></span><input type="time" id="ataTime2" value="'+t2+'" onchange="ataTimeChanged()"><span class="ata-zulu">'+(z2?zuluStr(z2):'--')+'</span></div></div>':'')+'</div>';
-}
-
-function ataToggleChanged(){
-  const on=document.getElementById('ataToggle').checked;
-  localStorage.setItem('ataEnabled',on?'true':'false');
-  render();
-}
-
-function ataTimeChanged(){
-  const t1=document.getElementById('ataTime1');
-  const t2=document.getElementById('ataTime2');
-  if(t1)localStorage.setItem('ataTime1',t1.value);
-  if(t2)localStorage.setItem('ataTime2',t2.value);
-  if(t1){const z=localToZuluMin(t1.value);localStorage.setItem('ataMin1',String(z))}
-  if(t2){const z=localToZuluMin(t2.value);localStorage.setItem('ataMin2',String(z))}
-  render();
-}
-
-/* ── 7-DAY OUTLOOK ── */
-function splitStatusGroups(statuses, ppd){
-  const groups=[];let idx=0;
-  ppd.forEach(p=>{groups.push(statuses.slice(idx,idx+p));idx+=p});
-  return groups;
-}
-function rSD(){
-  const c=document.getElementById('sdCard'),g=document.getElementById('sdGrid'),te=document.getElementById('sdTitle'),sd=DATA.sevenDay;
-  if(!sd){c.style.display='none';return}c.style.display='block';te.textContent=sd.title||'';
-  const ppd=sd.periodsPerDay||[];
-  // Day header row
-  let dayHdr='<div class="sd-row"><div class="sd-label"></div><div class="sd-groups">';
-  sd.dayLabels.forEach((d,i)=>{const p=ppd[i]||1;dayHdr+='<div class="sd-group" style="flex:'+p+'"><span class="sd-group-hdr">'+d+'</span></div>'});
-  dayHdr+='</div></div>';
-  // Period sub-header row
-  let subHdr='<div class="sd-row"><div class="sd-label"></div><div class="sd-groups">';
-  ppd.forEach(p=>{
-    if(p===3)subHdr+='<div class="sd-group" style="flex:'+p+'"><span class="sd-sub">AM</span><span class="sd-sub">PM</span><span class="sd-sub">N1</span></div>';
-    else subHdr+='<div class="sd-group" style="flex:'+p+'"><span class="sd-sub">\u2014</span></div>';
-  });
-  subHdr+='</div></div>';
-  // Category rows
-  const catRows=(sd.categories||[]).map(c2=>{
-    const groups=splitStatusGroups(c2.statuses||[],ppd);
-    let row='<div class="sd-row"><div class="sd-label">'+(c2.shortName||c2.name)+'</div><div class="sd-groups">';
-    groups.forEach((grp,i)=>{
-      const p=ppd[i]||1;
-      row+='<div class="sd-group" style="flex:'+p+'">';
-      grp.forEach(s=>{row+='<span class="dot '+(s==='go'?'go':s==='marginal'?'marginal':'noGo')+'"></span>'});
-      row+='</div>';
-    });
-    row+='</div></div>';return row;
-  }).join('');
-  // Temperature rows
-  let highRow='<div class="sd-row"><div class="sd-label" style="color:var(--text-secondary)">HIGH</div><div class="sd-groups">';
-  let lowRow='<div class="sd-row"><div class="sd-label" style="color:var(--text-secondary)">LOW</div><div class="sd-groups">';
-  (sd.highTemps||[]).forEach((t,i)=>{
-    const p=ppd[i]||1;
-    highRow+='<div class="sd-group" style="flex:'+p+'"><span class="sd-temp" style="color:var(--text-secondary)">'+t+'\u00B0</span></div>';
-    lowRow+='<div class="sd-group" style="flex:'+p+'"><span class="sd-temp" style="color:var(--text-secondary)">'+((sd.lowTemps||[])[i]||'--')+'\u00B0</span></div>';
-  });
-  highRow+='</div></div>';lowRow+='</div></div>';
-  const tid='thr-'+Date.now();
-  const legend='<div class="sd-legend"><div class="sd-legend-item"><span class="dot go" style="width:10px;height:10px"></span> GO</div><div class="sd-legend-item"><span class="dot marginal" style="width:10px;height:10px"></span> MARGINAL</div><div class="sd-legend-item"><span class="dot noGo" style="width:10px;height:10px"></span> NO GO</div></div>';
-  g.innerHTML='<div class="sd-chart">'+dayHdr+subHdr+catRows+'<div style="border-top:1px solid var(--border);margin:2px 0;opacity:0.3"></div>'+highRow+lowRow+'</div>'+legend+(sd.synopsis?'<div class="sd-syn">'+esc(sd.synopsis)+'</div>':'')+
-    '<div class="thr-toggle" onclick="togThr(\''+tid+'\',this)">\u25B6 THRESHOLDS</div><div id="'+tid+'" style="display:none"><table class="thr-tbl"><thead><tr><th></th><th style="color:var(--go)">GO</th><th style="color:var(--accent)">MARG</th><th style="color:var(--nogo)">NO GO</th></tr></thead><tbody><tr><td>CIG/VIS</td><td>\u22651000\'/3SM</td><td>700\'/2SM</td><td>\u2264500\'/1SM</td></tr><tr><td>WIND</td><td>&lt;20KT</td><td>20-29KT</td><td>\u226530KT</td></tr><tr><td>TURB</td><td>NONE</td><td>LGT</td><td>\u2265MDT</td></tr><tr><td>ICE</td><td>NONE</td><td>4\u00B0/MOIST</td><td>0\u00B0/MOIST</td></tr><tr><td>TS</td><td>&lt;30KT</td><td>30-44KT</td><td>\u226545KT</td></tr><tr><td>UAS</td><td>&lt;10KT</td><td>10KT</td><td>&gt;10KT</td></tr></tbody></table></div>';
-}
-function togThr(id,el){const d=document.getElementById(id);if(!d)return;const v=d.style.display!=='none';d.style.display=v?'none':'block';el.textContent=(v?'\u25B6':'\u25BC')+' THRESHOLDS'}
-
-/* ── DRAG & DROP REORDER ── */
-(function(){
-  const container=()=>document.querySelector('.hero-left');
-  let dragEl=null;
-
-  function sections(){return[...container().querySelectorAll(':scope > .drag-section')]}
-
-  function applyOrder(){
-    const saved=JSON.parse(localStorage.getItem('cardOrder')||'null');
-    if(!saved||!saved.length)return;
-    const c=container();
-    const els={};sections().forEach(el=>{els[el.dataset.section]=el});
-    // Append in saved order, then append any new sections not in saved order
-    saved.forEach(id=>{if(els[id])c.appendChild(els[id])});
-    sections().forEach(el=>{if(!saved.includes(el.dataset.section))c.appendChild(el)});
-  }
-
-  function saveOrder(){
-    const order=sections().map(el=>el.dataset.section);
-    localStorage.setItem('cardOrder',JSON.stringify(order));
-  }
-
-  function getDragAfter(y){
-    const els=sections().filter(el=>el!==dragEl);
-    let closest=null,closestOff=Number.NEGATIVE_INFINITY;
-    els.forEach(el=>{
-      const box=el.getBoundingClientRect();
-      const off=y-box.top-box.height/2;
-      if(off<0&&off>closestOff){closestOff=off;closest=el}
-    });
-    return closest;
-  }
-
-  document.addEventListener('dragstart',e=>{
-    const sec=e.target.closest('.drag-section');
-    if(!sec)return;
-    dragEl=sec;
-    sec.classList.add('dragging');
-    e.dataTransfer.effectAllowed='move';
-    e.dataTransfer.setData('text/plain',sec.dataset.section);
-  });
-
-  document.addEventListener('dragend',e=>{
-    if(dragEl)dragEl.classList.remove('dragging');
-    dragEl=null;
-    sections().forEach(el=>{el.classList.remove('drag-over-top','drag-over-bottom')});
-  });
-
-  document.addEventListener('dragover',e=>{
-    e.preventDefault();
-    e.dataTransfer.dropEffect='move';
-    const c=container();
-    if(!c.contains(e.target))return;
-    sections().forEach(el=>el.classList.remove('drag-over-top','drag-over-bottom'));
-    const after=getDragAfter(e.clientY);
-    if(after){after.classList.add('drag-over-top')}
-    else{const all=sections();if(all.length)all[all.length-1].classList.add('drag-over-bottom')}
-  });
-
-  document.addEventListener('drop',e=>{
-    e.preventDefault();
-    if(!dragEl)return;
-    const c=container();
-    const after=getDragAfter(e.clientY);
-    if(after){c.insertBefore(dragEl,after)}
-    else{c.appendChild(dragEl)}
-    dragEl.classList.remove('dragging');
-    sections().forEach(el=>el.classList.remove('drag-over-top','drag-over-bottom'));
-    saveOrder();
-    dragEl=null;
-  });
-
-  // Apply saved order after DOM ready
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',applyOrder)}
-  else{applyOrder()}
-})();
-
-function resetLayout(){
-  localStorage.removeItem('cardOrder');
-  location.reload();
-}
-
-async function fetchMETAR(){
-  try{
-    const r=await fetch('https://aviationweather.gov/api/data/metar?ids=KOZR&format=json&taf=false');
-    const d=await r.json();
-    if(d&&d.length){
-      const m=d[0];
-      DATA.metar={
-        icaoId:m.icaoId||'KOZR',name:m.name||'Ozark/Cairns AAF, AL, US',
-        rawOb:m.rawOb||'',reportTime:m.reportTime||'',
-        temp:m.temp,dewp:m.dewp,wdir:m.wdir,wspd:m.wspd,wgst:m.wgst||null,
-        visib:m.visib!=null?String(m.visib):'--',
-        altim:m.altim,slp:m.slp,fltCat:m.fltCat||'VFR',
-        cover:m.cover||'CLR',metarType:m.metarType||'METAR',
-        wxString:m.wxString||null,
-        clouds:(m.clouds||[]).map(c=>({cover:c.cover,base:c.base}))
-      };
-      render();
-    }
-  }catch(e){console.log('METAR fetch error:',e)}
-}
-
+setupPeriodButtons();
+updateClock();
+setInterval(updateClock, 30 * 1000);
 loadData();
-setInterval(()=>{loadData().then(()=>fetchMETAR())},300000);
-setTimeout(()=>{if(DATA)fetchMETAR()},3000);
+setInterval(loadData, DATA_REFRESH_MS);
 </script>
 </body>
 </html>
