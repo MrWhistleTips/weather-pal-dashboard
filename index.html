@@ -700,7 +700,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div class="card-body" id="advisories-body"></div>
   </div>
 
-  <div class="grid grid-3" style="margin-bottom: 10px;">
+  <div id="middle-grid" class="grid grid-3" style="margin-bottom: 10px;">
     <div id="solo-card" class="card" style="display:none;">
       <div class="card-header">
         <div class="card-title"><span class="card-title-icon">🎓</span>Solo Operations</div>
@@ -1106,9 +1106,15 @@ function renderAdvisories(forecast) {
 function renderSolo(forecast) {
   const card = document.getElementById('solo-card');
   const body = document.getElementById('solo-body');
+  const middle = document.getElementById('middle-grid');
 
   if (!forecast || (forecast.type !== 'AM' && forecast.type !== 'PM')) {
     card.style.display = 'none';
+    // Solo hidden — switch parent to 2-col so Hazards + FLW spread evenly
+    if (middle) {
+      middle.classList.remove('grid-3');
+      middle.classList.add('grid-2');
+    }
     return;
   }
 
@@ -1139,8 +1145,19 @@ function renderSolo(forecast) {
       </div>
     `;
   }
-  if (!rendered) { card.style.display = 'none'; return; }
+  if (!rendered) {
+    card.style.display = 'none';
+    if (middle) {
+      middle.classList.remove('grid-3');
+      middle.classList.add('grid-2');
+    }
+    return;
+  }
   card.style.display = 'block';
+  if (middle) {
+    middle.classList.remove('grid-2');
+    middle.classList.add('grid-3');
+  }
   body.innerHTML = html;
 }
 
