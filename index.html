@@ -544,10 +544,15 @@ body.tv .metar-strip-raw { font-size: 12px; }
   text-shadow: 0 0 12px rgba(179,71,217,0.7), 0 0 24px rgba(179,71,217,0.3);
 }
 
-.training-panel-icon {
-  font-size: 22px;
+.training-panel-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--text);
+  text-transform: uppercase;
   line-height: 1;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 .training-panel-status {
   font-family: 'Rajdhani', sans-serif;
@@ -555,18 +560,9 @@ body.tv .metar-strip-raw { font-size: 12px; }
   font-weight: 700;
   letter-spacing: 2px;
   line-height: 1;
-  margin: 4px 0 2px;
+  margin: 6px 0 2px;
   transition: all 0.3s;
   white-space: nowrap;
-}
-.training-panel-name {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--text);
-  text-transform: uppercase;
-  margin-top: 2px;
 }
 .training-panel-area {
   font-family: 'JetBrains Mono', monospace;
@@ -672,8 +668,7 @@ body.tv .metar-strip-raw { font-size: 12px; }
 }
 /* TV mode — bigger panel lights */
 body.tv .training-panel-status { font-size: 38px; letter-spacing: 4px; }
-body.tv .training-panel-name { font-size: 17px; }
-body.tv .training-panel-icon { font-size: 28px; }
+body.tv .training-panel-name { font-size: 24px; letter-spacing: 4px; }
 body.tv .training-panel-area { font-size: 11px; }
 body.tv .training-panel-solo,
 body.tv .training-panel-taxi { font-size: 13px; }
@@ -1714,7 +1709,7 @@ function renderTraining(metar, forecast) {
     taxi = { status: 'unknown', label: 'UNKNOWN' };
   }
   // Cairns has no solo (no solo flights at Cairns), but it does have taxi
-  let cells = panelHTML('🚁', cairnsStatus, cairnsLabel, 'Cairns AAF', cairnsArea, null, taxi);
+  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, taxi);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
@@ -1731,13 +1726,13 @@ function renderTraining(metar, forecast) {
         }
       }
     }
-    cells += panelHTML('🚁', status, label, sf.name, sf.area, solo, null);
+    cells += panelHTML(status, label, sf.name.toUpperCase(), sf.area, solo, null);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
 }
 
-function panelHTML(icon, status, label, name, area, solo, taxi) {
+function panelHTML(status, label, name, area, solo, taxi) {
   let soloHTML = '';
   if (solo) {
     const soloClass = solo.go ? 'go' : 'nogo';
@@ -1765,9 +1760,8 @@ function panelHTML(icon, status, label, name, area, solo, taxi) {
   }
   return `
     <div class="training-panel ${status}">
-      <div class="training-panel-icon">${icon}</div>
-      <div class="training-panel-status">${label}</div>
       <div class="training-panel-name">${name}</div>
+      <div class="training-panel-status">${label}</div>
       <div class="training-panel-area">${area}</div>
       ${soloHTML}
       ${taxiHTML}
