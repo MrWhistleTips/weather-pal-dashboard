@@ -142,8 +142,8 @@ body {
 .nav-btn:hover { background: var(--od); border-color: var(--tan); color: var(--text); }
 
 /* LAYOUT */
-.container { max-width: 1700px; margin: 0 auto; padding: 12px 16px; }
-.grid { display: grid; gap: 10px; }
+.container { max-width: 1800px; margin: 0 auto; padding: 8px 12px; }
+.grid { display: grid; gap: 6px; }
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-4 { grid-template-columns: repeat(4, 1fr); }
@@ -158,7 +158,7 @@ body {
   border: 1px solid var(--od-border);
   border-radius: 4px;
   padding: 3px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   width: fit-content;
   margin-inline: auto;
 }
@@ -200,24 +200,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 5px 10px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
 }
 .card-title {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
   color: var(--tan);
   display: flex; align-items: center; gap: 10px;
 }
-.card-title-icon { font-size: 14px; }
+.card-title-icon { font-size: 12px; }
 .card-subtitle {
-  font-size: 10px; color: var(--text-dim);
-  letter-spacing: 1px;
+  font-size: 9px; color: var(--text-dim);
+  letter-spacing: 0.8px;
 }
-.card-body { padding: 10px 12px; }
+.card-body { padding: 6px 10px; }
 
 /* METAR STRIP — thin horizontal bar across the page */
 .metar-strip {
@@ -228,7 +228,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 8px 12px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   flex-wrap: wrap;
@@ -301,40 +301,50 @@ body.tv .metar-strip-time { font-size: 13px; }
 body.tv .metar-strip-label { font-size: 11px; }
 body.tv .metar-strip-raw { font-size: 12px; }
 
-/* TRAINING STATUS */
-.training-hero { padding: 10px 12px; }
-.training-row {
+/* TRAINING STATUS — horizontal 5-col grid */
+.training-grid {
   display: grid;
-  grid-template-columns: 26px 1fr auto;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 4px;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.15s;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  padding: 0;
 }
-.training-row:last-child { border-bottom: none; }
-.training-row:hover { background: rgba(192,168,120,0.03); }
-.training-row.cairns {
-  background: rgba(61,77,51,0.12);
-  border-radius: 4px;
-  border: 1px solid var(--od-border);
-  margin-bottom: 6px;
+@media (max-width: 900px) {
+  .training-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px) {
+  .training-grid { grid-template-columns: 1fr; }
+}
+.training-cell {
+  background: var(--bg-1);
   padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  position: relative;
 }
-.training-icon {
-  font-size: 16px; text-align: center;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+.training-cell.cairns {
+  background: linear-gradient(180deg, rgba(61,77,51,0.15), var(--bg-1));
 }
-.training-name { display: flex; flex-direction: column; line-height: 1.1; }
-.training-station { font-size: 14px; font-weight: 600; letter-spacing: 0.3px; }
-.training-area {
+.training-cell-name {
+  display: flex; flex-direction: column; align-items: center;
+  line-height: 1.1; gap: 2px;
+}
+.training-cell-station {
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+.training-cell-area {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   color: var(--text-dim);
   letter-spacing: 1.2px;
-  margin-top: 2px;
   text-transform: uppercase;
 }
+.training-cell-icon { font-size: 14px; }
 
 /* BADGES */
 .badge {
@@ -463,22 +473,22 @@ body.tv .metar-strip-raw { font-size: 12px; }
 /* SOLO */
 .solo-row {
   display: grid;
-  grid-template-columns: 14px 1fr auto;
+  grid-template-columns: 12px 1fr auto;
   align-items: center;
-  gap: 10px;
-  padding: 5px 4px;
+  gap: 8px;
+  padding: 3px 2px;
   border-bottom: 1px solid var(--border);
 }
 .solo-row:last-child { border-bottom: none; }
 .solo-dot {
-  width: 10px; height: 10px;
+  width: 9px; height: 9px;
   border-radius: 50%;
   margin: 0 auto;
 }
-.solo-dot.go { background: var(--solo); box-shadow: 0 0 6px rgba(61,212,191,0.5); }
-.solo-dot.nogo { background: var(--nosolo); box-shadow: 0 0 6px rgba(237,137,54,0.5); }
-.solo-name { display: flex; align-items: baseline; gap: 8px; }
-.solo-station { font-size: 13px; font-weight: 600; }
+.solo-dot.go { background: var(--solo); box-shadow: 0 0 5px rgba(61,212,191,0.5); }
+.solo-dot.nogo { background: var(--nosolo); box-shadow: 0 0 5px rgba(237,137,54,0.5); }
+.solo-name { display: flex; align-items: baseline; gap: 6px; }
+.solo-station { font-size: 12px; font-weight: 600; }
 .solo-reason { font-size: 10px; color: var(--nosolo); }
 
 /* AREA FORECASTS */
@@ -495,22 +505,22 @@ body.tv .metar-strip-raw { font-size: 12px; }
   .areas-grid { grid-template-columns: 1fr; }
 }
 .area-card {
-  padding: 8px 12px;
+  padding: 5px 9px;
   background: var(--bg-1);
 }
 .area-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .area-name {
-  font-size: 13px; font-weight: 700;
+  font-size: 12px; font-weight: 700;
   color: var(--tan);
-  letter-spacing: 1.5px;
+  letter-spacing: 1.3px;
 }
 .area-text {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  line-height: 1.5;
+  font-size: 10.5px;
+  line-height: 1.35;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -555,20 +565,20 @@ body.tv .metar-strip-raw { font-size: 12px; }
   .solar-grid { grid-template-columns: repeat(2, 1fr); }
 }
 .solar-item {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 6px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 4px 3px;
   background: var(--bg-2);
   border-radius: 3px;
   text-align: center;
 }
-.solar-icon { font-size: 14px; }
+.solar-icon { font-size: 12px; }
 .solar-label {
-  font-size: 9px; color: var(--tan);
-  letter-spacing: 1px; text-transform: uppercase;
+  font-size: 8px; color: var(--tan);
+  letter-spacing: 0.8px; text-transform: uppercase;
 }
 .solar-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 10.5px;
 }
 
 /* HAZARDS */
@@ -576,17 +586,17 @@ body.tv .metar-strip-raw { font-size: 12px; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 0;
+  padding: 3px 0;
   border-bottom: 1px solid var(--border);
 }
 .hazard-row:last-child { border-bottom: none; }
 .hazard-label {
-  font-size: 11px; color: var(--tan);
-  letter-spacing: 1.2px; text-transform: uppercase; font-weight: 600;
+  font-size: 10px; color: var(--tan);
+  letter-spacing: 1px; text-transform: uppercase; font-weight: 600;
 }
 .hazard-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
 }
 .hazard-value.none { color: var(--text-ghost); }
 .hazard-value.active { color: var(--amber); font-weight: 600; }
@@ -609,7 +619,7 @@ body.tv .metar-strip-raw { font-size: 12px; }
   border-radius: 4px;
   color: var(--text-dim);
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   font-size: 12px;
 }
 .alert.warning {
@@ -760,12 +770,12 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div id="metar-strip" class="metar-strip"></div>
 
   <!-- Training Status full width -->
-  <div class="card" style="margin-bottom: 10px;">
+  <div class="card" style="margin-bottom: 6px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🎯</span>Training Status</div>
       <div class="card-subtitle">Cairns ≥1000/3 · Stagefields ≥700/1</div>
     </div>
-    <div class="card-body training-hero" id="training-body"></div>
+    <div id="training-body"></div>
   </div>
 
   <div id="advisories-card" class="card" style="display:none; margin-bottom:10px;">
@@ -777,7 +787,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   </div>
 
   <!-- Area Forecasts moved up under training status -->
-  <div class="card" style="margin-bottom: 10px;">
+  <div class="card" style="margin-bottom: 6px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🗺️</span>Area Forecasts</div>
       <div class="card-subtitle">Color-coded by flight category</div>
@@ -785,7 +795,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div id="areas-body">—</div>
   </div>
 
-  <div id="middle-grid" class="grid grid-3" style="margin-bottom: 10px;">
+  <div id="middle-grid" class="grid grid-3" style="margin-bottom: 6px;">
     <div id="solo-card" class="card" style="display:none;">
       <div class="card-header">
         <div class="card-title"><span class="card-title-icon">🎓</span>Solo Operations</div>
@@ -809,7 +819,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     </div>
   </div>
 
-  <div class="card" style="margin-bottom: 10px;">
+  <div class="card" style="margin-bottom: 6px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🌅</span>Solar / Lunar</div>
     </div>
@@ -1045,17 +1055,17 @@ function renderTraining(metar, forecast) {
   if (metar && !isMetarStale(metar)) {
     const ok = metarMeetsTraining(metar);
     cairnsStatus = ok ? 'go' : 'nogo';
-    cairnsText = ok ? 'GO for Departure' : 'NO GO for Departure';
+    cairnsText = ok ? 'GO' : 'NO GO';
   }
 
-  let html = `
-    <div class="training-row cairns">
-      <div class="training-icon">🚁</div>
-      <div class="training-name">
-        <div class="training-station">Cairns AAF</div>
-        <div class="training-area">KOZR · 1000/3 Minimums</div>
+  let cells = `
+    <div class="training-cell cairns">
+      <div class="training-cell-icon">🚁</div>
+      <div class="training-cell-name">
+        <div class="training-cell-station">Cairns AAF</div>
+        <div class="training-cell-area">KOZR · 1000/3</div>
       </div>
-      <span class="badge cairns ${cairnsStatus}">${cairnsText}</span>
+      <span class="badge ${cairnsStatus}">${cairnsText}</span>
     </div>
   `;
 
@@ -1070,19 +1080,19 @@ function renderTraining(metar, forecast) {
         text = isGo ? 'GO' : 'NO GO';
       }
     }
-    html += `
-      <div class="training-row">
-        <div class="training-icon">🚁</div>
-        <div class="training-name">
-          <div class="training-station">${sf.name}</div>
-          <div class="training-area">${sf.area}</div>
+    cells += `
+      <div class="training-cell">
+        <div class="training-cell-icon">🚁</div>
+        <div class="training-cell-name">
+          <div class="training-cell-station">${sf.name}</div>
+          <div class="training-cell-area">${sf.area}</div>
         </div>
         <span class="badge ${status}">${text}</span>
       </div>
     `;
   }
 
-  body.innerHTML = html;
+  body.innerHTML = `<div class="training-grid">${cells}</div>`;
 }
 
 function renderMETAR(metar) {
