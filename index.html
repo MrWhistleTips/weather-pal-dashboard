@@ -512,19 +512,36 @@ body.tv .metar-strip-raw { font-size: 12px; }
   color: var(--unknown);
   text-shadow: 0 0 12px rgba(230,165,58,0.7), 0 0 24px rgba(230,165,58,0.3);
 }
-/* IFR ONLY — blue, meets 200/0.25 but not 1000/3 */
-.training-panel.ifr {
+/* IFR ONLY (intermediate) — color matches actual METAR flight category */
+.training-panel.cat-mvfr {
   border-color: rgba(74,144,226,0.5);
   background: radial-gradient(ellipse at top, rgba(74,144,226,0.18), var(--bg-2) 70%);
   box-shadow: 0 0 18px rgba(74,144,226,0.18), inset 0 0 30px rgba(74,144,226,0.06);
 }
-.training-panel.ifr::before {
-  background: var(--mvfr);
-  box-shadow: 0 0 10px var(--mvfr);
-}
-.training-panel.ifr .training-panel-status {
+.training-panel.cat-mvfr::before { background: var(--mvfr); box-shadow: 0 0 10px var(--mvfr); }
+.training-panel.cat-mvfr .training-panel-status {
   color: var(--mvfr);
   text-shadow: 0 0 12px rgba(74,144,226,0.7), 0 0 24px rgba(74,144,226,0.3);
+}
+.training-panel.cat-ifr {
+  border-color: rgba(214,69,69,0.5);
+  background: radial-gradient(ellipse at top, rgba(214,69,69,0.18), var(--bg-2) 70%);
+  box-shadow: 0 0 18px rgba(214,69,69,0.18), inset 0 0 30px rgba(214,69,69,0.06);
+}
+.training-panel.cat-ifr::before { background: var(--ifr); box-shadow: 0 0 10px var(--ifr); }
+.training-panel.cat-ifr .training-panel-status {
+  color: var(--ifr);
+  text-shadow: 0 0 12px rgba(214,69,69,0.7), 0 0 24px rgba(214,69,69,0.3);
+}
+.training-panel.cat-lifr {
+  border-color: rgba(179,71,217,0.5);
+  background: radial-gradient(ellipse at top, rgba(179,71,217,0.18), var(--bg-2) 70%);
+  box-shadow: 0 0 18px rgba(179,71,217,0.18), inset 0 0 30px rgba(179,71,217,0.06);
+}
+.training-panel.cat-lifr::before { background: var(--lifr); box-shadow: 0 0 10px var(--lifr); }
+.training-panel.cat-lifr .training-panel-status {
+  color: var(--lifr);
+  text-shadow: 0 0 12px rgba(179,71,217,0.7), 0 0 24px rgba(179,71,217,0.3);
 }
 
 .training-panel-icon {
@@ -1676,8 +1693,11 @@ function renderTraining(metar, forecast) {
       cairnsStatus = 'go';
       cairnsLabel = 'VFR GO';
     } else if (ifrOk) {
-      cairnsStatus = 'ifr';
-      cairnsLabel = 'IFR GO';
+      // Color the panel by the actual METAR flight category (MVFR/IFR/LIFR)
+      const cat = (metar.fltCat || '').toLowerCase();
+      cairnsStatus = (cat === 'mvfr' || cat === 'ifr' || cat === 'lifr')
+        ? `cat-${cat}` : 'cat-ifr';
+      cairnsLabel = (metar.fltCat ? `${metar.fltCat} GO` : 'IFR GO');
     } else {
       cairnsStatus = 'nogo';
       cairnsLabel = 'NO GO';
