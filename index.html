@@ -544,8 +544,9 @@ body.tv .metar-strip-raw { font-size: 12px; }
   text-transform: uppercase;
 }
 
-/* Solo status row at bottom of training panel */
-.training-panel-solo {
+/* Solo / Taxi status row at bottom of training panel */
+.training-panel-solo,
+.training-panel-taxi {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -560,6 +561,41 @@ body.tv .metar-strip-raw { font-size: 12px; }
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
+}
+.training-panel-taxi { margin-bottom: 0; }
+/* When both solo and taxi are present (Cairns has taxi only) */
+.training-panel-solo + .training-panel-taxi { margin-top: 0; }
+.training-panel-taxi-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+.training-panel-taxi.go .training-panel-taxi-dot {
+  background: var(--go);
+  box-shadow: 0 0 6px var(--go);
+}
+.training-panel-taxi.go .training-panel-taxi-status {
+  color: var(--go);
+  text-shadow: 0 0 6px rgba(95,186,79,0.5);
+}
+.training-panel-taxi.nogo .training-panel-taxi-dot {
+  background: var(--nogo);
+  box-shadow: 0 0 6px var(--nogo);
+}
+.training-panel-taxi.nogo .training-panel-taxi-status {
+  color: var(--nogo);
+  text-shadow: 0 0 6px rgba(214,69,69,0.5);
+}
+.training-panel-taxi.unknown .training-panel-taxi-dot {
+  background: var(--unknown);
+  box-shadow: 0 0 6px var(--unknown);
+}
+.training-panel-taxi.unknown .training-panel-taxi-status {
+  color: var(--unknown);
+}
+.training-panel-taxi-label {
+  color: var(--text-dim);
+  font-size: 9px;
+  letter-spacing: 1.8px;
 }
 .training-panel-solo-label {
   color: var(--text-dim);
@@ -607,9 +643,12 @@ body.tv .training-panel-status { font-size: 38px; letter-spacing: 4px; }
 body.tv .training-panel-name { font-size: 17px; }
 body.tv .training-panel-icon { font-size: 28px; }
 body.tv .training-panel-area { font-size: 11px; }
-body.tv .training-panel-solo { font-size: 13px; }
-body.tv .training-panel-solo-label { font-size: 11px; }
-body.tv .training-panel-solo-dot { width: 9px; height: 9px; }
+body.tv .training-panel-solo,
+body.tv .training-panel-taxi { font-size: 13px; }
+body.tv .training-panel-solo-label,
+body.tv .training-panel-taxi-label { font-size: 11px; }
+body.tv .training-panel-solo-dot,
+body.tv .training-panel-taxi-dot { width: 9px; height: 9px; }
 body.tv .training-panel-solo-reason { font-size: 11px; }
 
 /* BADGES */
@@ -1570,6 +1609,36 @@ function metarMeetsTraining(metar) {
   return ceil >= 1000 && vis >= 3;
 }
 
+/// Taxi minimums: 200 ft ceiling AND 1/4 SM visibility (IFR taxi)
+function metarMeetsTaxi(metar) {
+  if (!metar) return null;
+  const c = metarCeiling(metar);
+  const ceil = c === null ? 99999 : c;
+  let vis = 99;
+  if (metar.visib) {
+    let visStr = String(metar.visib).replace('+','').trim();
+    // Handle fractional visibilities (1/4, 1/2, 3/4, 1 1/2, etc.)
+    if (visStr.includes('/')) {
+      const parts = visStr.split(' ');
+      let total = 0;
+      for (const p of parts) {
+        if (p.includes('/')) {
+          const [n, d] = p.split('/').map(Number);
+          if (d) total += n / d;
+        } else {
+          const n = parseFloat(p);
+          if (!isNaN(n)) total += n;
+        }
+      }
+      vis = total;
+    } else {
+      const num = parseFloat(visStr);
+      if (!isNaN(num)) vis = num;
+    }
+  }
+  return ceil >= 200 && vis >= 0.25;
+}
+
 function renderTraining(metar, forecast) {
   const body = document.getElementById('training-body');
   const stagefields = [
@@ -1585,20 +1654,26 @@ function renderTraining(metar, forecast) {
   let cairnsStatus = 'unknown';
   let cairnsLabel = 'UNKNOWN';
   let cairnsArea = 'KOZR · NO METAR';
+  let taxi = null; // { status: 'go'|'nogo'|'unknown', label }
   if (metar && !isMetarStale(metar)) {
     const ok = metarMeetsTraining(metar);
     cairnsStatus = ok ? 'go' : 'nogo';
     cairnsLabel = ok ? 'GO' : 'NO GO';
-    // Show actual current ceiling and visibility from METAR
     const ceil = metarCeiling(metar);
     const ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
     const visStr = (metar.visib != null) ? `${metar.visib}SM` : '—';
     cairnsArea = `KOZR · ${ceilStr} · ${visStr}`;
+    // Taxi status (200/0.25 IFR taxi minimums)
+    const taxiOk = metarMeetsTaxi(metar);
+    taxi = { status: taxiOk ? 'go' : 'nogo', label: taxiOk ? 'TAXI GO' : 'NO TAXI' };
   } else if (metar && isMetarStale(metar)) {
     cairnsArea = 'KOZR · OLD DATA';
+    taxi = { status: 'unknown', label: 'UNKNOWN' };
+  } else {
+    taxi = { status: 'unknown', label: 'UNKNOWN' };
   }
-  // Cairns has no solo (no solo flights at Cairns)
-  let cells = panelHTML('🚁', cairnsStatus, cairnsLabel, 'Cairns AAF', cairnsArea, null);
+  // Cairns has no solo (no solo flights at Cairns), but it does have taxi
+  let cells = panelHTML('🚁', cairnsStatus, cairnsLabel, 'Cairns AAF', cairnsArea, null, taxi);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
@@ -1615,13 +1690,13 @@ function renderTraining(metar, forecast) {
         }
       }
     }
-    cells += panelHTML('🚁', status, label, sf.name, sf.area, solo);
+    cells += panelHTML('🚁', status, label, sf.name, sf.area, solo, null);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
 }
 
-function panelHTML(icon, status, label, name, area, solo) {
+function panelHTML(icon, status, label, name, area, solo, taxi) {
   let soloHTML = '';
   if (solo) {
     const soloClass = solo.go ? 'go' : 'nogo';
@@ -1637,6 +1712,16 @@ function panelHTML(icon, status, label, name, area, solo) {
       </div>
     `;
   }
+  let taxiHTML = '';
+  if (taxi) {
+    taxiHTML = `
+      <div class="training-panel-taxi ${taxi.status}">
+        <span class="training-panel-taxi-dot"></span>
+        <span class="training-panel-taxi-label">TAXI</span>
+        <span class="training-panel-taxi-status">${taxi.label.replace('TAXI ','')}</span>
+      </div>
+    `;
+  }
   return `
     <div class="training-panel ${status}">
       <div class="training-panel-icon">${icon}</div>
@@ -1644,6 +1729,7 @@ function panelHTML(icon, status, label, name, area, solo) {
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-area">${area}</div>
       ${soloHTML}
+      ${taxiHTML}
     </div>
   `;
 }
