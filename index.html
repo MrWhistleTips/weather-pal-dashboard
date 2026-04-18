@@ -853,13 +853,48 @@ body.tv .training-panel-solo-reason { font-size: 11px; }
 }
 .area-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 2px;
+  gap: 8px;
+  margin-bottom: 3px;
 }
 .area-name {
   font-size: 12px; font-weight: 700;
   color: var(--tan);
   letter-spacing: 1.3px;
 }
+.area-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.area-status.trainable {
+  color: var(--go);
+  background: var(--go-bg);
+  border-color: var(--go-border);
+}
+.area-status.untrainable {
+  color: var(--nogo);
+  background: var(--nogo-bg);
+  border-color: var(--nogo-border);
+}
+.area-status.trainable-soon {
+  color: var(--unknown);
+  background: var(--unknown-bg);
+  border-color: var(--unknown-border);
+}
+.area-status.untrainable-soon {
+  color: #ed8936;
+  background: rgba(237,137,54,0.15);
+  border-color: rgba(237,137,54,0.4);
+}
+body.tv .area-status { font-size: 13px; padding: 3px 9px; }
 .area-text {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
@@ -1570,6 +1605,70 @@ function currentTrainingGo(forecast, amendment) {
   return (ceil === null ? 99999 : ceil) >= 700 && (vis === null ? 99 : vis) >= 1;
 }
 
+/// Time-aware trainability info with countdown.
+/// Returns { status: 'trainable'|'trainable-soon'|'untrainable-soon'|'untrainable',
+///           label, icon }
+function trainingInfo(forecast, amendment) {
+  const text = amendment || forecast || '';
+  const segs = splitSegments(text);
+  const timed = segs
+    .map((s, i) => ({ ...s, idx: i }))
+    .filter(s => !s.isTemporary && s.startMin !== null);
+
+  // Determine if currently trainable
+  const idx = currentSegmentIndex(segs);
+  const cur = segs[idx];
+  if (!cur) {
+    return { status: 'untrainable', label: 'Untrainable', icon: '❌' };
+  }
+  const curCeil = parseCeiling(cur.text);
+  const curVis = parseVisibility(cur.text);
+  const currentlyTrainable = (curCeil === null ? 99999 : curCeil) >= 700
+                          && (curVis === null ? 99 : curVis) >= 1;
+
+  // No timed future segments? Just report current state
+  if (timed.length === 0) {
+    return currentlyTrainable
+      ? { status: 'trainable', label: 'Weather is Trainable', icon: '✅' }
+      : { status: 'untrainable', label: 'Weather is Untrainable', icon: '❌' };
+  }
+
+  // Cross-midnight detection
+  const now = zuluMinutes();
+  const allEarly = timed.every(s => s.startMin < 720);
+  const isCrossMidnight = allEarly && now >= 1080;
+  const effNow = now;
+
+  // Look at future segments for a trainability change
+  const future = timed
+    .map(s => ({
+      ...s,
+      effStart: (isCrossMidnight && s.startMin < 720) ? s.startMin + 1440 : s.startMin
+    }))
+    .filter(s => s.effStart > effNow)
+    .sort((a, b) => a.effStart - b.effStart);
+
+  for (const s of future) {
+    const c = parseCeiling(s.text);
+    const v = parseVisibility(s.text);
+    const trainable = (c === null ? 99999 : c) >= 700 && (v === null ? 99 : v) >= 1;
+    if (trainable !== currentlyTrainable) {
+      const mins = s.effStart - effNow;
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      return currentlyTrainable
+        ? { status: 'untrainable-soon', label: `Untrainable in ${timeStr}`, icon: '⚠️' }
+        : { status: 'trainable-soon', label: `Trainable in ${timeStr}`, icon: '🕐' };
+    }
+  }
+
+  // No change forecast — current state is stable
+  return currentlyTrainable
+    ? { status: 'trainable', label: 'Weather is Trainable', icon: '✅' }
+    : { status: 'untrainable', label: 'Weather is Untrainable', icon: '❌' };
+}
+
 function parseSegmentWind(text) {
   if (!text) return { spd: 0, gust: 0 };
   const m = text.match(/(\d{3}|VRB)(\d{2,3})(G(\d{2,3}))?KT/);
@@ -1714,6 +1813,7 @@ function renderTraining(metar, forecast) {
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
     let solo = null;
+    let areaSubtitle = sf.area;
     if (forecast && forecast.mef && forecast.mef.areaForecasts) {
       const area = forecast.mef.areaForecasts.find(a =>
         (a.name || '').toUpperCase() === sf.area);
@@ -1724,9 +1824,15 @@ function renderTraining(metar, forecast) {
         if (showSolo) {
           solo = soloStatus(area.forecast, area.amendmentText);
         }
+        // Add trainability info (countdown if changing, or static label)
+        const info = trainingInfo(area.forecast, area.amendmentText);
+        if (info.label.includes(' in ')) {
+          // Show countdown only — area is implicit from station name
+          areaSubtitle = `${sf.area} · ${info.label}`;
+        }
       }
     }
-    cells += panelHTML(status, label, sf.name.toUpperCase(), sf.area, solo, null);
+    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
@@ -1872,11 +1978,15 @@ function renderAreas(forecast) {
       const cat = flightCategory(ceil, vis);
       return `<span class="seg-${cat}">${s.text}</span>`;
     }).join('\n');
+    const info = trainingInfo(a.forecast, a.amendmentText);
     return `
       <div class="area-card">
         <div class="area-header">
           <div class="area-name">${a.name}</div>
-          ${a.amendmentNumber ? `<span class="badge unknown" style="font-size:10px">${a.amendmentNumber}</span>` : ''}
+          <div style="display:flex; gap:4px; align-items:center;">
+            ${a.amendmentNumber ? `<span class="badge unknown" style="font-size:10px">${a.amendmentNumber}</span>` : ''}
+            <span class="area-status ${info.status}">${info.icon} ${info.label}</span>
+          </div>
         </div>
         <div class="area-text">${colored}</div>
       </div>
