@@ -1341,7 +1341,50 @@ const DEMO_SCENARIOS = {
     areaText: '26018G28KT 7SM SCT050 BKN120\nAFT 1600Z: 27020G30KT 7SM SCT060 BKN130',
     advisory: true,
   },
+  'improving': {
+    name: '⏱️ Improving — Trainable in 2h',
+    desc: 'Currently NO-GO; conditions improve in ~2 hours (timer demo)',
+    metar: makeDemoMetar({ flt: 'IFR', wdir: 200, wspd: 8, visib: '2', clouds: [{cover:'BKN',base:600}], wxString: 'BR' }),
+    areaTextFn: () => {
+      const futureZ = addHoursToZuluString(2);
+      return `20008KT 2SM BKN006\nAFT ${futureZ}: 22010KT 7SM SCT030 BKN050`;
+    },
+    advisory: false,
+  },
+  'degrading': {
+    name: '⏱️ Degrading — Untrainable in 2h',
+    desc: 'Currently GO; conditions degrade in ~2 hours (timer demo)',
+    metar: makeDemoMetar({ flt: 'VFR', wdir: 180, wspd: 6, visib: '10+', clouds: [{cover:'SCT',base:5000}] }),
+    areaTextFn: () => {
+      const futureZ = addHoursToZuluString(2);
+      return `18006KT 7SM SCT050 BKN120\nAFT ${futureZ}: 20015KT 1SM -RA OVC005`;
+    },
+    advisory: false,
+  },
+  'mixed-timers': {
+    name: '⏱️ Mixed — Multiple Timers',
+    desc: 'Some areas improving, others degrading (per-area timer demo)',
+    metar: makeDemoMetar({ flt: 'MVFR', wdir: 200, wspd: 10, visib: '4', clouds: [{cover:'BKN',base:1500}], wxString: 'BR' }),
+    perAreaFn: () => {
+      const futureZ = addHoursToZuluString(2);
+      return {
+        'GOLDFISH':   `20008KT 2SM BKN006\nAFT ${futureZ}: 22010KT 7SM SCT030 BKN050`,   // improving
+        'BEARCAT':    `18006KT 7SM SCT050 BKN120\nAFT ${futureZ}: 20015KT 1SM -RA OVC005`, // degrading
+        'VANGUARD N': `18008KT 7SM SCT050 BKN150`,                                          // stable GO
+        'VANGUARD C': `25018KT 2SM -RA OVC008\nAFT ${futureZ}: 24010KT 6SM BKN040`,      // improving
+        'VANGUARD S': `19006KT 7SM SCT050 BKN120`,                                         // stable GO
+        'HAWK':       `21012KT 1SM FG OVC003`,                                             // stable NO-GO
+      };
+    },
+    advisory: false,
+  },
 };
+
+function addHoursToZuluString(hoursAhead) {
+  const future = new Date(Date.now() + hoursAhead * 3600 * 1000);
+  return String(future.getUTCHours()).padStart(2,'0') +
+         String(future.getUTCMinutes()).padStart(2,'0') + 'Z';
+}
 
 function makeDemoMetar(opts) {
   const reportDate = new Date(Date.now() - (opts.hoursAgo || 0) * 3600 * 1000);
@@ -1367,8 +1410,24 @@ function makeDemoMetar(opts) {
 function buildDemoData(key) {
   const s = DEMO_SCENARIOS[key];
   if (!s) return null;
+
+  // Resolve area text:
+  //  - perAreaFn() returns { areaName: text } for per-area scenarios
+  //  - areaTextFn() returns shared text computed from current time
+  //  - areaText is a static shared string
+  let perAreaMap = null;
+  let sharedText = s.areaText;
+  if (typeof s.perAreaFn === 'function') {
+    perAreaMap = s.perAreaFn();
+  } else if (typeof s.areaTextFn === 'function') {
+    sharedText = s.areaTextFn();
+  }
+
   const areas = ['GOLDFISH','BEARCAT','VANGUARD N','VANGUARD C','VANGUARD S','HAWK']
-    .map(name => ({ name, forecast: s.areaText, amendmentText: null, amendmentNumber: null, tsCoverage: 'NONE' }));
+    .map(name => {
+      const text = perAreaMap ? (perAreaMap[name] || sharedText || '') : sharedText;
+      return { name, forecast: text, amendmentText: null, amendmentNumber: null, tsCoverage: 'NONE' };
+    });
 
   let advisories = [];
   if (s.advisory) {
