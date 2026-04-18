@@ -553,10 +553,11 @@ body.tv .metar-strip-raw { font-size: 12px; }
   font-family: 'Rajdhani', sans-serif;
   font-size: 26px;
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   line-height: 1;
   margin: 4px 0 2px;
   transition: all 0.3s;
+  white-space: nowrap;
 }
 .training-panel-name {
   font-family: 'Rajdhani', sans-serif;
@@ -1691,7 +1692,7 @@ function renderTraining(metar, forecast) {
     const ifrOk = metarMeetsTaxi(metar);     // 200/0.25
     if (vfrOk) {
       cairnsStatus = 'go';
-      cairnsLabel = 'VFR GO';
+      cairnsLabel = 'VFR/IFR GO';
     } else if (ifrOk) {
       // Color the panel by the actual METAR flight category (MVFR/IFR/LIFR)
       const cat = (metar.fltCat || '').toLowerCase();
