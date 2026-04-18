@@ -1645,11 +1645,16 @@ function currentSegmentIndex(segments) {
     ...s,
     effectiveStart: (allEarly && now >= 1080) ? s.startMin + 1440 : s.startMin
   }));
-  let best = effective[0];
+  // Find latest segment whose effectiveStart <= now
+  let best = null;
   for (const s of effective) {
-    if (s.effectiveStart <= now && s.effectiveStart >= best.effectiveStart) best = s;
+    if (s.effectiveStart <= now && (!best || s.effectiveStart >= best.effectiveStart)) {
+      best = s;
+    }
   }
-  return best.i;
+  if (best) return best.i;
+  // No timed segment has started yet — the initial untimed segment (idx 0) is current
+  return 0;
 }
 
 function currentTrainingGo(forecast, amendment) {
