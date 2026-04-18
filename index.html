@@ -60,13 +60,34 @@ body {
   background: var(--bg-0);
   background-image:
     radial-gradient(ellipse at top, rgba(61,77,51,0.08), transparent 60%),
-    radial-gradient(ellipse at bottom right, rgba(192,168,120,0.03), transparent 60%);
+    radial-gradient(ellipse at bottom right, rgba(192,168,120,0.03), transparent 60%),
+    /* Tactical grid */
+    linear-gradient(rgba(192,168,120,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192,168,120,0.025) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
   background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* CRT scanline overlay (very subtle) */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 3px
+  );
+  z-index: 1000;
+  mix-blend-mode: multiply;
 }
 
 .mono { font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace; }
@@ -96,6 +117,24 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 18px;
   box-shadow: 0 0 12px rgba(192,168,120,0.2);
+  position: relative;
+  overflow: hidden;
+}
+/* Radar sweep animation inside the brand logo */
+.brand-logo::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(192,168,120,0.6), transparent);
+  transform-origin: left center;
+  animation: radarSweep 4s linear infinite;
+  pointer-events: none;
+}
+@keyframes radarSweep {
+  0%   { transform: rotate(0deg); opacity: 0.7; }
+  100% { transform: rotate(360deg); opacity: 0.7; }
 }
 .brand-title { display: flex; flex-direction: column; line-height: 1; }
 .brand-name {
@@ -178,20 +217,71 @@ body {
   background: linear-gradient(180deg, var(--od), var(--od-dark));
   color: var(--tan);
   box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(192,168,120,0.2);
+  position: relative;
+}
+.period-btn.active::before,
+.period-btn.active::after {
+  content: "";
+  position: absolute;
+  width: 6px; height: 6px;
+  border-color: var(--tan);
+  pointer-events: none;
+}
+.period-btn.active::before {
+  top: 2px; left: 2px;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+}
+.period-btn.active::after {
+  bottom: 2px; right: 2px;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
 }
 
-/* CARD */
+/* CARD with tactical HUD corner brackets */
 .card {
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
+  border-radius: 4px;
+  overflow: visible;
   position: relative;
 }
-.card::before {
+.card::before, .card::after {
   content: "";
   position: absolute;
-  top: 0; left: 0; right: 0;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  border-color: var(--tan-dim);
+}
+.card::before {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+.card::after {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+.card > .card-header,
+.card > .card-body,
+.card > div:first-of-type {
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+}
+/* Top accent stripe inside header */
+.card-header {
+  position: relative;
+}
+.card-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  right: 12px;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--tan-dim), transparent);
   opacity: 0.6;
@@ -210,7 +300,14 @@ body {
   letter-spacing: 1.8px;
   text-transform: uppercase;
   color: var(--tan);
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title::after {
+  content: "";
+  flex: 0 0 30px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--tan-dim), transparent);
+  margin-left: 4px;
 }
 .card-title-icon { font-size: 12px; }
 .card-subtitle {
@@ -553,7 +650,18 @@ body.tv .training-panel-area { font-size: 11px; }
   word-break: break-all;
 }
 
-/* ADVISORIES */
+/* ADVISORIES — pulsing alert glow */
+#advisories-card {
+  border-color: var(--warning);
+  animation: alertPulse 2.5s ease-in-out infinite;
+}
+@keyframes alertPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(230,165,58,0); }
+  50%      { box-shadow: 0 0 14px rgba(230,165,58,0.25); }
+}
+#advisories-card::before, #advisories-card::after {
+  border-color: var(--warning);
+}
 .advisory {
   display: flex; align-items: center; gap: 10px;
   padding: 6px 10px;
