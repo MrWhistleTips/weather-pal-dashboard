@@ -1690,18 +1690,16 @@ function renderTraining(metar, forecast) {
   if (metar && !isMetarStale(metar)) {
     const vfrOk = metarMeetsTraining(metar); // 1000/3
     const ifrOk = metarMeetsTaxi(metar);     // 200/0.25
+    const cat = (metar.fltCat || '').toLowerCase();
     if (vfrOk) {
       cairnsStatus = 'go';
       cairnsLabel = 'VFR/IFR GO';
-    } else if (ifrOk) {
-      // Color the panel by the actual METAR flight category (MVFR/IFR/LIFR)
-      const cat = (metar.fltCat || '').toLowerCase();
+    } else {
+      // Color the panel by the actual METAR flight category
       cairnsStatus = (cat === 'mvfr' || cat === 'ifr' || cat === 'lifr')
         ? `cat-${cat}` : 'cat-ifr';
-      cairnsLabel = (metar.fltCat ? `${metar.fltCat} GO` : 'IFR GO');
-    } else {
-      cairnsStatus = 'nogo';
-      cairnsLabel = 'NO GO';
+      const catName = metar.fltCat || 'IFR';
+      cairnsLabel = ifrOk ? `${catName} GO` : `${catName} NO GO`;
     }
     const ceil = metarCeiling(metar);
     const ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
