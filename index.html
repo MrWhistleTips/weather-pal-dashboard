@@ -219,6 +219,43 @@ body {
 }
 .card-body { padding: 6px 10px; }
 
+/* SOLAR / LUNAR STRIP — top of page next to clock */
+.solar-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.solar-strip-item {
+  display: flex; align-items: center; gap: 4px;
+  white-space: nowrap;
+}
+.solar-strip-icon { font-size: 12px; }
+.solar-strip-label {
+  font-size: 8px;
+  color: var(--tan);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-family: 'Rajdhani', sans-serif;
+}
+.solar-strip-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 500;
+}
+body.tv .solar-strip { padding: 7px 12px; }
+body.tv .solar-strip-icon { font-size: 16px; }
+body.tv .solar-strip-label { font-size: 11px; }
+body.tv .solar-strip-value { font-size: 14px; }
+
 /* METAR STRIP — thin horizontal bar across the page */
 .metar-strip {
   display: flex;
@@ -737,14 +774,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <div class="nav-datum-value" id="local-time">—</div>
     </div>
     <div class="nav-datum">
-      <div class="nav-datum-label">Sunrise</div>
-      <div class="nav-datum-value" id="sunrise">—</div>
-    </div>
-    <div class="nav-datum">
-      <div class="nav-datum-label">Sunset</div>
-      <div class="nav-datum-value" id="sunset">—</div>
-    </div>
-    <div class="nav-datum">
       <div class="nav-datum-label">Fetched</div>
       <div class="nav-datum-value" id="fetched-ago">—</div>
     </div>
@@ -765,6 +794,9 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   </div>
 
   <div id="data-alert" class="alert" style="display:none;"></div>
+
+  <!-- Thin solar/lunar strip across the page -->
+  <div id="solar-strip" class="solar-strip" style="display:none;"></div>
 
   <!-- Thin METAR strip across the page -->
   <div id="metar-strip" class="metar-strip"></div>
@@ -819,14 +851,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     </div>
   </div>
 
-  <div class="card" style="margin-bottom: 6px;">
-    <div class="card-header">
-      <div class="card-title"><span class="card-title-icon">🌅</span>Solar / Lunar</div>
-    </div>
-    <div class="card-body">
-      <div class="solar-grid" id="solar-body">—</div>
-    </div>
-  </div>
 
 </div>
 
@@ -1327,35 +1351,32 @@ function renderHazards(forecast) {
 }
 
 function renderSolar(forecast) {
-  const body = document.getElementById('solar-body');
+  const strip = document.getElementById('solar-strip');
+  if (!strip) return;
+
   const sl = forecast && forecast.mef && forecast.mef.solarLunar;
-  if (!sl) {
-    body.innerHTML = '<div style="color:var(--text-dim)">No data.</div>';
-    return;
-  }
+  if (!sl) { strip.style.display = 'none'; return; }
 
   const items = [
-    { icon: '🌅', label: 'BMNT', value: sl.bmnt },
+    { icon: '🌄', label: 'BMNT', value: sl.bmnt },
     { icon: '☀️', label: 'Sunrise', value: sl.sunrise },
     { icon: '🌇', label: 'Sunset', value: sl.sunset },
     { icon: '🌃', label: 'EENT', value: sl.eent },
     { icon: '🌙', label: 'Moonrise', value: sl.moonrise },
     { icon: '🌘', label: 'Moonset', value: sl.moonset },
-    { icon: '✨', label: 'Illumination', value: sl.illumination },
+    { icon: '✨', label: 'Illum', value: sl.illumination },
   ].filter(i => i.value);
 
-  body.innerHTML = items.map(i => `
-    <div class="solar-item">
-      <div class="solar-icon">${i.icon}</div>
-      <div>
-        <div class="solar-label">${i.label}</div>
-        <div class="solar-value">${i.value}</div>
-      </div>
+  if (items.length === 0) { strip.style.display = 'none'; return; }
+  strip.style.display = 'flex';
+
+  strip.innerHTML = items.map(i => `
+    <div class="solar-strip-item">
+      <span class="solar-strip-icon">${i.icon}</span>
+      <span class="solar-strip-label">${i.label}</span>
+      <span class="solar-strip-value">${i.value}</span>
     </div>
   `).join('');
-
-  if (sl.sunrise) fmtTime(document.getElementById('sunrise'), sl.sunrise);
-  if (sl.sunset) fmtTime(document.getElementById('sunset'), sl.sunset);
 }
 
 function activeForecast() {
