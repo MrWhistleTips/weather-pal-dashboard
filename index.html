@@ -883,11 +883,85 @@ body.tv .training-panel-solo-reason { font-size: 11px; }
   background: var(--warning);
   color: #000;
   text-align: center;
-  padding: 8px;
+  padding: 6px;
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 3px;
   text-transform: uppercase;
+  display: none;
+}
+.demo-banner.active { display: block; }
+body.demo .demo-banner { display: block; }
+body.demo .container::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  border: 3px solid var(--warning);
+  pointer-events: none;
+  z-index: 999;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3);
+}
+
+/* Demo dropdown menu in navbar */
+.demo-menu {
+  position: relative;
+}
+.demo-menu-btn {
+  background: var(--bg-2);
+  border: 1px solid var(--od-border);
+  color: var(--tan);
+  padding: 5px 11px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 1.2px; text-transform: uppercase;
+}
+body.demo .demo-menu-btn {
+  background: var(--warning);
+  color: #000;
+  border-color: var(--warning);
+}
+.demo-menu-list {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  min-width: 280px;
+  background: var(--bg-1);
+  border: 1px solid var(--od-border);
+  border-radius: 4px;
+  z-index: 200;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+.demo-menu.open .demo-menu-list { display: block; }
+.demo-menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  transition: background 0.1s;
+}
+.demo-menu-item:hover { background: var(--bg-3); }
+.demo-menu-item.off { color: var(--text-dim); font-style: italic; }
+.demo-menu-item.active {
+  background: rgba(230,165,58,0.15);
+  color: var(--warning);
+}
+.demo-menu-item:last-child { border-bottom: none; }
+.demo-menu-item-name {
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-family: 'Rajdhani', sans-serif;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+.demo-menu-item-desc {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 2px;
 }
 .alert {
   padding: 8px 12px;
@@ -991,7 +1065,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 </head>
 <body>
 
-<div id="demo-banner" class="demo-banner" style="display:none;">
+<div id="demo-banner" class="demo-banner">
   🧪 DEMO MODE — <span id="demo-scenario">Sample Data</span>
 </div>
 
@@ -1020,6 +1094,10 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   </div>
 
   <div class="nav-actions">
+    <div id="demo-menu" class="demo-menu">
+      <button class="demo-menu-btn" onclick="toggleDemoMenu()">🧪 Demo</button>
+      <div class="demo-menu-list" id="demo-menu-list"></div>
+    </div>
     <button class="nav-btn" onclick="refresh()">↻ Refresh</button>
     <a class="nav-btn" href="https://www.army.mil/rucker#org-weather" target="_blank">📡 Source</a>
   </div>
@@ -1100,6 +1178,201 @@ const DATA_REFRESH_MS = 5 * 60 * 1000;
 const TV_MODE = /[?&]tv=(1|true)/i.test(location.search);
 let DATA = null;
 let lastFetchedAt = null;
+let demoScenario = localStorage.getItem('demoScenario') || null;
+
+/* ============================================================
+   DEMO SCENARIOS
+   ============================================================ */
+const DEMO_SCENARIOS = {
+  'vfr': {
+    name: 'VFR — All GO',
+    desc: 'Clear skies, all stagefields GO, all solos GO',
+    metar: makeDemoMetar({ flt: 'VFR', wdir: 180, wspd: 6, visib: '10+', clouds: [{cover:'SCT',base:5000}] }),
+    areaText: '18008KT 7SM SCT050 BKN120\nAFT 1600Z: 20010KT 7SM SCT070 BKN150',
+    advisory: false,
+  },
+  'mvfr': {
+    name: 'MVFR — Mixed',
+    desc: 'Marginal VFR, Cairns GO but some stagefields NO GO',
+    metar: makeDemoMetar({ flt: 'MVFR', wdir: 210, wspd: 10, visib: '4', clouds: [{cover:'BKN',base:1800}], wxString: 'BR' }),
+    areaText: '21012KT 3SM BKN010\nAFT 1600Z: 22015KT 4SM BKN012',
+    advisory: false,
+  },
+  'ifr': {
+    name: 'IFR — All NO GO',
+    desc: 'IFR conditions — Cairns and stagefields NO GO',
+    metar: makeDemoMetar({ flt: 'IFR', wdir: 160, wspd: 12, visib: '2', clouds: [{cover:'OVC',base:800}], wxString: '-RA BR' }),
+    areaText: '16012KT 2SM -RA OVC008\nAFT 1600Z: 17015KT 2SM -RA OVC006',
+    advisory: false,
+  },
+  'lifr': {
+    name: 'LIFR — Cannot Taxi',
+    desc: 'Low IFR fog scenario — below taxi minimums',
+    metar: makeDemoMetar({ flt: 'LIFR', wdir: 0, wspd: 0, visib: '1/4', clouds: [{cover:'BKN',base:100}], wxString: 'FG' }),
+    areaText: 'VRB03KT 1/2SM FG OVC002\nAFT 1500Z: VRB03KT 1SM BR OVC003',
+    advisory: false,
+  },
+  'highwinds': {
+    name: 'High Winds — No Solo',
+    desc: 'VFR but surface winds too high for solo operations',
+    metar: makeDemoMetar({ flt: 'VFR', wdir: 240, wspd: 22, wgst: 30, visib: '10+', clouds: [{cover:'SCT',base:4000}] }),
+    areaText: '24022G30KT 7SM SCT040 BKN100\nAFT 1600Z: 25025G35KT 7SM SCT050 BKN120',
+    advisory: false,
+  },
+  'stale': {
+    name: 'Stale METAR — OLD DATA',
+    desc: 'METAR observation is 2 hours old',
+    metar: makeDemoMetar({ flt: 'VFR', wdir: 180, wspd: 6, visib: '10+', clouds: [{cover:'SCT',base:5000}], hoursAgo: 2 }),
+    areaText: '18008KT 7SM SCT050 BKN120\nAFT 1600Z: 20010KT 7SM SCT070 BKN150',
+    advisory: false,
+  },
+  'nometar': {
+    name: 'No METAR — Unknown',
+    desc: 'No METAR available — Cairns shows UNKNOWN',
+    metar: null,
+    areaText: '18008KT 7SM SCT050 BKN120\nAFT 1600Z: 20010KT 7SM SCT070 BKN150',
+    advisory: false,
+  },
+  'advisory': {
+    name: 'Active Wind Advisory',
+    desc: 'Active AWA wind advisory — solo grounded',
+    metar: makeDemoMetar({ flt: 'VFR', wdir: 260, wspd: 18, wgst: 28, visib: '10+', clouds: [{cover:'SCT',base:5000}] }),
+    areaText: '26018G28KT 7SM SCT050 BKN120\nAFT 1600Z: 27020G30KT 7SM SCT060 BKN130',
+    advisory: true,
+  },
+};
+
+function makeDemoMetar(opts) {
+  const reportDate = new Date(Date.now() - (opts.hoursAgo || 0) * 3600 * 1000);
+  return {
+    icaoId: 'KOZR',
+    reportTime: reportDate.toISOString(),
+    temp: 20,
+    dewp: 14,
+    wdir: opts.wdir,
+    wspd: opts.wspd,
+    wgst: opts.wgst || null,
+    visib: opts.visib,
+    altim: 1018.5,
+    fltCat: opts.flt,
+    rawOb: `METAR KOZR DEMO [${opts.flt}]`,
+    name: 'Ozark/Cairns AAF (DEMO)',
+    cover: opts.clouds && opts.clouds[0] ? opts.clouds[0].cover : 'CLR',
+    clouds: opts.clouds || [],
+    wxString: opts.wxString || null,
+  };
+}
+
+function buildDemoData(key) {
+  const s = DEMO_SCENARIOS[key];
+  if (!s) return null;
+  const areas = ['GOLDFISH','BEARCAT','VANGUARD N','VANGUARD C','VANGUARD S','HAWK']
+    .map(name => ({ name, forecast: s.areaText, amendmentText: null, amendmentNumber: null, tsCoverage: 'NONE' }));
+
+  let advisories = [];
+  if (s.advisory) {
+    const now = new Date();
+    const fromHH = String(now.getUTCHours()).padStart(2,'0');
+    const fromMM = String(now.getUTCMinutes()).padStart(2,'0');
+    const toDate = new Date(now.getTime() + 4*3600*1000);
+    const toHH = String(toDate.getUTCHours()).padStart(2,'0');
+    const toMM = String(toDate.getUTCMinutes()).padStart(2,'0');
+    advisories = [{
+      type: 'AWA',
+      number: '04-015',
+      validFrom: `${fromHH}${fromMM}Z`,
+      validTo: `${toHH}${toMM}Z`,
+      criteria: 'SFC WIND GUSTS 25-35 KT'
+    }];
+  }
+
+  const flw = [
+    { level: '010', wind: '18010KT', temp: '+15 °C' },
+    { level: '030', wind: '22015KT', temp: '+09 °C' },
+    { level: '060', wind: '25020KT', temp: '+02 °C' },
+    { level: '090', wind: '27025KT', temp: '-05 °C' },
+  ];
+  const solarLunar = {
+    bmnt: '0545L', sunrise: '0615L', sunset: '1915L',
+    eent: '1945L', moonrise: '2145L', moonset: '0830L',
+    illumination: '54%'
+  };
+  const flightHazards = {
+    turbulence: key === 'highwinds' ? 'MDT BLW 050' : 'NONE',
+    icing: 'NONE', thunderstorms: 'NONE', llws: 'NONE'
+  };
+  const todayDisplay = (() => {
+    const d = new Date();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${d.getDate()}-${months[d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
+  })();
+
+  const makeForecast = (type, validPeriod) => ({
+    type, fetchedAt: new Date().toISOString(),
+    mef: {
+      date: todayDisplay, validPeriod,
+      areaForecasts: areas, weatherAdvisories: advisories,
+      flightLevelWinds: flw, solarLunar, flightHazards,
+      forecasterInitials: 'DEMO'
+    }
+  });
+
+  return {
+    metar: s.metar,
+    forecasts: [
+      makeForecast('AM', '1200Z-1800Z'),
+      makeForecast('PM', '1800Z-0030Z'),
+      makeForecast('N1', '0030Z-0730Z'),
+    ]
+  };
+}
+
+function setDemoScenario(key) {
+  demoScenario = key;
+  if (key) {
+    localStorage.setItem('demoScenario', key);
+    document.body.classList.add('demo');
+    const banner = document.getElementById('demo-scenario');
+    if (banner) banner.textContent = DEMO_SCENARIOS[key].name;
+  } else {
+    localStorage.removeItem('demoScenario');
+    document.body.classList.remove('demo');
+  }
+  renderDemoMenu();
+  loadData();
+}
+
+function renderDemoMenu() {
+  const list = document.getElementById('demo-menu-list');
+  if (!list) return;
+  let html = `
+    <div class="demo-menu-item off ${!demoScenario ? 'active' : ''}" onclick="setDemoScenario(null); closeDemoMenu();">
+      <div class="demo-menu-item-name">⏻ Off · Live Data</div>
+      <div class="demo-menu-item-desc">Use real METAR + published forecast data</div>
+    </div>
+  `;
+  for (const [key, s] of Object.entries(DEMO_SCENARIOS)) {
+    html += `
+      <div class="demo-menu-item ${demoScenario === key ? 'active' : ''}" onclick="setDemoScenario('${key}'); closeDemoMenu();">
+        <div class="demo-menu-item-name">${s.name}</div>
+        <div class="demo-menu-item-desc">${s.desc}</div>
+      </div>
+    `;
+  }
+  list.innerHTML = html;
+}
+
+function toggleDemoMenu() {
+  document.getElementById('demo-menu').classList.toggle('open');
+}
+function closeDemoMenu() {
+  document.getElementById('demo-menu').classList.remove('open');
+}
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('demo-menu');
+  if (menu && !menu.contains(e.target)) menu.classList.remove('open');
+});
 
 /// Auto-select the active forecast period based on local time:
 ///   AM:  04:00 - 10:44
@@ -1599,6 +1872,14 @@ function renderAll() {
 }
 
 async function loadData() {
+  // Demo mode bypasses live fetch and uses synthetic data
+  if (demoScenario && DEMO_SCENARIOS[demoScenario]) {
+    DATA = buildDemoData(demoScenario);
+    lastFetchedAt = new Date();
+    renderAll();
+    updateFetchedLabel();
+    return;
+  }
   try {
     const res = await fetch('data.json?' + Date.now(), { cache: 'no-store' });
     if (res.ok) DATA = await res.json();
@@ -1658,6 +1939,14 @@ function updateClock() {
 
 // TV mode — add ?tv=1 to the URL to enable large-font kiosk display.
 if (TV_MODE) document.body.classList.add('tv');
+
+// Restore persisted demo scenario state
+if (demoScenario && DEMO_SCENARIOS[demoScenario]) {
+  document.body.classList.add('demo');
+  const banner = document.getElementById('demo-scenario');
+  if (banner) banner.textContent = DEMO_SCENARIOS[demoScenario].name;
+}
+renderDemoMenu();
 
 // Cursor auto-hide after 3s of inactivity (useful when displayed on a TV).
 let cursorTimer;
