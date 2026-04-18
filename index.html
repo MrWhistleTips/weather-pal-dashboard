@@ -338,13 +338,12 @@ body.tv .metar-strip-time { font-size: 13px; }
 body.tv .metar-strip-label { font-size: 11px; }
 body.tv .metar-strip-raw { font-size: 12px; }
 
-/* TRAINING STATUS — horizontal 5-col grid */
+/* TRAINING STATUS — console panel lights */
 .training-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 1px;
-  background: var(--border);
-  padding: 0;
+  gap: 6px;
+  padding: 8px;
 }
 @media (max-width: 900px) {
   .training-grid { grid-template-columns: repeat(2, 1fr); }
@@ -352,36 +351,114 @@ body.tv .metar-strip-raw { font-size: 12px; }
 @media (max-width: 500px) {
   .training-grid { grid-template-columns: 1fr; }
 }
-.training-cell {
-  background: var(--bg-1);
-  padding: 8px 10px;
+.training-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  padding: 10px 8px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
   text-align: center;
-  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
-.training-cell.cairns {
-  background: linear-gradient(180deg, rgba(61,77,51,0.15), var(--bg-1));
+.training-panel::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--text-ghost);
+  transition: all 0.3s;
 }
-.training-cell-name {
-  display: flex; flex-direction: column; align-items: center;
-  line-height: 1.1; gap: 2px;
+/* GO */
+.training-panel.go {
+  border-color: var(--go-border);
+  background: radial-gradient(ellipse at top, rgba(95,186,79,0.18), var(--bg-2) 70%);
+  box-shadow: 0 0 18px rgba(95,186,79,0.18), inset 0 0 30px rgba(95,186,79,0.06);
 }
-.training-cell-station {
-  font-size: 13px; font-weight: 700;
-  letter-spacing: 0.5px;
+.training-panel.go::before {
+  background: var(--go);
+  box-shadow: 0 0 10px var(--go);
+}
+.training-panel.go .training-panel-status {
+  color: var(--go);
+  text-shadow: 0 0 12px rgba(95,186,79,0.7), 0 0 24px rgba(95,186,79,0.3);
+}
+/* NO GO */
+.training-panel.nogo {
+  border-color: var(--nogo-border);
+  background: radial-gradient(ellipse at top, rgba(214,69,69,0.18), var(--bg-2) 70%);
+  box-shadow: 0 0 18px rgba(214,69,69,0.18), inset 0 0 30px rgba(214,69,69,0.06);
+}
+.training-panel.nogo::before {
+  background: var(--nogo);
+  box-shadow: 0 0 10px var(--nogo);
+}
+.training-panel.nogo .training-panel-status {
+  color: var(--nogo);
+  text-shadow: 0 0 12px rgba(214,69,69,0.7), 0 0 24px rgba(214,69,69,0.3);
+}
+/* UNKNOWN */
+.training-panel.unknown {
+  border-color: var(--unknown-border);
+  background: radial-gradient(ellipse at top, rgba(230,165,58,0.18), var(--bg-2) 70%);
+  box-shadow: 0 0 18px rgba(230,165,58,0.18), inset 0 0 30px rgba(230,165,58,0.06);
+}
+.training-panel.unknown::before {
+  background: var(--unknown);
+  box-shadow: 0 0 10px var(--unknown);
+}
+.training-panel.unknown .training-panel-status {
+  color: var(--unknown);
+  text-shadow: 0 0 12px rgba(230,165,58,0.7), 0 0 24px rgba(230,165,58,0.3);
+}
+
+.training-panel-icon {
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+.training-panel-status {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  line-height: 1;
+  margin: 4px 0 2px;
+  transition: all 0.3s;
+}
+.training-panel-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
   color: var(--text);
+  text-transform: uppercase;
+  margin-top: 2px;
 }
-.training-cell-area {
+.training-panel-area {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   color: var(--text-dim);
   letter-spacing: 1.2px;
   text-transform: uppercase;
 }
-.training-cell-icon { font-size: 14px; }
+/* Subtle pulse on GO panels for liveness */
+@keyframes panelGlow {
+  0%, 100% { box-shadow: 0 0 18px rgba(95,186,79,0.18), inset 0 0 30px rgba(95,186,79,0.06); }
+  50%      { box-shadow: 0 0 28px rgba(95,186,79,0.28), inset 0 0 35px rgba(95,186,79,0.10); }
+}
+.training-panel.go {
+  animation: panelGlow 4s ease-in-out infinite;
+}
+/* TV mode — bigger panel lights */
+body.tv .training-panel-status { font-size: 38px; letter-spacing: 4px; }
+body.tv .training-panel-name { font-size: 17px; }
+body.tv .training-panel-icon { font-size: 28px; }
+body.tv .training-panel-area { font-size: 11px; }
 
 /* BADGES */
 .badge {
@@ -1075,48 +1152,41 @@ function renderTraining(metar, forecast) {
   ];
 
   let cairnsStatus = 'unknown';
-  let cairnsText = 'UNKNOWN';
+  let cairnsLabel = 'UNKNOWN';
   if (metar && !isMetarStale(metar)) {
     const ok = metarMeetsTraining(metar);
     cairnsStatus = ok ? 'go' : 'nogo';
-    cairnsText = ok ? 'GO' : 'NO GO';
+    cairnsLabel = ok ? 'GO' : 'NO GO';
   }
 
-  let cells = `
-    <div class="training-cell cairns">
-      <div class="training-cell-icon">🚁</div>
-      <div class="training-cell-name">
-        <div class="training-cell-station">Cairns AAF</div>
-        <div class="training-cell-area">KOZR · 1000/3</div>
-      </div>
-      <span class="badge ${cairnsStatus}">${cairnsText}</span>
-    </div>
-  `;
+  let cells = panelHTML('🚁', cairnsStatus, cairnsLabel, 'Cairns AAF', 'KOZR · 1000/3');
 
   for (const sf of stagefields) {
-    let status = 'unknown', text = '—';
+    let status = 'unknown', label = 'UNKNOWN';
     if (forecast && forecast.mef && forecast.mef.areaForecasts) {
       const area = forecast.mef.areaForecasts.find(a =>
         (a.name || '').toUpperCase() === sf.area);
       if (area) {
         const isGo = currentTrainingGo(area.forecast, area.amendmentText);
         status = isGo ? 'go' : 'nogo';
-        text = isGo ? 'GO' : 'NO GO';
+        label = isGo ? 'GO' : 'NO GO';
       }
     }
-    cells += `
-      <div class="training-cell">
-        <div class="training-cell-icon">🚁</div>
-        <div class="training-cell-name">
-          <div class="training-cell-station">${sf.name}</div>
-          <div class="training-cell-area">${sf.area}</div>
-        </div>
-        <span class="badge ${status}">${text}</span>
-      </div>
-    `;
+    cells += panelHTML('🚁', status, label, sf.name, sf.area);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
+}
+
+function panelHTML(icon, status, label, name, area) {
+  return `
+    <div class="training-panel ${status}">
+      <div class="training-panel-icon">${icon}</div>
+      <div class="training-panel-status">${label}</div>
+      <div class="training-panel-name">${name}</div>
+      <div class="training-panel-area">${area}</div>
+    </div>
+  `;
 }
 
 function renderMETAR(metar) {
