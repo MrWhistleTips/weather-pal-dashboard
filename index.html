@@ -512,6 +512,20 @@ body.tv .metar-strip-raw { font-size: 12px; }
   color: var(--unknown);
   text-shadow: 0 0 12px rgba(230,165,58,0.7), 0 0 24px rgba(230,165,58,0.3);
 }
+/* IFR ONLY — blue, meets 200/0.25 but not 1000/3 */
+.training-panel.ifr {
+  border-color: rgba(74,144,226,0.5);
+  background: radial-gradient(ellipse at top, rgba(74,144,226,0.18), var(--bg-2) 70%);
+  box-shadow: 0 0 18px rgba(74,144,226,0.18), inset 0 0 30px rgba(74,144,226,0.06);
+}
+.training-panel.ifr::before {
+  background: var(--mvfr);
+  box-shadow: 0 0 10px var(--mvfr);
+}
+.training-panel.ifr .training-panel-status {
+  color: var(--mvfr);
+  text-shadow: 0 0 12px rgba(74,144,226,0.7), 0 0 24px rgba(74,144,226,0.3);
+}
 
 .training-panel-icon {
   font-size: 22px;
@@ -1654,18 +1668,26 @@ function renderTraining(metar, forecast) {
   let cairnsStatus = 'unknown';
   let cairnsLabel = 'UNKNOWN';
   let cairnsArea = 'KOZR · NO METAR';
-  let taxi = null; // { status: 'go'|'nogo'|'unknown', label }
+  let taxi = null;
   if (metar && !isMetarStale(metar)) {
-    const ok = metarMeetsTraining(metar);
-    cairnsStatus = ok ? 'go' : 'nogo';
-    cairnsLabel = ok ? 'GO' : 'NO GO';
+    const vfrOk = metarMeetsTraining(metar); // 1000/3
+    const ifrOk = metarMeetsTaxi(metar);     // 200/0.25
+    if (vfrOk) {
+      cairnsStatus = 'go';
+      cairnsLabel = 'VFR GO';
+    } else if (ifrOk) {
+      cairnsStatus = 'ifr';
+      cairnsLabel = 'IFR GO';
+    } else {
+      cairnsStatus = 'nogo';
+      cairnsLabel = 'NO GO';
+    }
     const ceil = metarCeiling(metar);
     const ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
     const visStr = (metar.visib != null) ? `${metar.visib}SM` : '—';
     cairnsArea = `KOZR · ${ceilStr} · ${visStr}`;
-    // Taxi status (200/0.25 IFR taxi minimums)
-    const taxiOk = metarMeetsTaxi(metar);
-    taxi = { status: taxiOk ? 'go' : 'nogo', label: taxiOk ? 'TAXI GO' : 'NO TAXI' };
+    // IFR Taxi badge (200/0.25)
+    taxi = { status: ifrOk ? 'go' : 'nogo', label: ifrOk ? 'TAXI GO' : 'NO TAXI' };
   } else if (metar && isMetarStale(metar)) {
     cairnsArea = 'KOZR · OLD DATA';
     taxi = { status: 'unknown', label: 'UNKNOWN' };
