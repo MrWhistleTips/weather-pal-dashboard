@@ -219,6 +219,88 @@ body {
 }
 .card-body { padding: 10px 12px; }
 
+/* METAR STRIP — thin horizontal bar across the page */
+.metar-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+.metar-strip::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--tan-dim), transparent);
+}
+.metar-strip-cat {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 4px 12px;
+  border-radius: 3px;
+  border: 2px solid;
+  line-height: 1;
+}
+.metar-strip-cat.vfr  { color: var(--vfr);  border-color: var(--vfr);  background: rgba(95,186,79,0.1); }
+.metar-strip-cat.mvfr { color: var(--mvfr); border-color: var(--mvfr); background: rgba(74,144,226,0.1); }
+.metar-strip-cat.ifr  { color: var(--ifr);  border-color: var(--ifr);  background: rgba(214,69,69,0.1); }
+.metar-strip-cat.lifr { color: var(--lifr); border-color: var(--lifr); background: rgba(179,71,217,0.1); }
+.metar-strip-cat.unknown { color: var(--unknown); border-color: var(--unknown); background: var(--unknown-bg); }
+.metar-strip-station {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text);
+}
+.metar-strip-time { color: var(--text-dim); font-size: 11px; }
+.metar-strip-data { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; flex: 1; }
+.metar-strip-cell { display: flex; gap: 5px; align-items: baseline; }
+.metar-strip-label {
+  font-size: 9px;
+  color: var(--tan);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+}
+.metar-strip-value { color: var(--text); font-weight: 500; }
+.metar-strip-old {
+  font-size: 9px; font-weight: 700;
+  color: #000;
+  background: var(--warning);
+  padding: 2px 7px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+  font-family: 'Rajdhani', sans-serif;
+}
+.metar-strip-raw {
+  width: 100%;
+  font-size: 10px;
+  color: var(--text-dim);
+  padding-top: 4px;
+  margin-top: 4px;
+  border-top: 1px dashed var(--border);
+  word-break: break-all;
+}
+body.tv .metar-strip { font-size: 14px; padding: 10px 14px; }
+body.tv .metar-strip-cat { font-size: 20px; padding: 6px 16px; }
+body.tv .metar-strip-station { font-size: 17px; }
+body.tv .metar-strip-time { font-size: 13px; }
+body.tv .metar-strip-label { font-size: 11px; }
+body.tv .metar-strip-raw { font-size: 12px; }
+
 /* TRAINING STATUS */
 .training-hero { padding: 10px 12px; }
 .training-row {
@@ -674,22 +756,16 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
   <div id="data-alert" class="alert" style="display:none;"></div>
 
-  <div class="grid grid-2" style="margin-bottom: 10px;">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><span class="card-title-icon">🎯</span>Training Status</div>
-        <div class="card-subtitle">Cairns ≥1000/3 · Stagefields ≥700/1</div>
-      </div>
-      <div class="card-body training-hero" id="training-body"></div>
-    </div>
+  <!-- Thin METAR strip across the page -->
+  <div id="metar-strip" class="metar-strip"></div>
 
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><span class="card-title-icon">📡</span>Current METAR</div>
-        <div class="card-subtitle" id="metar-subtitle">—</div>
-      </div>
-      <div id="metar-body"></div>
+  <!-- Training Status full width -->
+  <div class="card" style="margin-bottom: 10px;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">🎯</span>Training Status</div>
+      <div class="card-subtitle">Cairns ≥1000/3 · Stagefields ≥700/1</div>
     </div>
+    <div class="card-body training-hero" id="training-body"></div>
   </div>
 
   <div id="advisories-card" class="card" style="display:none; margin-bottom:10px;">
@@ -698,6 +774,15 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <div class="card-subtitle" id="advisories-count">0 active</div>
     </div>
     <div class="card-body" id="advisories-body"></div>
+  </div>
+
+  <!-- Area Forecasts moved up under training status -->
+  <div class="card" style="margin-bottom: 10px;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">🗺️</span>Area Forecasts</div>
+      <div class="card-subtitle">Color-coded by flight category</div>
+    </div>
+    <div id="areas-body">—</div>
   </div>
 
   <div id="middle-grid" class="grid grid-3" style="margin-bottom: 10px;">
@@ -722,14 +807,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       </div>
       <div class="card-body" id="flw-body">—</div>
     </div>
-  </div>
-
-  <div class="card" style="margin-bottom: 10px;">
-    <div class="card-header">
-      <div class="card-title"><span class="card-title-icon">🗺️</span>Area Forecasts</div>
-      <div class="card-subtitle">Color-coded by flight category</div>
-    </div>
-    <div id="areas-body">—</div>
   </div>
 
   <div class="card" style="margin-bottom: 10px;">
@@ -1009,20 +1086,15 @@ function renderTraining(metar, forecast) {
 }
 
 function renderMETAR(metar) {
-  const body = document.getElementById('metar-body');
-  const subtitle = document.getElementById('metar-subtitle');
+  const strip = document.getElementById('metar-strip');
+  if (!strip) return;
 
   if (!metar) {
-    body.innerHTML = `
-      <div class="metar-hero">
-        <div class="metar-category unknown">—</div>
-        <div class="metar-details">
-          <div class="metar-station">${METAR_STATION}</div>
-          <div class="metar-time">No METAR available</div>
-        </div>
-      </div>
+    strip.innerHTML = `
+      <div class="metar-strip-cat unknown">—</div>
+      <div class="metar-strip-station">${METAR_STATION}</div>
+      <div class="metar-strip-time">No METAR available</div>
     `;
-    subtitle.textContent = METAR_STATION;
     return;
   }
 
@@ -1049,25 +1121,21 @@ function renderMETAR(metar) {
   let altimStr = '—';
   if (metar.altim) altimStr = (metar.altim / 33.8639).toFixed(2) + '"';
 
-  body.innerHTML = `
-    <div class="metar-hero">
-      <div class="metar-category ${cat || 'unknown'}">${metar.fltCat || '—'}</div>
-      <div class="metar-details">
-        <div class="metar-station">${metar.icaoId || METAR_STATION}${stale ? '<span class="metar-old">OLD DATA</span>' : ''}</div>
-        <div class="metar-time">${timeStr}${metar.name ? ' · ' + metar.name : ''}</div>
-      </div>
+  strip.innerHTML = `
+    <div class="metar-strip-cat ${cat || 'unknown'}">${metar.fltCat || '—'}</div>
+    <div class="metar-strip-station">${metar.icaoId || METAR_STATION}</div>
+    <div class="metar-strip-time">${timeStr}</div>
+    ${stale ? '<div class="metar-strip-old">OLD DATA</div>' : ''}
+    <div class="metar-strip-data">
+      <div class="metar-strip-cell"><span class="metar-strip-label">Wind</span><span class="metar-strip-value">${windStr}</span></div>
+      <div class="metar-strip-cell"><span class="metar-strip-label">Vis</span><span class="metar-strip-value">${metar.visib || '—'} SM</span></div>
+      <div class="metar-strip-cell"><span class="metar-strip-label">Ceil</span><span class="metar-strip-value">${ceilStr}</span></div>
+      <div class="metar-strip-cell"><span class="metar-strip-label">Temp</span><span class="metar-strip-value">${metar.temp != null ? metar.temp + '°C' : '—'}</span></div>
+      <div class="metar-strip-cell"><span class="metar-strip-label">DP</span><span class="metar-strip-value">${metar.dewp != null ? metar.dewp + '°C' : '—'}</span></div>
+      <div class="metar-strip-cell"><span class="metar-strip-label">Alt</span><span class="metar-strip-value">${altimStr}</span></div>
     </div>
-    <div class="metar-grid">
-      <div class="metar-cell"><div class="metar-label">Wind</div><div class="metar-value">${windStr}</div></div>
-      <div class="metar-cell"><div class="metar-label">Visibility</div><div class="metar-value">${metar.visib || '—'} SM</div></div>
-      <div class="metar-cell"><div class="metar-label">Ceiling</div><div class="metar-value">${ceilStr}</div></div>
-      <div class="metar-cell"><div class="metar-label">Temp</div><div class="metar-value">${metar.temp != null ? metar.temp + '°C' : '—'}</div></div>
-      <div class="metar-cell"><div class="metar-label">Dewpoint</div><div class="metar-value">${metar.dewp != null ? metar.dewp + '°C' : '—'}</div></div>
-      <div class="metar-cell"><div class="metar-label">Altimeter</div><div class="metar-value">${altimStr}</div></div>
-    </div>
-    ${metar.rawOb ? `<div class="metar-raw">${metar.rawOb}</div>` : ''}
+    ${metar.rawOb ? `<div class="metar-strip-raw">${metar.rawOb}</div>` : ''}
   `;
-  subtitle.textContent = metar.icaoId || METAR_STATION;
 }
 
 function renderAdvisories(forecast) {
