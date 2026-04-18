@@ -908,6 +908,85 @@ body.tv .area-status { font-size: 13px; padding: 3px 9px; }
 .seg-lifr { color: var(--lifr); }
 .seg-tmp  { color: var(--text-ghost); }
 
+/* AERODROME FORECASTS */
+.aerodromes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+@media (max-width: 1100px) { .aerodromes-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) { .aerodromes-grid { grid-template-columns: 1fr; } }
+.aero-card {
+  padding: 6px 10px;
+  background: var(--bg-1);
+}
+.aero-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.aero-icao {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+.aero-icao.vfr { color: var(--vfr); }
+.aero-icao.mvfr { color: var(--mvfr); }
+.aero-icao.ifr { color: var(--ifr); }
+.aero-icao.lifr { color: var(--lifr); }
+.aero-cat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.8px;
+  border: 1px solid;
+}
+.aero-cat.vfr { color: var(--vfr); background: rgba(95,186,79,0.1); border-color: rgba(95,186,79,0.4); }
+.aero-cat.mvfr { color: var(--mvfr); background: rgba(74,144,226,0.1); border-color: rgba(74,144,226,0.4); }
+.aero-cat.ifr { color: var(--ifr); background: rgba(214,69,69,0.1); border-color: rgba(214,69,69,0.4); }
+.aero-cat.lifr { color: var(--lifr); background: rgba(179,71,217,0.1); border-color: rgba(179,71,217,0.4); }
+.aero-period {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  line-height: 1.4;
+  padding: 2px 0;
+}
+.aero-period-time {
+  font-size: 9px;
+  color: var(--tan);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-family: 'Rajdhani', sans-serif;
+  margin-right: 6px;
+}
+.aero-period.tempo {
+  padding-left: 12px;
+  color: var(--text-ghost);
+  font-size: 10px;
+}
+.aero-period.tempo .aero-period-time { color: var(--text-ghost); }
+.aero-period.vfr .aero-period-text { color: var(--vfr); }
+.aero-period.mvfr .aero-period-text { color: var(--mvfr); }
+.aero-period.ifr .aero-period-text { color: var(--ifr); }
+.aero-period.lifr .aero-period-text { color: var(--lifr); }
+.aero-also {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+  letter-spacing: 0.3px;
+}
+body.tv .aero-icao { font-size: 17px; }
+body.tv .aero-cat { font-size: 11px; }
+body.tv .aero-period { font-size: 12px; }
+body.tv .aero-period-time { font-size: 11px; }
+
 /* FLIGHT LEVEL WINDS */
 .flw-grid {
   display: grid;
@@ -1244,6 +1323,15 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <div class="card-subtitle">Color-coded by flight category</div>
     </div>
     <div id="areas-body">—</div>
+  </div>
+
+  <!-- Aerodrome Forecasts -->
+  <div id="aerodromes-card" class="card" style="margin-bottom: 6px; display: none;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">🛬</span>Aerodrome Forecasts</div>
+      <div class="card-subtitle" id="aerodromes-count">—</div>
+    </div>
+    <div id="aerodromes-body">—</div>
   </div>
 
   <div class="grid grid-2" style="margin-bottom: 6px;">
@@ -2059,6 +2147,71 @@ function renderAreas(forecast) {
   body.innerHTML = `<div class="areas-grid">${cells}</div>`;
 }
 
+function renderAerodromes(forecast) {
+  const card = document.getElementById('aerodromes-card');
+  const body = document.getElementById('aerodromes-body');
+  const count = document.getElementById('aerodromes-count');
+
+  const aerodromes = (forecast && forecast.flightBriefing && forecast.flightBriefing.aerodromeForecasts) || [];
+  if (aerodromes.length === 0) {
+    if (card) card.style.display = 'none';
+    return;
+  }
+  if (card) card.style.display = 'block';
+  if (count) count.textContent = `${aerodromes.length} airfields`;
+
+  body.innerHTML = `<div class="aerodromes-grid">${
+    aerodromes.map(a => aerodromeCardHTML(a)).join('')
+  }</div>`;
+}
+
+function aerodromeCardHTML(aero) {
+  const periods = aero.periods || [];
+  // Determine the predominant flight category from first non-TEMPO period
+  const main = periods.find(p => !/TEMPO/i.test(p.periodType || '')) || periods[0];
+  const headerCat = main ? periodFlightCategory(main) : 'vfr';
+
+  const periodHTML = periods.map(p => {
+    const isTempo = /TEMPO/i.test(p.periodType || '');
+    const cat = periodFlightCategory(p);
+    const time = p.validFrom && p.validTo
+      ? `${p.validFrom}-${p.validTo}Z`
+      : (p.validFrom || '');
+    const parts = [
+      p.surfaceWind, p.visibility, p.weather, p.skyCondition, p.altimeter
+    ].filter(x => x && x.trim()).join(' ');
+    const label = isTempo ? 'TEMPO' : (p.periodType || 'FROM');
+    return `
+      <div class="aero-period ${isTempo ? 'tempo' : cat}">
+        <span class="aero-period-time">${label}${time ? ' · ' + time : ''}</span>
+        <span class="aero-period-text">${parts}</span>
+      </div>
+    `;
+  }).join('');
+
+  const sameAs = (aero.sameAs && aero.sameAs.length > 0)
+    ? `<div class="aero-also">Also: ${aero.sameAs.join(', ')}</div>` : '';
+
+  return `
+    <div class="aero-card">
+      <div class="aero-header">
+        <span class="aero-icao ${headerCat}">${aero.icao}</span>
+        <span class="aero-cat ${headerCat}">${headerCat.toUpperCase()}</span>
+      </div>
+      ${periodHTML}
+      ${sameAs}
+    </div>
+  `;
+}
+
+function periodFlightCategory(period) {
+  if (!period) return 'vfr';
+  const text = [period.skyCondition, period.visibility, period.weather].filter(x => x).join(' ');
+  const ceil = parseCeiling(text);
+  const vis = parseVisibility(period.visibility ? period.visibility + ' SM' : '');
+  return flightCategory(ceil, vis);
+}
+
 function renderFLW(forecast) {
   const body = document.getElementById('flw-body');
   if (!forecast || !forecast.mef || !forecast.mef.flightLevelWinds || forecast.mef.flightLevelWinds.length === 0) {
@@ -2157,6 +2310,7 @@ function renderAll() {
   renderMETAR(metar);
   renderAdvisories(forecast);
   renderAreas(forecast);
+  renderAerodromes(forecast);
   renderFLW(forecast);
   renderHazards(forecast);
   renderSolar(forecast);
