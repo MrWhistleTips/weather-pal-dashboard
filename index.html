@@ -1584,13 +1584,21 @@ function renderTraining(metar, forecast) {
 
   let cairnsStatus = 'unknown';
   let cairnsLabel = 'UNKNOWN';
+  let cairnsArea = 'KOZR · NO METAR';
   if (metar && !isMetarStale(metar)) {
     const ok = metarMeetsTraining(metar);
     cairnsStatus = ok ? 'go' : 'nogo';
     cairnsLabel = ok ? 'GO' : 'NO GO';
+    // Show actual current ceiling and visibility from METAR
+    const ceil = metarCeiling(metar);
+    const ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
+    const visStr = (metar.visib != null) ? `${metar.visib}SM` : '—';
+    cairnsArea = `KOZR · ${ceilStr} · ${visStr}`;
+  } else if (metar && isMetarStale(metar)) {
+    cairnsArea = 'KOZR · OLD DATA';
   }
   // Cairns has no solo (no solo flights at Cairns)
-  let cells = panelHTML('🚁', cairnsStatus, cairnsLabel, 'Cairns AAF', 'KOZR · 1000/3', null);
+  let cells = panelHTML('🚁', cairnsStatus, cairnsLabel, 'Cairns AAF', cairnsArea, null);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
