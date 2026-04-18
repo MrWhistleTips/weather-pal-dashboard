@@ -543,6 +543,57 @@ body.tv .metar-strip-raw { font-size: 12px; }
   letter-spacing: 1.2px;
   text-transform: uppercase;
 }
+
+/* Solo status row at bottom of training panel */
+.training-panel-solo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: calc(100% + 16px);
+  margin: 6px -8px -8px;
+  padding: 5px 8px;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.25);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.training-panel-solo-label {
+  color: var(--text-dim);
+  font-size: 9px;
+  letter-spacing: 1.8px;
+}
+.training-panel-solo-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+.training-panel-solo.go .training-panel-solo-dot {
+  background: var(--solo);
+  box-shadow: 0 0 6px var(--solo);
+}
+.training-panel-solo.go .training-panel-solo-status {
+  color: var(--solo);
+  text-shadow: 0 0 6px rgba(61,212,191,0.5);
+}
+.training-panel-solo.nogo .training-panel-solo-dot {
+  background: var(--nosolo);
+  box-shadow: 0 0 6px var(--nosolo);
+}
+.training-panel-solo.nogo .training-panel-solo-status {
+  color: var(--nosolo);
+  text-shadow: 0 0 6px rgba(237,137,54,0.5);
+}
+.training-panel-solo-reason {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  text-transform: none;
+  margin-left: 4px;
+}
 /* Subtle pulse on GO panels for liveness */
 @keyframes panelGlow {
   0%, 100% { box-shadow: 0 0 18px rgba(95,186,79,0.18), inset 0 0 30px rgba(95,186,79,0.06); }
@@ -556,6 +607,10 @@ body.tv .training-panel-status { font-size: 38px; letter-spacing: 4px; }
 body.tv .training-panel-name { font-size: 17px; }
 body.tv .training-panel-icon { font-size: 28px; }
 body.tv .training-panel-area { font-size: 11px; }
+body.tv .training-panel-solo { font-size: 13px; }
+body.tv .training-panel-solo-label { font-size: 11px; }
+body.tv .training-panel-solo-dot { width: 9px; height: 9px; }
+body.tv .training-panel-solo-reason { font-size: 11px; }
 
 /* BADGES */
 .badge {
@@ -1012,15 +1067,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div id="areas-body">—</div>
   </div>
 
-  <div id="middle-grid" class="grid grid-3" style="margin-bottom: 6px;">
-    <div id="solo-card" class="card" style="display:none;">
-      <div class="card-header">
-        <div class="card-title"><span class="card-title-icon">🎓</span>Solo Operations</div>
-        <div class="card-subtitle">≥1200/3 · ≤15kt</div>
-      </div>
-      <div class="card-body" id="solo-body"></div>
-    </div>
-
+  <div class="grid grid-2" style="margin-bottom: 6px;">
     <div class="card">
       <div class="card-header">
         <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
@@ -1259,6 +1306,9 @@ function renderTraining(metar, forecast) {
     { name: 'Lucas', area: 'VANGUARD C' },
   ];
 
+  // Solo only applies to AM and PM forecasts
+  const showSolo = forecast && (forecast.type === 'AM' || forecast.type === 'PM');
+
   let cairnsStatus = 'unknown';
   let cairnsLabel = 'UNKNOWN';
   if (metar && !isMetarStale(metar)) {
@@ -1266,11 +1316,12 @@ function renderTraining(metar, forecast) {
     cairnsStatus = ok ? 'go' : 'nogo';
     cairnsLabel = ok ? 'GO' : 'NO GO';
   }
-
-  let cells = panelHTML('🚁', cairnsStatus, cairnsLabel, 'Cairns AAF', 'KOZR · 1000/3');
+  // Cairns has no solo (no solo flights at Cairns)
+  let cells = panelHTML('🚁', cairnsStatus, cairnsLabel, 'Cairns AAF', 'KOZR · 1000/3', null);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
+    let solo = null;
     if (forecast && forecast.mef && forecast.mef.areaForecasts) {
       const area = forecast.mef.areaForecasts.find(a =>
         (a.name || '').toUpperCase() === sf.area);
@@ -1278,21 +1329,40 @@ function renderTraining(metar, forecast) {
         const isGo = currentTrainingGo(area.forecast, area.amendmentText);
         status = isGo ? 'go' : 'nogo';
         label = isGo ? 'GO' : 'NO GO';
+        if (showSolo) {
+          solo = soloStatus(area.forecast, area.amendmentText);
+        }
       }
     }
-    cells += panelHTML('🚁', status, label, sf.name, sf.area);
+    cells += panelHTML('🚁', status, label, sf.name, sf.area, solo);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
 }
 
-function panelHTML(icon, status, label, name, area) {
+function panelHTML(icon, status, label, name, area, solo) {
+  let soloHTML = '';
+  if (solo) {
+    const soloClass = solo.go ? 'go' : 'nogo';
+    const soloLabel = solo.go ? 'GO' : 'NO-GO';
+    const reason = (!solo.go && solo.reason && solo.reason !== 'OK')
+      ? `<span class="training-panel-solo-reason">${solo.reason}</span>` : '';
+    soloHTML = `
+      <div class="training-panel-solo ${soloClass}">
+        <span class="training-panel-solo-dot"></span>
+        <span class="training-panel-solo-label">SOLO</span>
+        <span class="training-panel-solo-status">${soloLabel}</span>
+        ${reason}
+      </div>
+    `;
+  }
   return `
     <div class="training-panel ${status}">
       <div class="training-panel-icon">${icon}</div>
       <div class="training-panel-status">${label}</div>
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-area">${area}</div>
+      ${soloHTML}
     </div>
   `;
 }
@@ -1381,64 +1451,6 @@ function renderAdvisories(forecast) {
       </div>
     `;
   }).join('');
-}
-
-function renderSolo(forecast) {
-  const card = document.getElementById('solo-card');
-  const body = document.getElementById('solo-body');
-  const middle = document.getElementById('middle-grid');
-
-  if (!forecast || (forecast.type !== 'AM' && forecast.type !== 'PM')) {
-    card.style.display = 'none';
-    // Solo hidden — switch parent to 2-col so Hazards + FLW spread evenly
-    if (middle) {
-      middle.classList.remove('grid-3');
-      middle.classList.add('grid-2');
-    }
-    return;
-  }
-
-  const stagefields = [
-    { name: 'Allen', area: 'GOLDFISH' },
-    { name: 'Toth', area: 'GOLDFISH' },
-    { name: 'Highbluff', area: 'BEARCAT' },
-    { name: 'Lucas', area: 'VANGUARD C' },
-  ];
-
-  let html = '';
-  let rendered = false;
-  for (const sf of stagefields) {
-    if (!forecast.mef || !forecast.mef.areaForecasts) continue;
-    const area = forecast.mef.areaForecasts.find(a =>
-      (a.name || '').toUpperCase() === sf.area);
-    if (!area) continue;
-    const solo = soloStatus(area.forecast, area.amendmentText);
-    rendered = true;
-    html += `
-      <div class="solo-row">
-        <div class="solo-dot ${solo.go ? 'go' : 'nogo'}"></div>
-        <div class="solo-name">
-          <div class="solo-station">${sf.name}</div>
-          ${!solo.go ? `<div class="solo-reason">${solo.reason}</div>` : ''}
-        </div>
-        <span class="badge ${solo.go ? 'solo' : 'nosolo'}">${solo.go ? 'GO for Solo' : 'No-Go for Solo'}</span>
-      </div>
-    `;
-  }
-  if (!rendered) {
-    card.style.display = 'none';
-    if (middle) {
-      middle.classList.remove('grid-3');
-      middle.classList.add('grid-2');
-    }
-    return;
-  }
-  card.style.display = 'block';
-  if (middle) {
-    middle.classList.remove('grid-2');
-    middle.classList.add('grid-3');
-  }
-  body.innerHTML = html;
 }
 
 function renderAreas(forecast) {
@@ -1568,7 +1580,6 @@ function renderAll() {
   renderTraining(metar, forecast);
   renderMETAR(metar);
   renderAdvisories(forecast);
-  renderSolo(forecast);
   renderAreas(forecast);
   renderFLW(forecast);
   renderHazards(forecast);
