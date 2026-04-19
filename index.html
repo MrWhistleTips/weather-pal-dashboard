@@ -1867,6 +1867,19 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div id="aerodromes-body">—</div>
   </div>
 
+  <!-- Local NWS Radar (KMXX — Maxwell AFB, closest broad coverage) -->
+  <div class="card collapsible" data-collapse-key="radar" data-default-open="1" style="margin-bottom: 4px;">
+    <div class="card-header" onclick="toggleCollapse(this)">
+      <div class="card-title"><span class="card-title-icon">📡</span>Local Radar — KMXX</div>
+      <span class="card-subtitle" id="radar-updated">Live NWS NEXRAD loop</span>
+      <span class="collapse-chevron">▾</span>
+    </div>
+    <div class="card-body collapsible-body" id="radar-body" style="text-align:center; padding: 8px;">
+      <img id="radar-img" src="" alt="KMXX NEXRAD radar"
+           style="max-width: 700px; width: 100%; border-radius: 4px; border: 1px solid var(--border); image-rendering: -webkit-optimize-contrast;">
+    </div>
+  </div>
+
 </div>
 
 <footer class="footer">
@@ -3510,15 +3523,30 @@ function toggleCollapse(headerEl) {
   }
 }
 
-/// Restore previously collapsed cards on page load. Default state = collapsed.
+/// Restore previously collapsed cards on page load.
+/// Default = collapsed unless the card has data-default-open="1".
 function initCollapsibles() {
   document.querySelectorAll('.card.collapsible').forEach(card => {
     const key = card.dataset.collapseKey;
+    const defaultOpen = card.dataset.defaultOpen === '1';
     const saved = key ? localStorage.getItem('collapse:' + key) : null;
-    // Default to collapsed if no saved preference
-    const collapsed = saved === null ? true : saved === '1';
+    const collapsed = saved === null ? !defaultOpen : saved === '1';
     card.classList.toggle('collapsed', collapsed);
   });
+}
+
+/// Refresh the radar image with cache-busted URL.
+const RADAR_STATION = 'KMXX';
+function refreshRadar() {
+  const img = document.getElementById('radar-img');
+  const updated = document.getElementById('radar-updated');
+  if (!img) return;
+  const cb = Date.now();
+  img.src = `https://radar.weather.gov/ridge/standard/${RADAR_STATION}_loop.gif?_=${cb}`;
+  if (updated) {
+    const f = new Date();
+    updated.textContent = `Live NWS NEXRAD · refreshed ${String(f.getHours()).padStart(2,'0')}:${String(f.getMinutes()).padStart(2,'0')}L`;
+  }
 }
 
 // TV mode — add ?tv=1 to the URL to enable large-font kiosk display.
@@ -3557,6 +3585,8 @@ scheduleDailyReload();
 
 setupPeriodButtons();
 initCollapsibles();
+refreshRadar();
+setInterval(refreshRadar, 5 * 60 * 1000); // refresh radar every 5 min
 updateClock();
 setInterval(updateClock, 30 * 1000);
 // Re-check auto period every minute so the page snaps to the
