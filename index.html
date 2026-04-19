@@ -572,15 +572,17 @@ body.tv .metar-strip-raw { font-size: 12px; }
   text-transform: uppercase;
 }
 
-/* IFR TRAINING STRIP — dedicated Cairns IFR status card */
+/* IFR TRAINING STRIP — sits inside the Training Status card,
+   above the 5-panel VFR grid */
 .ifr-training {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 14px;
-  border-radius: 6px;
+  padding: 8px 14px;
+  margin: 8px 8px 0;
+  border-radius: 4px;
+  background: var(--bg-2);
   border: 1px solid var(--border);
-  background: var(--bg-1);
   position: relative;
   overflow: hidden;
   transition: all 0.3s;
@@ -589,33 +591,33 @@ body.tv .metar-strip-raw { font-size: 12px; }
   content: "";
   position: absolute;
   top: 0; left: 0; bottom: 0;
-  width: 4px;
+  width: 3px;
   background: var(--text-ghost);
   transition: all 0.3s;
 }
 .ifr-training.go {
   border-color: var(--go-border);
-  background: linear-gradient(90deg, rgba(95,186,79,0.12), var(--bg-1) 50%);
-  box-shadow: 0 0 14px rgba(95,186,79,0.15);
+  background: linear-gradient(90deg, rgba(95,186,79,0.14), var(--bg-2) 50%);
+  box-shadow: 0 0 12px rgba(95,186,79,0.12);
 }
-.ifr-training.go::before { background: var(--go); box-shadow: 0 0 10px var(--go); }
+.ifr-training.go::before { background: var(--go); box-shadow: 0 0 8px var(--go); }
 .ifr-training.go .ifr-training-status {
   color: var(--go);
-  text-shadow: 0 0 12px rgba(95,186,79,0.7);
+  text-shadow: 0 0 10px rgba(95,186,79,0.7);
 }
 .ifr-training.nogo {
   border-color: var(--nogo-border);
-  background: linear-gradient(90deg, rgba(214,69,69,0.12), var(--bg-1) 50%);
-  box-shadow: 0 0 14px rgba(214,69,69,0.15);
+  background: linear-gradient(90deg, rgba(214,69,69,0.14), var(--bg-2) 50%);
+  box-shadow: 0 0 12px rgba(214,69,69,0.12);
 }
-.ifr-training.nogo::before { background: var(--nogo); box-shadow: 0 0 10px var(--nogo); }
+.ifr-training.nogo::before { background: var(--nogo); box-shadow: 0 0 8px var(--nogo); }
 .ifr-training.nogo .ifr-training-status {
   color: var(--nogo);
-  text-shadow: 0 0 12px rgba(214,69,69,0.7);
+  text-shadow: 0 0 10px rgba(214,69,69,0.7);
 }
 .ifr-training.unknown {
   border-color: var(--unknown-border);
-  background: linear-gradient(90deg, rgba(230,165,58,0.12), var(--bg-1) 50%);
+  background: linear-gradient(90deg, rgba(230,165,58,0.14), var(--bg-2) 50%);
 }
 .ifr-training.unknown::before { background: var(--unknown); }
 .ifr-training.unknown .ifr-training-status {
@@ -1384,16 +1386,14 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- Thin METAR strip across the page -->
   <div id="metar-strip" class="metar-strip"></div>
 
-  <!-- IFR Training Status (Cairns 200/0.25) -->
-  <div id="ifr-training" class="ifr-training" style="margin-bottom: 6px;">
-    <!-- Rendered by JS -->
-  </div>
-
-  <!-- VFR Training Status (Cairns 1000/3 + Stagefields 700/1) -->
+  <!-- Training Status: IFR strip + VFR 5-panel grid -->
   <div class="card" style="margin-bottom: 6px;">
     <div class="card-header">
-      <div class="card-title"><span class="card-title-icon">🎯</span>VFR Training Status</div>
-      <div class="card-subtitle">Cairns ≥1000/3 · Stagefields ≥700/1</div>
+      <div class="card-title"><span class="card-title-icon">🎯</span>Training Status</div>
+      <div class="card-subtitle">IFR ≥200/¼ · VFR Cairns ≥1000/3 + Stagefields ≥700/1</div>
+    </div>
+    <div id="ifr-training" class="ifr-training">
+      <!-- Rendered by JS -->
     </div>
     <div id="training-body"></div>
   </div>
