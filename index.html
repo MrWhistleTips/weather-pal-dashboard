@@ -2243,11 +2243,13 @@ let lastMetarReportTime = null;
 let lastMetarFetchError = null;
 
 async function fetchMETAR() {
-  // Cache-bust via query string only. We deliberately do NOT add Cache-Control
-  // or Pragma request headers — they would trigger a CORS preflight that
-  // aviationweather.gov does not support, blocking all requests.
+  // aviationweather.gov does NOT return CORS headers for browser origins like
+  // mrwhistletips.github.io, so direct fetch is blocked. Route through a
+  // public CORS proxy that adds the right headers. corsproxy.io is free,
+  // reliable, and adds no signup requirement.
   const cb = Date.now();
-  const url = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json&hours=2&_=${cb}`;
+  const target = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json&hours=2&_=${cb}`;
+  const url = `https://corsproxy.io/?${encodeURIComponent(target)}`;
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
