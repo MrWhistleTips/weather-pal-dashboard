@@ -2629,25 +2629,34 @@ function parse1000ftWind(forecast) {
 }
 
 /// Pick the best landing runway given wind. Returns the chosen heading (deg)
-/// + headwind/crosswind components.
+/// + headwind/crosswind components and crosswind direction side.
+/// crosswindSide: 'right' = wind FROM right (push aircraft LEFT)
+///                'left'  = wind FROM left  (push aircraft RIGHT)
 function bestLanding(runways, wind) {
   if (!wind || wind.spd === 0) {
     return { heading: null, headwind: 0, crosswind: 0, calm: true };
   }
   if (wind.isVariable) {
-    // Variable wind → no preferred runway, all crosswind risk
     return { heading: null, headwind: 0, crosswind: wind.spd, variable: true };
   }
   let best = null;
   for (const [a, b] of runways) {
     for (const heading of [a, b]) {
-      // Difference between wind and runway heading
+      // Signed angle difference between wind FROM-direction and runway heading
       const diff = ((wind.dir - heading + 540) % 360) - 180;  // -180..+180
       const rad = diff * Math.PI / 180;
       const headwind = wind.spd * Math.cos(rad);
-      const crosswind = Math.abs(wind.spd * Math.sin(rad));
+      const xwSigned = wind.spd * Math.sin(rad);
+      // Positive sin → wind is to the RIGHT of runway → wind FROM right
+      // Negative sin → wind is to the LEFT of runway → wind FROM left
+      const crosswindSide = xwSigned >= 0 ? 'right' : 'left';
       if (!best || headwind > best.headwind) {
-        best = { heading, headwind: Math.round(headwind), crosswind: Math.round(crosswind) };
+        best = {
+          heading,
+          headwind: Math.round(headwind),
+          crosswind: Math.round(Math.abs(xwSigned)),
+          crosswindSide
+        };
       }
     }
   }
@@ -2664,20 +2673,25 @@ function landingHTML(stationName, forecast) {
     return `<div class="training-panel-landing"><span class="land-label">RWY</span><span class="land-calm">CALM</span></div>`;
   }
   if (land.variable) {
-    return `<div class="training-panel-landing"><span class="land-label">RWY</span><span class="land-vrb">VRB</span><span class="land-xw orange">XW ${land.crosswind}kt</span></div>`;
+    return `<div class="training-panel-landing"><span class="land-label">RWY</span><span class="land-vrb">VRB</span><span class="land-xw orange">↔ ${land.crosswind}kt</span></div>`;
   }
   // Display the runway as a 2-digit identifier (e.g., 06, 24, 18, 36)
   const rwy = String(Math.round(land.heading / 10)).padStart(2, '0');
-  const arrow = land.headwind >= 0 ? '↓' : '↑';
-  const arrowClass = land.headwind >= 0 ? 'green' : 'red';
+  const hwArrow = land.headwind >= 0 ? '↓' : '↑';
+  const hwClass = land.headwind >= 0 ? 'green' : 'red';
+  // Crosswind arrow: wind FROM right (right xw) → arrow LEFT (←)
+  //                  wind FROM left  (left xw)  → arrow RIGHT (→)
+  // Per pilot's perspective looking down the runway: arrow shows force
+  // pushing the aircraft.
+  const xwArrow = land.crosswindSide === 'right' ? '←' : '→';
   const xwClass = land.crosswind >= 15 ? 'orange' : '';
   return `
     <div class="training-panel-landing">
       <span class="land-label">RWY</span>
       <span class="land-rwy">${rwy}</span>
-      <span class="land-arrow ${arrowClass}">${arrow}</span>
+      <span class="land-arrow ${hwClass}">${hwArrow}</span>
       <span class="land-hw">HW ${Math.abs(land.headwind)}kt</span>
-      <span class="land-xw ${xwClass}">XW ${land.crosswind}kt</span>
+      <span class="land-xw ${xwClass}">${xwArrow} ${land.crosswind}kt</span>
     </div>
   `;
 }
