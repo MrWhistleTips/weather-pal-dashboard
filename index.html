@@ -419,7 +419,14 @@ body.tv .solar-strip-value { font-size: 14px; }
   color: var(--text);
 }
 .metar-strip-time { color: var(--text-dim); font-size: 11px; }
-.metar-strip-data { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; flex: 1; }
+.metar-strip-data {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1;
+  justify-content: space-around;
+}
 .metar-strip-cell { display: flex; gap: 5px; align-items: baseline; }
 .metar-strip-label {
   font-size: 9px;
@@ -447,11 +454,13 @@ body.tv .solar-strip-value { font-size: 14px; }
   padding-left: 10px;
   border-left: 1px solid var(--border);
   margin-left: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 100%;
+  text-align: left;
+  word-break: break-all;
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px dashed var(--border);
+  border-left: none;
 }
 body.tv .metar-strip { font-size: 14px; padding: 10px 14px; }
 body.tv .metar-strip-cat { font-size: 20px; padding: 6px 16px; }
