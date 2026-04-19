@@ -658,13 +658,22 @@ body.tv .metar-strip-raw { font-size: 12px; }
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: var(--go);
-  background: var(--go-bg);
-  border: 1px solid var(--go-border);
   padding: 3px 9px;
   border-radius: 3px;
   white-space: nowrap;
+  border: 1px solid;
+}
+.ifr-training-taxi.authorized {
+  color: var(--go);
+  background: var(--go-bg);
+  border-color: var(--go-border);
   text-shadow: 0 0 6px rgba(95,186,79,0.5);
+}
+.ifr-training-taxi.denied {
+  color: var(--nogo);
+  background: var(--nogo-bg);
+  border-color: var(--nogo-border);
+  text-shadow: 0 0 6px rgba(214,69,69,0.5);
 }
 body.tv .ifr-training { padding: 14px 18px; gap: 18px; }
 body.tv .ifr-training-label { font-size: 13px; }
@@ -2054,10 +2063,10 @@ function renderIFRTraining(metar) {
     const ceil = metarCeiling(metar);
     const ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
     const visStr = (metar.visib != null) ? `${metar.visib} SM` : '—';
-    detail = `${ceilStr} · ${visStr}  ·  Mins ≥200ft / ¼ SM`;
-    if (ifrOk) {
-      taxiBadge = `<div class="ifr-training-taxi">✓ TAXI AUTHORIZED</div>`;
-    }
+    detail = `${ceilStr} · ${visStr}`;
+    taxiBadge = ifrOk
+      ? `<div class="ifr-training-taxi authorized">✓ TAXI AUTHORIZED</div>`
+      : `<div class="ifr-training-taxi denied">✗ TAXI NOT AUTHORIZED</div>`;
   } else if (metar && isMetarStale(metar)) {
     detail = 'METAR is stale — cannot verify';
   }
