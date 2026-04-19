@@ -336,6 +336,25 @@ body::before {
 }
 .card-body { padding: 4px 10px; }
 
+/* "Hazards Present" badge in the Flight Hazards card header */
+.hazards-present-badge {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #000;
+  background: var(--warning);
+  padding: 3px 9px;
+  border-radius: 3px;
+  white-space: nowrap;
+  margin-left: auto;
+  margin-right: 8px;
+  animation: pipPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(230,165,58,0.4);
+}
+body.tv .hazards-present-badge { font-size: 13px; padding: 4px 11px; }
+
 /* Collapsible cards */
 .card.collapsible .card-header {
   cursor: pointer;
@@ -1726,6 +1745,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div class="card collapsible" data-collapse-key="hazards">
       <div class="card-header" onclick="toggleCollapse(this)">
         <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
+        <span id="hazards-badge" class="hazards-present-badge" style="display:none;">⚠️ Hazards Present, Click to View</span>
         <span class="collapse-chevron">▾</span>
       </div>
       <div class="card-body collapsible-body" id="hazards-body">—</div>
@@ -3188,8 +3208,10 @@ function renderFLW(forecast) {
 
 function renderHazards(forecast) {
   const body = document.getElementById('hazards-body');
+  const badge = document.getElementById('hazards-badge');
   if (!forecast || !forecast.mef || !forecast.mef.flightHazards) {
     body.innerHTML = '<div style="color:var(--text-dim)">No data.</div>';
+    if (badge) badge.style.display = 'none';
     return;
   }
   const h = forecast.mef.flightHazards;
@@ -3199,6 +3221,9 @@ function renderHazards(forecast) {
     ['Thunderstorms', h.thunderstorms],
     ['Low Level Wind Shear', h.llws],
   ];
+  // Count active hazards (anything other than NONE/empty)
+  const activeCount = rows.filter(([_, val]) => val && !/^NONE$/i.test(val)).length;
+  if (badge) badge.style.display = activeCount > 0 ? 'inline-block' : 'none';
   body.innerHTML = rows.map(([label, val]) => {
     const isNone = !val || /^NONE$/i.test(val);
     const cls = isNone ? 'none' : 'active';
