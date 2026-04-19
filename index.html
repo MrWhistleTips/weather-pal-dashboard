@@ -1884,23 +1884,19 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- Bottom row: NWS Radar + Windy.com map, side-by-side, equal size -->
   <div class="grid grid-2" style="margin-bottom: 4px;">
 
-    <!-- SkyVector Sectional Chart — Fort Rucker area -->
-    <div class="card collapsible" data-collapse-key="radar" data-default-open="1">
+    <!-- ADS-B Exchange Live Traffic — Fort Rucker area -->
+    <div class="card collapsible" data-collapse-key="adsb" data-default-open="1">
       <div class="card-header" onclick="toggleCollapse(this)">
-        <div class="card-title"><span class="card-title-icon">🗺️</span>SkyVector Chart — Fort Rucker</div>
-        <span class="card-subtitle">Sectional · click to open interactive</span>
+        <div class="card-title"><span class="card-title-icon">✈️</span>ADS-B Live Traffic — Fort Rucker</div>
+        <span class="card-subtitle">adsbexchange.com · includes military</span>
         <span class="collapse-chevron">▾</span>
       </div>
       <div class="card-body collapsible-body radar-map-body">
-        <a href="https://skyvector.com/?ll=31.321849978640195,-85.7565307558679&chart=301&zoom=1"
-           target="_blank"
-           title="Open interactive chart at SkyVector.com"
-           style="display: block; width: 100%; height: 100%; line-height: 0;">
-          <div id="sv_3610" style="width: 100%; height: 100%; border-radius: 4px; overflow: hidden;">
-            Loading <span style="color:var(--tan)">SkyVector</span> chart…
-          </div>
-        </a>
-        <script src="//skyvector.com/api/lchart?ll=31.321849978640195,-85.7565307558679&s=1&c=sv_3610&i=301" type="text/javascript"></script>
+        <iframe id="adsb-iframe"
+                src="https://globe.adsbexchange.com/?lat=31.32&lon=-85.76&zoom=9"
+                frameborder="0"
+                style="width: 100%; height: 100%; border: 0; border-radius: 4px;">
+        </iframe>
       </div>
     </div>
 
