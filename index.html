@@ -668,20 +668,30 @@ body.tv .area-amd-time { font-size: 11px; }
   0%, 100% { box-shadow: 0 0 12px rgba(95,186,79,0.12); }
   50%      { box-shadow: 0 0 22px rgba(230,165,58,0.4); }
 }
-.ifr-training.advisory-affecting::after {
-  content: "⚠️";
+/* Circular pip indicator inside the IFR strip when an advisory affects IFR */
+.ifr-training-pip {
   position: absolute;
-  top: 4px;
-  right: 8px;
-  font-size: 12px;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(230,165,58,0.25);
+  border: 1.5px solid var(--warning);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
   animation: pipPulse 2s ease-in-out infinite;
+  cursor: help;
 }
-/* Push the IFR GO/NO GO label away from the corner ⚠️ icon so it isn't covered */
+body.tv .ifr-training-pip { width: 22px; height: 22px; font-size: 12px; }
+/* Push the IFR GO/NO GO label away from the corner pip so it isn't covered */
 .ifr-training.advisory-affecting .ifr-training-status {
-  margin-right: 18px;
+  margin-right: 22px;
 }
 body.tv .ifr-training.advisory-affecting .ifr-training-status {
-  margin-right: 24px;
+  margin-right: 28px;
 }
 
 /* IFR TRAINING STRIP — sits inside the Training Status card,
@@ -2300,7 +2310,11 @@ function renderIFRTraining(metar, forecast) {
 
   el.className = `ifr-training ${status}${advClass}`;
   el.title = ifrAdvisory ? `Advisory affecting IFR ops: ${ifrAdvisory.type} ${ifrAdvisory.number} — ${ifrAdvisory.criteria}` : '';
+  const pipHTML = ifrAdvisory
+    ? `<div class="ifr-training-pip" title="${escapeAttr(`${ifrAdvisory.type} ${ifrAdvisory.number || ''}: ${ifrAdvisory.criteria || ''}`)}">⚠️</div>`
+    : '';
   el.innerHTML = `
+    ${pipHTML}
     <div class="ifr-training-label">🎯 IFR Training</div>
     <div class="ifr-training-station">CAIRNS · KOZR</div>
     <div class="ifr-training-detail">${detail}</div>
