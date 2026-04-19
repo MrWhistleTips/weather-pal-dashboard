@@ -1466,6 +1466,20 @@ body.tv .aero-period-time { font-size: 11px; }
 .flw-strip-wind.high { color: var(--amber); font-weight: 600; }
 .flw-strip-temp { color: var(--text-dim); }
 .flw-strip-temp.cold { color: var(--mvfr); font-weight: 600; }
+.flw-ice-badge {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #fff;
+  background: var(--mvfr);
+  padding: 1px 6px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-left: 2px;
+}
+body.tv .flw-ice-badge { font-size: 11px; padding: 2px 7px; }
 body.tv .flw-strip { padding: 6px 14px; }
 body.tv .flw-strip-label { font-size: 12px; }
 body.tv .flw-strip-cells { font-size: 14px; }
@@ -3230,11 +3244,13 @@ function renderFLW(forecast) {
       tempDisplay = `${sign}${tempC}°`;
     }
     const tempClass = tempC <= 4 ? 'cold' : '';
+    const iceBadge = (tempC <= 4) ? '<span class="flw-ice-badge">POSS ICE</span>' : '';
     return `
       <div class="flw-strip-cell">
         <span class="flw-strip-level">${levelStr}</span>
         <span class="flw-strip-wind ${windClass}">${windDisplay}</span>
         <span class="flw-strip-temp ${tempClass}">${tempDisplay}</span>
+        ${iceBadge}
       </div>
     `;
   }).join('');
