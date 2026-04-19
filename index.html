@@ -647,25 +647,21 @@ body.tv .metar-strip-old-inline { font-size: 11px; padding: 2px 8px; }
   top: 0; left: 0; right: 0;
   height: 3px;
 }
-/* VFR — Dark olive with bright olive accent */
-.vfr-section-header {
-  background: linear-gradient(180deg, #2f3a26 0%, #243019 100%);
-  border: 1px solid #4a5e3a;
-  border-top: none;
-}
-.vfr-section-header::before {
-  background: linear-gradient(90deg, #6a8348, #8aaf5d 50%, #6a8348);
-  box-shadow: 0 0 8px rgba(138,175,93,0.5);
-}
-/* IFR — Dark steel/slate with cyan accent */
+/* VFR + IFR — both use the same light OD green band */
+.vfr-section-header,
 .ifr-section-header {
-  background: linear-gradient(180deg, #1f2a36 0%, #161e26 100%);
-  border: 1px solid #3a4d62;
+  background: linear-gradient(180deg, #8da76e 0%, #7d9760 100%);
+  border: 1px solid #5d7046;
   border-top: none;
+}
+/* Distinct top accent stripes still differentiate VFR vs IFR */
+.vfr-section-header::before {
+  background: linear-gradient(90deg, #4d6638, #6b8a4a 50%, #4d6638);
+  box-shadow: 0 0 8px rgba(107,138,74,0.6);
 }
 .ifr-section-header::before {
   background: linear-gradient(90deg, #2a90c0, #4ac0e2 50%, #2a90c0);
-  box-shadow: 0 0 8px rgba(74,192,226,0.5);
+  box-shadow: 0 0 8px rgba(74,192,226,0.6);
 }
 .section-header-icon {
   font-size: 18px;
@@ -678,15 +674,15 @@ body.tv .metar-strip-old-inline { font-size: 11px; padding: 2px 8px; }
   letter-spacing: 3px;
   text-transform: uppercase;
   color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 0 4px rgba(0,0,0,0.4);
 }
 .section-header-detail {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255,255,255,0.95);
   letter-spacing: 0.8px;
   margin-left: auto;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.6);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
 }
 body.tv .section-header { padding: 8px 18px; }
 body.tv .section-header-title { font-size: 23px; letter-spacing: 4px; }
