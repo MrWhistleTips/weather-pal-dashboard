@@ -336,6 +336,23 @@ body::before {
 }
 .card-body { padding: 4px 10px; }
 
+/* Collapsible cards */
+.card.collapsible .card-header {
+  cursor: pointer;
+  user-select: none;
+}
+.card.collapsible .card-header:hover { background: linear-gradient(180deg, var(--bg-3), var(--bg-2)); }
+.collapse-chevron {
+  font-size: 14px;
+  color: var(--tan);
+  transition: transform 0.25s ease;
+  transform: rotate(0deg);
+  margin-left: 8px;
+}
+.card.collapsed .collapse-chevron { transform: rotate(-90deg); }
+.card.collapsed .collapsible-body { display: none; }
+body.tv .collapse-chevron { font-size: 18px; }
+
 /* SOLAR / LUNAR STRIP — top of page next to clock */
 .solar-strip {
   display: flex;
@@ -1704,6 +1721,25 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- Thin METAR strip across the page -->
   <div id="metar-strip" class="metar-strip"></div>
 
+  <!-- Flight Hazards + Flight Level Winds (collapsible, default collapsed) -->
+  <div class="grid grid-2" style="margin-bottom: 4px;">
+    <div class="card collapsible" data-collapse-key="hazards">
+      <div class="card-header" onclick="toggleCollapse(this)">
+        <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
+        <span class="collapse-chevron">▾</span>
+      </div>
+      <div class="card-body collapsible-body" id="hazards-body">—</div>
+    </div>
+
+    <div class="card collapsible" data-collapse-key="flw">
+      <div class="card-header" onclick="toggleCollapse(this)">
+        <div class="card-title"><span class="card-title-icon">💨</span>Flight Level Winds</div>
+        <span class="collapse-chevron">▾</span>
+      </div>
+      <div class="card-body collapsible-body" id="flw-body">—</div>
+    </div>
+  </div>
+
   <!-- Active Advisories (shown above both sections when active) -->
   <div id="advisories-card" class="card" style="display:none; margin-bottom:4px;">
     <div class="card-header">
@@ -1748,23 +1784,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div id="aerodromes-card" class="card" style="margin-bottom: 4px; display: none;">
     <div id="aerodromes-body">—</div>
   </div>
-
-  <div class="grid grid-2" style="margin-bottom: 4px;">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
-      </div>
-      <div class="card-body" id="hazards-body">—</div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><span class="card-title-icon">💨</span>Flight Level Winds</div>
-      </div>
-      <div class="card-body" id="flw-body">—</div>
-    </div>
-  </div>
-
 
 </div>
 
@@ -3338,6 +3357,28 @@ function updateClock() {
   fmtTime(document.getElementById('local-time'), localTimeHHMM() + 'L');
 }
 
+/// Toggle a collapsible card and persist the state in localStorage.
+function toggleCollapse(headerEl) {
+  const card = headerEl.closest('.card.collapsible');
+  if (!card) return;
+  card.classList.toggle('collapsed');
+  const key = card.dataset.collapseKey;
+  if (key) {
+    localStorage.setItem('collapse:' + key, card.classList.contains('collapsed') ? '1' : '0');
+  }
+}
+
+/// Restore previously collapsed cards on page load. Default state = collapsed.
+function initCollapsibles() {
+  document.querySelectorAll('.card.collapsible').forEach(card => {
+    const key = card.dataset.collapseKey;
+    const saved = key ? localStorage.getItem('collapse:' + key) : null;
+    // Default to collapsed if no saved preference
+    const collapsed = saved === null ? true : saved === '1';
+    card.classList.toggle('collapsed', collapsed);
+  });
+}
+
 // TV mode — add ?tv=1 to the URL to enable large-font kiosk display.
 if (TV_MODE) document.body.classList.add('tv');
 
@@ -3373,6 +3414,7 @@ function scheduleDailyReload() {
 scheduleDailyReload();
 
 setupPeriodButtons();
+initCollapsibles();
 updateClock();
 setInterval(updateClock, 30 * 1000);
 // Re-check auto period every minute so the page snaps to the
