@@ -676,6 +676,13 @@ body.tv .area-amd-time { font-size: 11px; }
   font-size: 12px;
   animation: pipPulse 2s ease-in-out infinite;
 }
+/* Push the IFR GO/NO GO label away from the corner ⚠️ icon so it isn't covered */
+.ifr-training.advisory-affecting .ifr-training-status {
+  margin-right: 18px;
+}
+body.tv .ifr-training.advisory-affecting .ifr-training-status {
+  margin-right: 24px;
+}
 
 /* IFR TRAINING STRIP — sits inside the Training Status card,
    above the 5-panel VFR grid */
