@@ -572,6 +572,51 @@ body.tv .metar-strip-raw { font-size: 12px; }
   text-transform: uppercase;
 }
 
+/* SECTION HEADERS — group VFR vs IFR cards */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  margin: 8px 0 6px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--bg-2), transparent 80%);
+  border-left: 4px solid var(--tan);
+  position: relative;
+}
+.section-header::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--tan-dim), transparent);
+  opacity: 0.5;
+}
+.section-header-icon { font-size: 18px; }
+.section-header-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.section-header-detail {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.8px;
+  margin-left: auto;
+}
+.vfr-section-header { border-left-color: var(--go); }
+.vfr-section-header .section-header-title { color: var(--go); }
+.ifr-section-header { border-left-color: var(--mvfr); }
+.ifr-section-header .section-header-title { color: var(--mvfr); }
+body.tv .section-header { padding: 10px 18px; }
+body.tv .section-header-title { font-size: 22px; letter-spacing: 4px; }
+body.tv .section-header-icon { font-size: 22px; }
+body.tv .section-header-detail { font-size: 13px; }
+
 /* MEF Amendment badge in card subtitle */
 .mef-amd-badge {
   display: inline-flex;
@@ -694,14 +739,13 @@ body.tv .ifr-training.advisory-affecting .ifr-training-status {
   margin-right: 28px;
 }
 
-/* IFR TRAINING STRIP — sits inside the Training Status card,
-   above the 5-panel VFR grid */
+/* IFR TRAINING STRIP — sits inside its own IFR Training Status card */
 .ifr-training {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 8px 14px;
-  margin: 8px 8px 0;
+  padding: 10px 14px;
+  margin: 8px 10px;
   border-radius: 4px;
   background: var(--bg-2);
   border: 1px solid var(--border);
@@ -1584,18 +1628,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- Thin METAR strip across the page -->
   <div id="metar-strip" class="metar-strip"></div>
 
-  <!-- Training Status: IFR strip + VFR 5-panel grid -->
-  <div class="card" style="margin-bottom: 6px;">
-    <div class="card-header">
-      <div class="card-title"><span class="card-title-icon">🎯</span>Training Status</div>
-      <div class="card-subtitle">IFR ≥200/¼ · VFR Cairns ≥1000/3 + Stagefields ≥700/1</div>
-    </div>
-    <div id="ifr-training" class="ifr-training">
-      <!-- Rendered by JS -->
-    </div>
-    <div id="training-body"></div>
-  </div>
-
+  <!-- Active Advisories (shown above both sections when active) -->
   <div id="advisories-card" class="card" style="display:none; margin-bottom:10px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">⚠️</span>Active Advisories</div>
@@ -1604,8 +1637,24 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div class="card-body" id="advisories-body"></div>
   </div>
 
-  <!-- Area Forecasts moved up under training status -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- VFR SECTION: Training Status panels + Area Forecasts -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section-header vfr-section-header">
+    <span class="section-header-icon">🎯</span>
+    <span class="section-header-title">VFR Operations</span>
+    <span class="section-header-detail">Cairns ≥1000/3 · Stagefields ≥700/1</span>
+  </div>
+
   <div class="card" style="margin-bottom: 6px;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">🚁</span>VFR Training Status</div>
+      <div class="card-subtitle">Stagefield by stagefield</div>
+    </div>
+    <div id="training-body"></div>
+  </div>
+
+  <div class="card" style="margin-bottom: 10px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🗺️</span>Area Forecasts</div>
       <div class="card-subtitle">Color-coded by flight category</div>
@@ -1613,8 +1662,26 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div id="areas-body">—</div>
   </div>
 
-  <!-- Aerodrome Forecasts -->
-  <div id="aerodromes-card" class="card" style="margin-bottom: 6px; display: none;">
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- IFR SECTION: IFR Training strip + Aerodrome Forecasts -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section-header ifr-section-header">
+    <span class="section-header-icon">🎯</span>
+    <span class="section-header-title">IFR Operations</span>
+    <span class="section-header-detail">KOZR ≥200ft / ¼ SM</span>
+  </div>
+
+  <div class="card" style="margin-bottom: 6px;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">🛫</span>IFR Training Status</div>
+      <div class="card-subtitle">Cairns departure for IFR ops</div>
+    </div>
+    <div id="ifr-training" class="ifr-training">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <div id="aerodromes-card" class="card" style="margin-bottom: 10px; display: none;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🛬</span>Aerodrome Forecasts</div>
       <div class="card-subtitle" id="aerodromes-count">—</div>
@@ -2511,21 +2578,14 @@ function escapeAttr(s) {
   return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
 
-/// Display the MEF amendment number/time in the Training Status card subtitle.
+/// Display the MEF amendment number/time on the VFR section header.
 function renderMEFAmendmentBadge(forecast) {
-  // Find the subtitle element in the Training Status card (the one with "🎯" icon)
-  const cardTitles = document.querySelectorAll('.card-title');
-  let targetSubtitle = null;
-  cardTitles.forEach(t => {
-    if (t.textContent.includes('Training Status')) {
-      const subtitle = t.parentElement.querySelector('.card-subtitle');
-      if (subtitle) targetSubtitle = subtitle;
-    }
-  });
-  if (!targetSubtitle) return;
+  // Find the VFR section header — that's the most prominent place for it
+  const header = document.querySelector('.vfr-section-header .section-header-detail');
+  if (!header) return;
 
   // Remove any existing amendment badge
-  const existing = targetSubtitle.querySelector('.mef-amd-badge');
+  const existing = header.parentElement.querySelector('.mef-amd-badge');
   if (existing) existing.remove();
 
   const amdNum = forecast && forecast.amendmentNumber;
@@ -2538,7 +2598,7 @@ function renderMEFAmendmentBadge(forecast) {
   const badge = document.createElement('span');
   badge.className = 'mef-amd-badge';
   badge.textContent = '⚠️ ' + labelParts.join(' ');
-  targetSubtitle.appendChild(badge);
+  header.parentElement.appendChild(badge);
 }
 
 function renderMETAR(metar) {
