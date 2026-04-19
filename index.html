@@ -96,7 +96,7 @@ body::before {
 .navbar {
   background: linear-gradient(180deg, rgba(16,21,16,0.95), rgba(10,13,8,0.9));
   border-bottom: 1px solid var(--od-border);
-  padding: 8px 16px;
+  padding: 4px 16px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -181,8 +181,8 @@ body::before {
 .nav-btn:hover { background: var(--od); border-color: var(--tan); color: var(--text); }
 
 /* LAYOUT */
-.container { max-width: 1800px; margin: 0 auto; padding: 8px 12px; }
-.grid { display: grid; gap: 6px; }
+.container { max-width: 1800px; margin: 0 auto; padding: 4px 10px; }
+.grid { display: grid; gap: 4px; }
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-4 { grid-template-columns: repeat(4, 1fr); }
@@ -196,15 +196,15 @@ body::before {
   background: var(--bg-1);
   border: 1px solid var(--od-border);
   border-radius: 4px;
-  padding: 3px;
-  margin-bottom: 6px;
+  padding: 2px;
+  margin-bottom: 4px;
   width: fit-content;
   margin-inline: auto;
 }
 .period-btn {
   background: transparent; border: none;
   color: var(--text-dim);
-  padding: 6px 22px;
+  padding: 3px 22px;
   cursor: pointer;
   font-family: 'Rajdhani', sans-serif;
   font-size: 13px; font-weight: 700;
@@ -290,7 +290,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 10px;
+  padding: 3px 10px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
 }
@@ -314,7 +314,7 @@ body::before {
   font-size: 9px; color: var(--text-dim);
   letter-spacing: 0.8px;
 }
-.card-body { padding: 6px 10px; }
+.card-body { padding: 4px 10px; }
 
 /* SOLAR / LUNAR STRIP — top of page next to clock */
 .solar-strip {
@@ -325,8 +325,8 @@ body::before {
   background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
   border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 5px 10px;
-  margin-bottom: 6px;
+  padding: 3px 10px;
+  margin-bottom: 4px;
   flex-wrap: wrap;
 }
 .solar-strip-item {
@@ -361,8 +361,8 @@ body.tv .solar-strip-value { font-size: 14px; }
   background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
   border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 8px 12px;
-  margin-bottom: 6px;
+  padding: 4px 12px;
+  margin-bottom: 4px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   flex-wrap: wrap;
@@ -439,8 +439,8 @@ body.tv .metar-strip-raw { font-size: 12px; }
 .training-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-  padding: 8px;
+  gap: 4px;
+  padding: 4px 6px;
 }
 @media (max-width: 900px) {
   .training-grid { grid-template-columns: repeat(2, 1fr); }
@@ -453,8 +453,8 @@ body.tv .metar-strip-raw { font-size: 12px; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 10px 8px 8px;
+  gap: 2px;
+  padding: 6px 8px 4px;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--bg-2);
@@ -560,7 +560,7 @@ body.tv .metar-strip-raw { font-size: 12px; }
   font-weight: 700;
   letter-spacing: 2px;
   line-height: 1;
-  margin: 6px 0 2px;
+  margin: 2px 0 0;
   transition: all 0.3s;
   white-space: nowrap;
 }
@@ -577,8 +577,8 @@ body.tv .metar-strip-raw { font-size: 12px; }
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 14px;
-  margin: 8px 0 6px;
+  padding: 4px 12px;
+  margin: 4px 0 4px;
   border-radius: 4px;
   background: linear-gradient(90deg, var(--bg-2), transparent 80%);
   border-left: 4px solid var(--tan);
@@ -646,7 +646,7 @@ body.tv .mef-amd-badge { font-size: 13px; padding: 4px 10px; }
   align-items: center;
   gap: 10px;
   padding: 6px 12px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   border-radius: 4px;
   background: rgba(74,144,226,0.10);
   border: 1px solid rgba(74,144,226,0.4);
@@ -744,8 +744,8 @@ body.tv .ifr-training.advisory-affecting .ifr-training-status {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 14px;
-  margin: 8px 10px;
+  padding: 5px 12px;
+  margin: 4px 8px;
   border-radius: 4px;
   background: var(--bg-2);
   border: 1px solid var(--border);
@@ -856,8 +856,8 @@ body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
   justify-content: center;
   gap: 6px;
   width: calc(100% + 16px);
-  margin: 6px -8px -8px;
-  padding: 5px 8px;
+  margin: 4px -8px -4px;
+  padding: 3px 8px;
   border-top: 1px solid var(--border);
   background: rgba(0,0,0,0.25);
   font-family: 'Rajdhani', sans-serif;
@@ -1135,7 +1135,7 @@ body.tv .advisory-expires { font-size: 12px; }
   .areas-grid { grid-template-columns: 1fr; }
 }
 .area-card {
-  padding: 5px 9px;
+  padding: 3px 9px;
   background: var(--bg-1);
 }
 .area-header {
@@ -1247,13 +1247,13 @@ body.tv .area-advisory-text { font-size: 12px; }
 @media (max-width: 1100px) { .aerodromes-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 700px) { .aerodromes-grid { grid-template-columns: 1fr; } }
 .aero-card {
-  padding: 6px 10px;
+  padding: 4px 10px;
   background: var(--bg-1);
 }
 .aero-header {
   display: flex; align-items: center; gap: 8px;
-  margin-bottom: 4px;
-  padding-bottom: 4px;
+  margin-bottom: 2px;
+  padding-bottom: 2px;
   border-bottom: 1px solid var(--border);
 }
 .aero-icao {
@@ -1281,8 +1281,8 @@ body.tv .area-advisory-text { font-size: 12px; }
 .aero-period {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
-  line-height: 1.4;
-  padding: 2px 0;
+  line-height: 1.3;
+  padding: 0;
 }
 .aero-period-time {
   font-size: 9px;
@@ -1479,7 +1479,7 @@ body.demo .demo-menu-btn {
   border-radius: 4px;
   color: var(--text-dim);
   text-align: center;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   font-size: 12px;
 }
 .alert.warning {
@@ -1629,7 +1629,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div id="metar-strip" class="metar-strip"></div>
 
   <!-- Active Advisories (shown above both sections when active) -->
-  <div id="advisories-card" class="card" style="display:none; margin-bottom:10px;">
+  <div id="advisories-card" class="card" style="display:none; margin-bottom:4px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">⚠️</span>Active Advisories</div>
       <div class="card-subtitle" id="advisories-count">0 active</div>
@@ -1646,7 +1646,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <span class="section-header-detail">Cairns ≥1000/3 · Stagefields ≥700/1</span>
   </div>
 
-  <div class="card" style="margin-bottom: 6px;">
+  <div class="card" style="margin-bottom: 4px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🚁</span>VFR Training Status</div>
       <div class="card-subtitle">Stagefield by stagefield</div>
@@ -1654,7 +1654,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div id="training-body"></div>
   </div>
 
-  <div class="card" style="margin-bottom: 10px;">
+  <div class="card" style="margin-bottom: 4px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🗺️</span>Area Forecasts</div>
       <div class="card-subtitle">Color-coded by flight category</div>
@@ -1671,7 +1671,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <span class="section-header-detail">KOZR ≥200ft / ¼ SM</span>
   </div>
 
-  <div class="card" style="margin-bottom: 6px;">
+  <div class="card" style="margin-bottom: 4px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🛫</span>IFR Training Status</div>
       <div class="card-subtitle">Cairns departure for IFR ops</div>
@@ -1681,7 +1681,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     </div>
   </div>
 
-  <div id="aerodromes-card" class="card" style="margin-bottom: 10px; display: none;">
+  <div id="aerodromes-card" class="card" style="margin-bottom: 4px; display: none;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">🛬</span>Aerodrome Forecasts</div>
       <div class="card-subtitle" id="aerodromes-count">—</div>
@@ -1689,7 +1689,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div id="aerodromes-body">—</div>
   </div>
 
-  <div class="grid grid-2" style="margin-bottom: 6px;">
+  <div class="grid grid-2" style="margin-bottom: 4px;">
     <div class="card">
       <div class="card-header">
         <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
