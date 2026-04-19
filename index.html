@@ -572,6 +572,111 @@ body.tv .metar-strip-raw { font-size: 12px; }
   text-transform: uppercase;
 }
 
+/* MEF Amendment badge in card subtitle */
+.mef-amd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(230,165,58,0.15);
+  color: var(--warning);
+  border: 1px solid rgba(230,165,58,0.5);
+  margin-left: 10px;
+  animation: amdPulse 2s ease-in-out infinite;
+}
+@keyframes amdPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(230,165,58,0); }
+  50%      { box-shadow: 0 0 10px rgba(230,165,58,0.5); }
+}
+body.tv .mef-amd-badge { font-size: 13px; padding: 4px 10px; }
+
+/* Pending advisory banner above the active advisories card */
+.pending-advisory {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  background: rgba(74,144,226,0.10);
+  border: 1px solid rgba(74,144,226,0.4);
+  border-left: 3px solid var(--mvfr);
+  font-size: 11px;
+}
+.pending-advisory-icon { font-size: 13px; }
+.pending-advisory-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--mvfr);
+  text-transform: uppercase;
+}
+.pending-advisory-text { color: var(--text); flex: 1; }
+.pending-advisory-time {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-dim);
+  font-size: 10px;
+}
+body.tv .pending-advisory { font-size: 13px; padding: 8px 14px; }
+body.tv .pending-advisory-label { font-size: 12px; }
+body.tv .pending-advisory-time { font-size: 12px; }
+
+/* Per-stagefield advisory pip */
+.training-panel-advisory-pip {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(230,165,58,0.25);
+  border: 1.5px solid var(--warning);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  animation: pipPulse 2s ease-in-out infinite;
+  cursor: help;
+}
+@keyframes pipPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(230,165,58,0); }
+  50%      { box-shadow: 0 0 8px rgba(230,165,58,0.7); }
+}
+body.tv .training-panel-advisory-pip { width: 22px; height: 22px; font-size: 12px; }
+
+/* Per-area amendment time */
+.area-amd-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--warning);
+  letter-spacing: 0.5px;
+  margin-left: 4px;
+}
+body.tv .area-amd-time { font-size: 11px; }
+
+/* IFR strip flashes amber when an active advisory affects IFR ops */
+.ifr-training.advisory-affecting {
+  animation: ifrAdvFlash 2.5s ease-in-out infinite;
+}
+@keyframes ifrAdvFlash {
+  0%, 100% { box-shadow: 0 0 12px rgba(95,186,79,0.12); }
+  50%      { box-shadow: 0 0 22px rgba(230,165,58,0.4); }
+}
+.ifr-training.advisory-affecting::after {
+  content: "⚠️";
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 12px;
+  animation: pipPulse 2s ease-in-out infinite;
+}
+
 /* IFR TRAINING STRIP — sits inside the Training Status card,
    above the 5-panel VFR grid */
 .ifr-training {
@@ -1544,10 +1649,27 @@ const DEMO_SCENARIOS = {
   },
   'advisory': {
     name: 'Active Wind Advisory',
-    desc: 'Active AWA wind advisory — solo grounded',
+    desc: 'Active AWA wind advisory — solo grounded, IFR strip pulses',
     metar: makeDemoMetar({ flt: 'VFR', wdir: 260, wspd: 18, wgst: 28, visib: '10+', clouds: [{cover:'SCT',base:5000}] }),
     areaText: '26018G28KT 7SM SCT050 BKN120\nAFT 1600Z: 27020G30KT 7SM SCT060 BKN130',
     advisory: true,
+  },
+  'amendment': {
+    name: '⚠️ Amendment Issued',
+    desc: 'MEF amendment + per-area amendment with timestamp',
+    metar: makeDemoMetar({ flt: 'MVFR', wdir: 240, wspd: 14, visib: '4', clouds: [{cover:'BKN',base:1500}], wxString: 'BR' }),
+    areaText: '24014KT 4SM BR BKN015\nAFT 1700Z: 25018KT 6SM BKN020',
+    advisory: false,
+    amendmentNumber: 2,
+    amendedAt: '1430Z',
+    areaAmendment: { number: 'AMD 2', time: '1430Z' },
+  },
+  'pending-advisory': {
+    name: '🕐 Upcoming Advisory',
+    desc: 'AWA scheduled to begin in ~1 hour (banner preview)',
+    metar: makeDemoMetar({ flt: 'VFR', wdir: 200, wspd: 8, visib: '10+', clouds: [{cover:'SCT',base:5000}] }),
+    areaText: '20008KT 7SM SCT050 BKN120',
+    advisory: 'pending',
   },
   'improving': {
     name: '⏱️ Improving — Trainable in 2h',
@@ -1634,11 +1756,18 @@ function buildDemoData(key) {
   const areas = ['GOLDFISH','BEARCAT','VANGUARD N','VANGUARD C','VANGUARD S','HAWK']
     .map(name => {
       const text = perAreaMap ? (perAreaMap[name] || sharedText || '') : sharedText;
-      return { name, forecast: text, amendmentText: null, amendmentNumber: null, tsCoverage: 'NONE' };
+      // Apply per-area amendment to GOLDFISH only for the amendment demo
+      let amendmentNumber = null, amendmentTime = null, amendmentText = null;
+      if (s.areaAmendment && name === 'GOLDFISH') {
+        amendmentNumber = s.areaAmendment.number;
+        amendmentTime = s.areaAmendment.time;
+        amendmentText = text;
+      }
+      return { name, forecast: text, amendmentText, amendmentNumber, amendmentTime, tsCoverage: 'NONE' };
     });
 
   let advisories = [];
-  if (s.advisory) {
+  if (s.advisory === true) {
     const now = new Date();
     const fromHH = String(now.getUTCHours()).padStart(2,'0');
     const fromMM = String(now.getUTCMinutes()).padStart(2,'0');
@@ -1651,6 +1780,21 @@ function buildDemoData(key) {
       validFrom: `${fromHH}${fromMM}Z`,
       validTo: `${toHH}${toMM}Z`,
       criteria: 'SFC WIND GUSTS 25-35 KT'
+    }];
+  } else if (s.advisory === 'pending') {
+    // Upcoming advisory starting in ~1 hour
+    const fromDate = new Date(Date.now() + 60 * 60 * 1000);
+    const toDate = new Date(Date.now() + 5 * 60 * 60 * 1000);
+    const fromHH = String(fromDate.getUTCHours()).padStart(2,'0');
+    const fromMM = String(fromDate.getUTCMinutes()).padStart(2,'0');
+    const toHH = String(toDate.getUTCHours()).padStart(2,'0');
+    const toMM = String(toDate.getUTCMinutes()).padStart(2,'0');
+    advisories = [{
+      type: 'AWA',
+      number: '04-022',
+      validFrom: `${fromHH}${fromMM}Z`,
+      validTo: `${toHH}${toMM}Z`,
+      criteria: 'CIG/VIS BLW 1000/3 IN GOLDFISH'
     }];
   }
 
@@ -1677,8 +1821,10 @@ function buildDemoData(key) {
 
   const makeForecast = (type, validPeriod) => ({
     type, fetchedAt: new Date().toISOString(),
+    amendmentNumber: s.amendmentNumber || null,
     mef: {
       date: todayDisplay, validPeriod,
+      amendedAt: s.amendedAt || null,
       areaForecasts: areas, weatherAdvisories: advisories,
       flightLevelWinds: flw, solarLunar, flightHazards,
       forecasterInitials: 'DEMO'
@@ -2047,7 +2193,7 @@ function metarMeetsTaxi(metar) {
 
 /// Standalone IFR training card — Cairns ≥200/0.25 = GO for IFR training departure.
 /// IFR training does not require any stagefield, so this is purely a Cairns check.
-function renderIFRTraining(metar) {
+function renderIFRTraining(metar, forecast) {
   const el = document.getElementById('ifr-training');
   if (!el) return;
 
@@ -2057,7 +2203,7 @@ function renderIFRTraining(metar) {
   let taxiBadge = '';
 
   if (metar && !isMetarStale(metar)) {
-    const ifrOk = metarMeetsTaxi(metar); // 200/0.25
+    const ifrOk = metarMeetsTaxi(metar);
     status = ifrOk ? 'go' : 'nogo';
     statusLabel = ifrOk ? 'IFR GO' : 'IFR NO GO';
     const ceil = metarCeiling(metar);
@@ -2071,7 +2217,13 @@ function renderIFRTraining(metar) {
     detail = 'METAR is stale — cannot verify';
   }
 
-  el.className = `ifr-training ${status}`;
+  // If any active advisory affects IFR ops, add amber flashing border
+  const advs = (forecast && forecast.mef && forecast.mef.weatherAdvisories) || [];
+  const ifrAdvisory = activeAdvisories(advs).find(a => advisoryAffectsIFR(a));
+  const advClass = ifrAdvisory ? ' advisory-affecting' : '';
+
+  el.className = `ifr-training ${status}${advClass}`;
+  el.title = ifrAdvisory ? `Advisory affecting IFR ops: ${ifrAdvisory.type} ${ifrAdvisory.number} — ${ifrAdvisory.criteria}` : '';
   el.innerHTML = `
     <div class="ifr-training-label">🎯 IFR Training</div>
     <div class="ifr-training-station">CAIRNS · KOZR</div>
@@ -2082,8 +2234,11 @@ function renderIFRTraining(metar) {
 }
 
 function renderTraining(metar, forecast) {
-  // Render the standalone IFR Training card first
-  renderIFRTraining(metar);
+  // Render the standalone IFR Training card first (passes forecast for advisory check)
+  renderIFRTraining(metar, forecast);
+
+  // MEF amendment badge in the Training Status card subtitle
+  renderMEFAmendmentBadge(forecast);
 
   const body = document.getElementById('training-body');
   const stagefields = [
@@ -2095,6 +2250,10 @@ function renderTraining(metar, forecast) {
 
   // Solo only applies to AM and PM forecasts
   const showSolo = forecast && (forecast.type === 'AM' || forecast.type === 'PM');
+
+  // Active advisories for per-stagefield pip
+  const advs = (forecast && forecast.mef && forecast.mef.weatherAdvisories) || [];
+  const activeAdvs = activeAdvisories(advs);
 
   // Cairns VFR-only logic (1000/3) — IFR is shown separately above
   let cairnsStatus = 'unknown';
@@ -2128,21 +2287,21 @@ function renderTraining(metar, forecast) {
         if (showSolo) {
           solo = soloStatus(area.forecast, area.amendmentText);
         }
-        // Add trainability info (countdown if changing, or static label)
         const info = trainingInfo(area.forecast, area.amendmentText);
         if (info.label.includes(' in ')) {
-          // Show countdown only — area is implicit from station name
           areaSubtitle = `${sf.area} · ${info.label}`;
         }
       }
     }
-    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null);
+    // Advisory pip — true if any active advisory affects this area
+    const affectingAdv = activeAdvs.find(a => advisoryAffectsArea(a, sf.area));
+    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
 }
 
-function panelHTML(status, label, name, area, solo, taxi) {
+function panelHTML(status, label, name, area, solo, taxi, advisory) {
   let soloHTML = '';
   if (solo) {
     const soloClass = solo.go ? 'go' : 'nogo';
@@ -2168,8 +2327,15 @@ function panelHTML(status, label, name, area, solo, taxi) {
       </div>
     `;
   }
+  // Advisory pip — small ⚠️ in top-right corner with hover tooltip
+  let pipHTML = '';
+  if (advisory) {
+    const tooltip = `${advisory.type} ${advisory.number || ''}: ${advisory.criteria || ''}`;
+    pipHTML = `<div class="training-panel-advisory-pip" title="${escapeAttr(tooltip)}">⚠️</div>`;
+  }
   return `
     <div class="training-panel ${status}">
+      ${pipHTML}
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-status">${label}</div>
       <div class="training-panel-area">${area}</div>
@@ -2177,6 +2343,40 @@ function panelHTML(status, label, name, area, solo, taxi) {
       ${taxiHTML}
     </div>
   `;
+}
+
+function escapeAttr(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+/// Display the MEF amendment number/time in the Training Status card subtitle.
+function renderMEFAmendmentBadge(forecast) {
+  // Find the subtitle element in the Training Status card (the one with "🎯" icon)
+  const cardTitles = document.querySelectorAll('.card-title');
+  let targetSubtitle = null;
+  cardTitles.forEach(t => {
+    if (t.textContent.includes('Training Status')) {
+      const subtitle = t.parentElement.querySelector('.card-subtitle');
+      if (subtitle) targetSubtitle = subtitle;
+    }
+  });
+  if (!targetSubtitle) return;
+
+  // Remove any existing amendment badge
+  const existing = targetSubtitle.querySelector('.mef-amd-badge');
+  if (existing) existing.remove();
+
+  const amdNum = forecast && forecast.amendmentNumber;
+  const amdAt = forecast && forecast.mef && forecast.mef.amendedAt;
+  if (!amdNum && !amdAt) return;
+
+  const labelParts = [];
+  if (amdNum != null) labelParts.push(`AMD ${amdNum}`);
+  if (amdAt) labelParts.push(`@ ${amdAt}`);
+  const badge = document.createElement('span');
+  badge.className = 'mef-amd-badge';
+  badge.textContent = '⚠️ ' + labelParts.join(' ');
+  targetSubtitle.appendChild(badge);
 }
 
 function renderMETAR(metar) {
@@ -2235,26 +2435,97 @@ function renderMETAR(metar) {
   `;
 }
 
+/// Returns advisories currently active at the given Zulu minutes.
+function activeAdvisories(advisories, now) {
+  if (!advisories) return [];
+  if (now == null) now = zuluMinutes();
+  return advisories.filter(a => {
+    const from = parseZuluFromText(a.validFrom);
+    const to = parseZuluFromText(a.validTo);
+    if (from === null || to === null) return true;
+    if (to < from) return now >= from || now <= to;  // cross-midnight
+    return now >= from && now <= to;
+  });
+}
+
+/// Returns advisories not yet active, sorted by validFrom (soonest first).
+function upcomingAdvisories(advisories, now) {
+  if (!advisories) return [];
+  if (now == null) now = zuluMinutes();
+  return advisories
+    .filter(a => {
+      const from = parseZuluFromText(a.validFrom);
+      const to = parseZuluFromText(a.validTo);
+      if (from === null || to === null) return false;
+      // Skip advisories already active or expired
+      if (to < from) return now < from && now > to;  // cross-midnight: between to and from
+      return now < from;
+    })
+    .sort((a, b) => parseZuluFromText(a.validFrom) - parseZuluFromText(b.validFrom));
+}
+
+/// True if an advisory's criteria text suggests it impacts a given area name.
+/// Returns true if the criteria explicitly mentions the area, OR if no specific
+/// area is named (advisory considered general — affects all areas).
+function advisoryAffectsArea(advisory, areaName) {
+  if (!advisory || !advisory.criteria) return true;
+  const text = String(advisory.criteria).toUpperCase();
+  const knownAreas = ['GOLDFISH', 'BEARCAT', 'VANGUARD N', 'VANGUARD C', 'VANGUARD S', 'HAWK'];
+  const mentioned = knownAreas.filter(a => text.includes(a));
+  if (mentioned.length === 0) return true;            // no area mentioned → general
+  return mentioned.includes(areaName.toUpperCase());
+}
+
+/// True if the advisory likely impacts IFR/taxi operations (low ceiling, low vis,
+/// fog, freezing precip, severe wind/icing).
+function advisoryAffectsIFR(advisory) {
+  if (!advisory || !advisory.criteria) return false;
+  const t = String(advisory.criteria).toUpperCase();
+  return /\bWIND|GUST|CEIL|VIS|FOG|FG|BR|SHRA|TS|ICING|FRZG|WIND SHEAR|LLWS\b/.test(t);
+}
+
 function renderAdvisories(forecast) {
   const card = document.getElementById('advisories-card');
   const body = document.getElementById('advisories-body');
   const count = document.getElementById('advisories-count');
 
   const advs = (forecast && forecast.mef && forecast.mef.weatherAdvisories) || [];
-  const now = zuluMinutes();
-  const active = advs.filter(a => {
-    const from = parseZuluFromText(a.validFrom);
-    const to = parseZuluFromText(a.validTo);
-    if (from === null || to === null) return true;
-    if (to < from) return now >= from || now <= to;
-    return now >= from && now <= to;
-  });
+  const active = activeAdvisories(advs);
+  const upcoming = upcomingAdvisories(advs);
 
-  if (active.length === 0) { card.style.display = 'none'; return; }
+  // Show card if either active OR upcoming exist
+  if (active.length === 0 && upcoming.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
   card.style.display = 'block';
-  count.textContent = `${active.length} active`;
+  count.textContent = active.length > 0
+    ? `${active.length} active`
+    : `${upcoming.length} upcoming`;
 
-  body.innerHTML = active.map(a => {
+  // Pending advisory banner (shows the next upcoming one)
+  let pendingHTML = '';
+  if (upcoming.length > 0) {
+    const next = upcoming[0];
+    const now = zuluMinutes();
+    const fromMin = parseZuluFromText(next.validFrom);
+    let mins = fromMin - now;
+    if (mins < 0) mins += 1440; // cross-midnight
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+    pendingHTML = `
+      <div class="pending-advisory">
+        <span class="pending-advisory-icon">🕐</span>
+        <span class="pending-advisory-label">Upcoming</span>
+        <span class="pending-advisory-text">${next.type} ${next.number || ''} — ${next.criteria || ''}</span>
+        <span class="pending-advisory-time">in ${timeStr} · ${next.validFrom}</span>
+      </div>
+    `;
+  }
+
+  // Active advisories list
+  const activeHTML = active.map(a => {
     const red = (a.type === 'TWA' || a.type === 'WARNING');
     return `
       <div class="advisory ${red ? 'red' : ''}">
@@ -2266,6 +2537,8 @@ function renderAdvisories(forecast) {
       </div>
     `;
   }).join('');
+
+  body.innerHTML = pendingHTML + activeHTML;
 }
 
 function renderAreas(forecast) {
@@ -2286,12 +2559,15 @@ function renderAreas(forecast) {
       return `<span class="seg-${cat}">${s.text}</span>`;
     }).join('\n');
     const info = trainingInfo(a.forecast, a.amendmentText);
+    const amdHTML = a.amendmentNumber
+      ? `<span class="badge unknown" style="font-size:10px">${a.amendmentNumber}${a.amendmentTime ? `<span class="area-amd-time">@ ${a.amendmentTime}</span>` : ''}</span>`
+      : '';
     return `
       <div class="area-card">
         <div class="area-header">
           <div class="area-name">${a.name}</div>
           <div style="display:flex; gap:4px; align-items:center;">
-            ${a.amendmentNumber ? `<span class="badge unknown" style="font-size:10px">${a.amendmentNumber}</span>` : ''}
+            ${amdHTML}
             <span class="area-status ${info.status}">${info.icon} ${info.label}</span>
           </div>
         </div>
