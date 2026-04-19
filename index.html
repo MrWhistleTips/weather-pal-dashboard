@@ -2105,21 +2105,79 @@ function parseSegmentWind(text) {
   return { spd: parseInt(m[2]), gust: m[4] ? parseInt(m[4]) : 0 };
 }
 
-function soloStatus(forecast, amendment) {
+/// Solo evaluation per UH-72 Common Core FTG Weather Requirements:
+///   (1) ≥1200ft ceiling AND ≥3 SM visibility, currently AND throughout period
+///   (2) terminate immediately if forecast/observed drops below 1200/3
+///   (3) NO SOLO if surface wind exceeds 15 KT including gusts, OR
+///       gust spread > 10 KT, OR any wind advisory >15 KT in effect
+///       or upcoming during the period
+function soloStatus(forecast, amendment, advisories) {
+  // Gap 2: check wind advisories first (active OR upcoming during period)
+  const windAdv = findWindAdvisoryDuringPeriod(advisories);
+  if (windAdv) {
+    return { go: false, reason: `${windAdv.type} Wind` };
+  }
+
   const text = amendment || forecast || '';
   const segs = splitSegments(text);
   if (segs.length === 0) return { go: false, reason: 'No data' };
+
+  // Gap 1: check the CURRENT segment AND every remaining future segment.
+  // If any future segment drops below 1200/3 or has wind > 15kt, NO SOLO.
+  const main = segs.filter(s => !s.isTemporary);
   const idx = currentSegmentIndex(segs);
-  const seg = segs[idx] || segs[0];
-  const ceil = parseCeiling(seg.text);
-  const vis = parseVisibility(seg.text);
-  const wind = parseSegmentWind(seg.text);
-  if (ceil !== null && ceil < 1200) return { go: false, reason: `Ceil ${ceil}ft` };
-  if (vis !== null && vis < 3) return { go: false, reason: `Vis ${vis}SM` };
-  if (wind.spd > 15) return { go: false, reason: `Wind ${wind.spd}kt` };
-  if (wind.gust > 15) return { go: false, reason: `Gust G${wind.gust}kt` };
-  if (wind.gust > 0 && (wind.gust - wind.spd) > 10) return { go: false, reason: `Spread ${wind.gust - wind.spd}kt` };
+  // Walk current segment and every later main segment
+  for (let i = 0; i < segs.length; i++) {
+    const s = segs[i];
+    if (s.isTemporary) continue;
+    if (i < idx) continue;  // skip past segments
+    const ceil = parseCeiling(s.text);
+    const vis = parseVisibility(s.text);
+    const wind = parseSegmentWind(s.text);
+    const tag = (i === idx) ? '' : ' (later)';
+    if (ceil !== null && ceil < 1200) return { go: false, reason: `Ceil ${ceil}ft${tag}` };
+    if (vis !== null && vis < 3) return { go: false, reason: `Vis ${vis}SM${tag}` };
+    if (wind.spd > 15) return { go: false, reason: `Wind ${wind.spd}kt${tag}` };
+    if (wind.gust > 15) return { go: false, reason: `Gust G${wind.gust}kt${tag}` };
+    if (wind.gust > 0 && (wind.gust - wind.spd) > 10) {
+      return { go: false, reason: `Spread ${wind.gust - wind.spd}kt${tag}` };
+    }
+  }
   return { go: true, reason: 'OK' };
+}
+
+/// Returns the first wind-related advisory (>15kt) that is active OR upcoming.
+/// Returns null if no such advisory exists.
+function findWindAdvisoryDuringPeriod(advisories) {
+  if (!advisories) return null;
+  for (const a of advisories) {
+    if (!a || !a.criteria) continue;
+    const t = String(a.criteria).toUpperCase();
+    // Must mention wind/gust to qualify
+    if (!/WIND|GUST/.test(t)) continue;
+    // Find any number followed by KT/KNOTS in the criteria
+    const numMatches = [...t.matchAll(/(\d+)\s*(?:KT|KNOTS?)/g)].map(m => parseInt(m[1]));
+    // If it explicitly cites wind speed > 15, ground solos
+    const exceeds15 = numMatches.length > 0
+      ? numMatches.some(n => n > 15)
+      : true;  // no specific number = generic wind advisory, treat as grounding
+    if (!exceeds15) continue;
+    // Check this advisory is active OR scheduled within the next 6 hours
+    const now = zuluMinutes();
+    const from = parseZuluFromText(a.validFrom);
+    const to = parseZuluFromText(a.validTo);
+    if (from === null || to === null) return a;  // ambiguous timing, treat as in-effect
+    // Active right now?
+    const active = (to < from)
+      ? (now >= from || now <= to)         // cross-midnight
+      : (now >= from && now <= to);
+    if (active) return a;
+    // Upcoming within 6 hours?
+    let minsUntil = from - now;
+    if (minsUntil < 0) minsUntil += 1440;  // wrap past midnight
+    if (minsUntil <= 360) return a;        // 6 hours
+  }
+  return null;
 }
 
 async function fetchMETAR() {
@@ -2296,7 +2354,7 @@ function renderTraining(metar, forecast) {
         status = isGo ? 'go' : 'nogo';
         label = isGo ? 'GO' : 'NO GO';
         if (showSolo) {
-          solo = soloStatus(area.forecast, area.amendmentText);
+          solo = soloStatus(area.forecast, area.amendmentText, advs);
         }
         const info = trainingInfo(area.forecast, area.amendmentText);
         if (info.label.includes(' in ')) {
