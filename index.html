@@ -164,6 +164,27 @@ body::before {
 }
 
 .nav-actions { display: flex; gap: 8px; align-items: center; }
+
+/* Amendment indicator: light gold tint on the navbar + flanking badges */
+body.has-amendment .navbar {
+  background: linear-gradient(180deg, rgba(230,190,80,0.20), rgba(180,150,60,0.20));
+  border-bottom-color: rgba(230,190,80,0.5);
+}
+.nav-amd-badge {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #000;
+  background: var(--warning);
+  padding: 4px 10px;
+  border-radius: 3px;
+  white-space: nowrap;
+  animation: pipPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(230,165,58,0.5);
+}
+body.tv .nav-amd-badge { font-size: 14px; padding: 6px 12px; letter-spacing: 2.2px; }
 .nav-btn {
   background: var(--bg-2);
   border: 1px solid var(--od-border);
@@ -1735,6 +1756,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   </div>
 
   <div class="nav-center">
+    <div id="nav-amd-left" class="nav-amd-badge" style="display:none;">⚠️ AMENDMENT</div>
     <div class="nav-datum">
       <div class="nav-datum-label">Zulu Time</div>
       <div class="nav-datum-value" id="zulu-time">—</div>
@@ -1747,6 +1769,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <div class="nav-datum-label">Fetched</div>
       <div class="nav-datum-value" id="fetched-ago">—</div>
     </div>
+    <div id="nav-amd-right" class="nav-amd-badge" style="display:none;">⚠️ <span id="nav-amd-right-text">AMD</span></div>
   </div>
 
   <div class="nav-actions">
@@ -2869,27 +2892,46 @@ function escapeAttr(s) {
   return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
 
-/// Display the MEF amendment number/time on the VFR section header.
+/// Display the MEF amendment indicators. Two locations:
+///   1. Navbar — body gets `has-amendment` class which tints the navbar gold,
+///      and two flanking badges become visible left/right of the time chips.
+///   2. VFR section header — small AMD pill in the section detail line.
 function renderMEFAmendmentBadge(forecast) {
-  // Find the VFR section header — that's the most prominent place for it
-  const header = document.querySelector('.vfr-section-header .section-header-detail');
-  if (!header) return;
-
-  // Remove any existing amendment badge
-  const existing = header.parentElement.querySelector('.mef-amd-badge');
-  if (existing) existing.remove();
-
   const amdNum = forecast && forecast.amendmentNumber;
   const amdAt = forecast && forecast.mef && forecast.mef.amendedAt;
-  if (!amdNum && !amdAt) return;
+  const hasAmd = !!(amdNum || amdAt);
 
-  const labelParts = [];
-  if (amdNum != null) labelParts.push(`AMD ${amdNum}`);
-  if (amdAt) labelParts.push(`@ ${amdAt}`);
-  const badge = document.createElement('span');
-  badge.className = 'mef-amd-badge';
-  badge.textContent = '⚠️ ' + labelParts.join(' ');
-  header.parentElement.appendChild(badge);
+  // Toggle navbar gold tint
+  document.body.classList.toggle('has-amendment', hasAmd);
+
+  // Toggle flanking navbar badges
+  const left = document.getElementById('nav-amd-left');
+  const right = document.getElementById('nav-amd-right');
+  const rightText = document.getElementById('nav-amd-right-text');
+  if (left) left.style.display = hasAmd ? 'inline-block' : 'none';
+  if (right) right.style.display = hasAmd ? 'inline-block' : 'none';
+  if (rightText) {
+    const parts = [];
+    if (amdNum != null) parts.push(`AMD ${amdNum}`);
+    if (amdAt) parts.push(`@ ${amdAt}`);
+    rightText.textContent = parts.join(' ') || 'AMENDMENT';
+  }
+
+  // VFR section header AMD pill
+  const header = document.querySelector('.vfr-section-header .section-header-detail');
+  if (header) {
+    const existing = header.parentElement.querySelector('.mef-amd-badge');
+    if (existing) existing.remove();
+    if (hasAmd) {
+      const labelParts = [];
+      if (amdNum != null) labelParts.push(`AMD ${amdNum}`);
+      if (amdAt) labelParts.push(`@ ${amdAt}`);
+      const badge = document.createElement('span');
+      badge.className = 'mef-amd-badge';
+      badge.textContent = '⚠️ ' + labelParts.join(' ');
+      header.parentElement.appendChild(badge);
+    }
+  }
 }
 
 function renderMETAR(metar) {
