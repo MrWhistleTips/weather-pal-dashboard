@@ -1449,6 +1449,13 @@ const DEMO_SCENARIOS = {
     },
     advisory: false,
   },
+  'minimums': {
+    name: '700/1 — Right at Stagefield Mins',
+    desc: 'Ceiling 700ft, vis 1SM — stagefields exactly meet minimums, Cairns IFR-only',
+    metar: makeDemoMetar({ flt: 'IFR', wdir: 200, wspd: 8, visib: '1', clouds: [{cover:'BKN',base:700}], wxString: 'BR' }),
+    areaText: '20008KT 1SM BR BKN007\nAFT 1500Z: 22010KT 2SM BKN012',
+    advisory: false,
+  },
   'mixed-timers': {
     name: '⏱️ Mixed — Multiple Timers',
     desc: 'Some areas improving, others degrading (per-area timer demo)',
