@@ -182,7 +182,8 @@ body.has-amendment .navbar {
   border-radius: 3px;
   white-space: nowrap;
   animation: pipPulse 2s ease-in-out infinite;
-  box-shadow: 0 0 10px rgba(230,165,58,0.5);
+  box-shadow: 0 0 10px rgba(230,165,58,0.25);
+  opacity: 0.5;
 }
 body.tv .nav-amd-badge { font-size: 14px; padding: 6px 12px; letter-spacing: 2.2px; }
 .nav-btn {
@@ -2917,21 +2918,9 @@ function renderMEFAmendmentBadge(forecast) {
     rightText.textContent = parts.join(' ') || 'AMENDMENT';
   }
 
-  // VFR section header AMD pill
-  const header = document.querySelector('.vfr-section-header .section-header-detail');
-  if (header) {
-    const existing = header.parentElement.querySelector('.mef-amd-badge');
-    if (existing) existing.remove();
-    if (hasAmd) {
-      const labelParts = [];
-      if (amdNum != null) labelParts.push(`AMD ${amdNum}`);
-      if (amdAt) labelParts.push(`@ ${amdAt}`);
-      const badge = document.createElement('span');
-      badge.className = 'mef-amd-badge';
-      badge.textContent = '⚠️ ' + labelParts.join(' ');
-      header.parentElement.appendChild(badge);
-    }
-  }
+  // (The VFR section header AMD pill was removed — navbar indicators are
+  //  enough; remove any leftover badge in case it was added previously.)
+  document.querySelectorAll('.section-header .mef-amd-badge').forEach(el => el.remove());
 }
 
 function renderMETAR(metar) {
