@@ -2377,6 +2377,34 @@ function localTimeHHMM() {
 }
 function fmtTime(el, v) { if (el) el.textContent = v; }
 
+/// Convert "1830" or "1830Z" (UTC HHMM today) to local "HH:MM".
+/// Returns empty string if invalid.
+function zuluHHMMToLocalString(zStr) {
+  const digits = String(zStr || '').replace(/[^0-9]/g, '');
+  if (digits.length < 4) return '';
+  const hh = parseInt(digits.substring(0, 2));
+  const mm = parseInt(digits.substring(2, 4));
+  if (isNaN(hh) || isNaN(mm)) return '';
+  // Build a Date for today at the given UTC time, then read local hours/minutes
+  const now = new Date();
+  const utcDate = new Date(Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hh, mm, 0
+  ));
+  const lh = String(utcDate.getHours()).padStart(2, '0');
+  const lm = String(utcDate.getMinutes()).padStart(2, '0');
+  return `${lh}:${lm}L`;
+}
+
+/// Add local-time suffix in parens next to every NNNN(Z) pattern in text.
+/// Used for area forecast text where times are inline.
+function annotateZuluWithLocal(text) {
+  if (!text) return text;
+  return text.replace(/\b(\d{4})Z\b/g, (m, hhmm) => {
+    const local = zuluHHMMToLocalString(hhmm);
+    return local ? `${hhmm}Z (${local})` : m;
+  });
+}
+
 function parseZuluFromText(s) {
   if (!s) return null;
   const digits = String(s).replace(/[^0-9]/g,'');
@@ -3076,12 +3104,13 @@ function renderAdvisories(forecast) {
     const h = Math.floor(mins / 60);
     const m = mins % 60;
     const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+    const fromLocal = zuluHHMMToLocalString(next.validFrom);
     pendingHTML = `
       <div class="pending-advisory">
         <span class="pending-advisory-icon">🕐</span>
         <span class="pending-advisory-label">Upcoming</span>
         <span class="pending-advisory-text">${next.type} ${next.number || ''} — ${next.criteria || ''}</span>
-        <span class="pending-advisory-time">in ${timeStr} · ${next.validFrom}</span>
+        <span class="pending-advisory-time">in ${timeStr} · ${next.validFrom}${fromLocal ? ` (${fromLocal})` : ''}</span>
       </div>
     `;
   }
@@ -3090,12 +3119,16 @@ function renderAdvisories(forecast) {
   const activeHTML = active.map(a => {
     const red = (a.type === 'TWA' || a.type === 'WARNING');
     const expiresStr = expiryCountdown(a);
+    const fromLocal = zuluHHMMToLocalString(a.validFrom);
+    const toLocal = zuluHHMMToLocalString(a.validTo);
+    const fromStr = `${a.validFrom || ''}${fromLocal ? ` (${fromLocal})` : ''}`;
+    const toStr = `${a.validTo || ''}${toLocal ? ` (${toLocal})` : ''}`;
     return `
       <div class="advisory ${red ? 'red' : ''}">
         <div class="advisory-type">${a.type} ${a.number || ''}</div>
         <div class="advisory-content">
           <div class="advisory-title">${a.criteria || ''}</div>
-          <div class="advisory-time">${a.validFrom || ''} — ${a.validTo || ''}${expiresStr ? `<span class="advisory-expires">· Expires ${expiresStr}</span>` : ''}</div>
+          <div class="advisory-time">${fromStr} — ${toStr}${expiresStr ? `<span class="advisory-expires">· Expires ${expiresStr}</span>` : ''}</div>
         </div>
       </div>
     `;
@@ -3120,11 +3153,12 @@ function renderAreas(forecast) {
     const text = a.amendmentText || a.forecast || '';
     const segs = splitSegments(text);
     const colored = segs.map(s => {
-      if (s.isTemporary) return `<span class="seg-tmp">${s.text}</span>`;
+      const annotated = annotateZuluWithLocal(s.text);
+      if (s.isTemporary) return `<span class="seg-tmp">${annotated}</span>`;
       const ceil = parseCeiling(s.text);
       const vis = parseVisibility(s.text);
       const cat = flightCategory(ceil, vis);
-      return `<span class="seg-${cat}">${s.text}</span>`;
+      return `<span class="seg-${cat}">${annotated}</span>`;
     }).join('\n');
     const info = trainingInfo(a.forecast, a.amendmentText);
     const amdHTML = a.amendmentNumber
@@ -3205,9 +3239,11 @@ function aerodromeCardHTML(aero) {
   const periodHTML = periods.map(p => {
     const isTempo = /TEMPO/i.test(p.periodType || '');
     const cat = periodFlightCategory(p);
+    const fromLocal = zuluHHMMToLocalString(p.validFrom);
+    const toLocal = zuluHHMMToLocalString(p.validTo);
     const time = p.validFrom && p.validTo
-      ? `${p.validFrom}-${p.validTo}Z`
-      : (p.validFrom || '');
+      ? `${p.validFrom}Z${fromLocal ? ` (${fromLocal})` : ''} - ${p.validTo}Z${toLocal ? ` (${toLocal})` : ''}`
+      : (p.validFrom ? `${p.validFrom}Z${fromLocal ? ` (${fromLocal})` : ''}` : '');
     const parts = [
       p.surfaceWind, p.visibility, p.weather, p.skyCondition, p.altimeter
     ].filter(x => x && x.trim()).join(' ');
