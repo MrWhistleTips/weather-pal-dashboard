@@ -2268,12 +2268,19 @@ async function fetchMETAR() {
       console.warn('[METAR] API returned empty array');
       return null;
     }
-    // The API returns observations newest-first when hours param is used.
-    // Take the first (most recent) one.
-    const latest = arr[0];
+    // Explicitly sort observations by reportTime DESC and pick the newest.
+    // Defends against any API ordering changes and ensures SPECI obs win
+    // over older regular METAR obs.
+    const sorted = [...arr].sort((a, b) => {
+      const ta = new Date(a.reportTime).getTime() || 0;
+      const tb = new Date(b.reportTime).getTime() || 0;
+      return tb - ta;  // newest first
+    });
+    const latest = sorted[0];
     lastMetarReportTime = latest.reportTime;
     lastMetarFetchError = null;
-    console.log(`[METAR] ${new Date().toISOString()} → ${latest.icaoId} reportTime=${latest.reportTime} (${arr.length} obs available)`);
+    console.log(`[METAR] ${new Date().toISOString()} → picked ${latest.icaoId} ${latest.reportTime} from ${arr.length} obs:`);
+    sorted.slice(0, 5).forEach(o => console.log(`         ${o.reportTime}  ${(o.rawOb || '').substring(0, 60)}`));
     return latest;
   } catch (e) {
     lastMetarFetchError = e.message || String(e);
@@ -2989,7 +2996,18 @@ async function loadData() {
   const liveMetar = await fetchMETAR();
   if (liveMetar) {
     if (!DATA) DATA = { forecasts: [], metar: null };
-    DATA.metar = liveMetar;
+    // Compare timestamps: only keep the newer observation between the
+    // currently-displayed METAR and the live one. Live should normally win
+    // but this guards against transient API issues returning older obs.
+    const currentT = DATA.metar && DATA.metar.reportTime
+      ? (new Date(DATA.metar.reportTime).getTime() || 0) : 0;
+    const liveT = new Date(liveMetar.reportTime).getTime() || 0;
+    if (liveT >= currentT) {
+      DATA.metar = liveMetar;
+      console.log(`[METAR] Updated DATA.metar to ${liveMetar.reportTime}`);
+    } else {
+      console.log(`[METAR] Live METAR (${liveMetar.reportTime}) is older than current (${DATA.metar.reportTime}) — keeping current`);
+    }
   }
   lastFetchedAt = new Date();
   renderAll();
