@@ -394,6 +394,20 @@ body.tv .hazards-present-badge { font-size: 13px; padding: 4px 11px; }
 .card.collapsed .collapsible-body { display: none; }
 body.tv .collapse-chevron { font-size: 18px; }
 
+/* Radar + Windy map cards: equal-height fixed-aspect bodies side by side */
+.radar-map-body {
+  height: 380px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-0);
+}
+body.tv .radar-map-body { height: 480px; }
+@media (max-width: 1100px) {
+  .radar-map-body { height: 320px; }
+}
+
 /* SOLAR / LUNAR STRIP — top of page next to clock */
 .solar-strip {
   display: flex;
@@ -1867,17 +1881,38 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div id="aerodromes-body">—</div>
   </div>
 
-  <!-- Local NWS Radar (KMXX — Maxwell AFB, closest broad coverage) -->
-  <div class="card collapsible" data-collapse-key="radar" data-default-open="1" style="margin-bottom: 4px;">
-    <div class="card-header" onclick="toggleCollapse(this)">
-      <div class="card-title"><span class="card-title-icon">📡</span>Local Radar — KMXX</div>
-      <span class="card-subtitle" id="radar-updated">Live NWS NEXRAD loop</span>
-      <span class="collapse-chevron">▾</span>
+  <!-- Bottom row: NWS Radar + Windy.com map, side-by-side, equal size -->
+  <div class="grid grid-2" style="margin-bottom: 4px;">
+
+    <!-- Local NWS Radar (KMXX — Maxwell AFB, closest broad coverage) -->
+    <div class="card collapsible" data-collapse-key="radar" data-default-open="1">
+      <div class="card-header" onclick="toggleCollapse(this)">
+        <div class="card-title"><span class="card-title-icon">📡</span>Local Radar — KMXX</div>
+        <span class="card-subtitle" id="radar-updated">Live NWS NEXRAD loop</span>
+        <span class="collapse-chevron">▾</span>
+      </div>
+      <div class="card-body collapsible-body radar-map-body">
+        <img id="radar-img" src="" alt="KMXX NEXRAD radar"
+             style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; image-rendering: -webkit-optimize-contrast;">
+      </div>
     </div>
-    <div class="card-body collapsible-body" id="radar-body" style="text-align:center; padding: 8px;">
-      <img id="radar-img" src="" alt="KMXX NEXRAD radar"
-           style="max-width: 700px; width: 100%; border-radius: 4px; border: 1px solid var(--border); image-rendering: -webkit-optimize-contrast;">
+
+    <!-- Windy.com map (Fort Rucker area) -->
+    <div class="card collapsible" data-collapse-key="windy" data-default-open="1">
+      <div class="card-header" onclick="toggleCollapse(this)">
+        <div class="card-title"><span class="card-title-icon">🗺️</span>Windy.com Map — Fort Rucker</div>
+        <span class="card-subtitle">Live wind/clouds/precip overlays</span>
+        <span class="collapse-chevron">▾</span>
+      </div>
+      <div class="card-body collapsible-body radar-map-body">
+        <iframe id="windy-iframe"
+                src="https://embed.windy.com/embed2.html?lat=31.212&lon=-85.387&detailLat=31.212&detailLon=-85.387&width=650&height=450&zoom=11&level=surface&overlay=radar&product=ecmwf&menu=&message=&marker=true&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1"
+                frameborder="0"
+                style="width: 100%; height: 100%; border: 0; border-radius: 4px;">
+        </iframe>
+      </div>
     </div>
+
   </div>
 
 </div>
