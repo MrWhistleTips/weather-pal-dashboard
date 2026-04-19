@@ -1027,6 +1027,17 @@ body.tv .training-panel-solo-reason { font-size: 11px; }
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px; color: var(--text-dim);
 }
+.advisory-expires {
+  margin-left: 8px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--warning);
+  text-transform: uppercase;
+}
+.advisory.red .advisory-expires { color: var(--nogo); }
+body.tv .advisory-expires { font-size: 12px; }
 
 /* SOLO */
 .solo-row {
@@ -2464,6 +2475,27 @@ function upcomingAdvisories(advisories, now) {
     .sort((a, b) => parseZuluFromText(a.validFrom) - parseZuluFromText(b.validFrom));
 }
 
+/// Returns a short countdown string like "in 1h 15m" until the advisory's
+/// validTo. Returns "now" if expiring this minute, or empty if validTo can't
+/// be parsed.
+function expiryCountdown(advisory, now) {
+  if (!advisory) return '';
+  if (now == null) now = zuluMinutes();
+  const from = parseZuluFromText(advisory.validFrom);
+  const to = parseZuluFromText(advisory.validTo);
+  if (to === null) return '';
+  // Handle cross-midnight: if validTo is earlier in the clock than validFrom,
+  // and we're past validFrom (active), then to is "tomorrow" - add 1440.
+  let effTo = to;
+  if (from !== null && to < from && now >= from) effTo = to + 1440;
+  let mins = effTo - now;
+  if (mins < 0) return '';
+  if (mins < 1) return 'now';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `in ${h}h ${m}m` : `in ${m}m`;
+}
+
 /// True if an advisory's criteria text suggests it impacts a given area name.
 /// Returns true if the criteria explicitly mentions the area, OR if no specific
 /// area is named (advisory considered general — affects all areas).
@@ -2527,12 +2559,13 @@ function renderAdvisories(forecast) {
   // Active advisories list
   const activeHTML = active.map(a => {
     const red = (a.type === 'TWA' || a.type === 'WARNING');
+    const expiresStr = expiryCountdown(a);
     return `
       <div class="advisory ${red ? 'red' : ''}">
         <div class="advisory-type">${a.type} ${a.number || ''}</div>
         <div class="advisory-content">
           <div class="advisory-title">${a.criteria || ''}</div>
-          <div class="advisory-time">${a.validFrom || ''} — ${a.validTo || ''}</div>
+          <div class="advisory-time">${a.validFrom || ''} — ${a.validTo || ''}${expiresStr ? `<span class="advisory-expires">· Expires ${expiresStr}</span>` : ''}</div>
         </div>
       </div>
     `;
