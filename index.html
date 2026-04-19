@@ -197,10 +197,30 @@ body::before {
   border: 1px solid var(--od-border);
   border-radius: 4px;
   padding: 2px;
-  margin-bottom: 4px;
   width: fit-content;
-  margin-inline: auto;
 }
+
+/* Top row: period selector on the left, solar/lunar centered */
+.top-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.top-row .solar-strip {
+  margin-bottom: 0;
+}
+/* invisible spacer on the right matching the period bar width
+   so the solar strip stays truly centered on the page */
+.top-row-spacer {
+  visibility: hidden;
+  display: flex;
+  padding: 2px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+.top-row-spacer .period-btn { padding: 3px 22px; }
 .period-btn {
   background: transparent; border: none;
   color: var(--text-dim);
@@ -1617,16 +1637,23 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
 <div class="container">
 
-  <div class="period-bar">
-    <button class="period-btn" data-period="AM">AM</button>
-    <button class="period-btn" data-period="PM">PM</button>
-    <button class="period-btn" data-period="N1">N1</button>
+  <div class="top-row">
+    <div class="period-bar">
+      <button class="period-btn" data-period="AM">AM</button>
+      <button class="period-btn" data-period="PM">PM</button>
+      <button class="period-btn" data-period="N1">N1</button>
+    </div>
+    <!-- Thin solar/lunar strip centered on the same row -->
+    <div id="solar-strip" class="solar-strip" style="display:none;"></div>
+    <!-- Right-side spacer to keep the solar strip page-centered -->
+    <div class="top-row-spacer">
+      <button class="period-btn">AM</button>
+      <button class="period-btn">PM</button>
+      <button class="period-btn">N1</button>
+    </div>
   </div>
 
   <div id="data-alert" class="alert" style="display:none;"></div>
-
-  <!-- Thin solar/lunar strip across the page -->
-  <div id="solar-strip" class="solar-strip" style="display:none;"></div>
 
   <!-- Thin METAR strip across the page -->
   <div id="metar-strip" class="metar-strip"></div>
