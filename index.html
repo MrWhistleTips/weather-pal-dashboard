@@ -653,11 +653,25 @@ body.tv .metar-strip-raw { font-size: 12px; }
   color: var(--text-dim);
   letter-spacing: 0.8px;
 }
+.ifr-training-taxi {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--go);
+  background: var(--go-bg);
+  border: 1px solid var(--go-border);
+  padding: 3px 9px;
+  border-radius: 3px;
+  white-space: nowrap;
+  text-shadow: 0 0 6px rgba(95,186,79,0.5);
+}
 body.tv .ifr-training { padding: 14px 18px; gap: 18px; }
 body.tv .ifr-training-label { font-size: 13px; }
 body.tv .ifr-training-station { font-size: 17px; }
 body.tv .ifr-training-status { font-size: 30px; }
 body.tv .ifr-training-detail { font-size: 13px; }
+body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
 
 /* Solo / Taxi status row at bottom of training panel */
 .training-panel-solo,
@@ -2031,6 +2045,7 @@ function renderIFRTraining(metar) {
   let status = 'unknown';
   let statusLabel = 'UNKNOWN';
   let detail = 'No METAR available';
+  let taxiBadge = '';
 
   if (metar && !isMetarStale(metar)) {
     const ifrOk = metarMeetsTaxi(metar); // 200/0.25
@@ -2040,6 +2055,9 @@ function renderIFRTraining(metar) {
     const ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
     const visStr = (metar.visib != null) ? `${metar.visib} SM` : '—';
     detail = `${ceilStr} · ${visStr}  ·  Mins ≥200ft / ¼ SM`;
+    if (ifrOk) {
+      taxiBadge = `<div class="ifr-training-taxi">✓ TAXI AUTHORIZED</div>`;
+    }
   } else if (metar && isMetarStale(metar)) {
     detail = 'METAR is stale — cannot verify';
   }
@@ -2049,6 +2067,7 @@ function renderIFRTraining(metar) {
     <div class="ifr-training-label">🎯 IFR Training</div>
     <div class="ifr-training-station">CAIRNS · KOZR</div>
     <div class="ifr-training-detail">${detail}</div>
+    ${taxiBadge}
     <div class="ifr-training-status">${statusLabel}</div>
   `;
 }
