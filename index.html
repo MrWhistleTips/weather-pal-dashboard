@@ -1892,10 +1892,11 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <span class="collapse-chevron">▾</span>
       </div>
       <div class="card-body collapsible-body radar-map-body">
-        <div id="sv_3610" style="width: 100%; height: 100%; border-radius: 4px; overflow: hidden;">
-          Loading <a href="https://skyvector.com/" target="_blank">SkyVector</a> chart…
-        </div>
-        <script src="//skyvector.com/api/lchart?ll=31.321849978640195,-85.7565307558679&s=1&c=sv_3610&i=301" type="text/javascript"></script>
+        <iframe id="skyvector-iframe"
+                src="https://skyvector.com/?ll=31.321849978640195,-85.7565307558679&chart=301&zoom=1"
+                frameborder="0"
+                style="width: 100%; height: 100%; border: 0; border-radius: 4px;">
+        </iframe>
       </div>
     </div>
 
