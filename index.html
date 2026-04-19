@@ -1394,6 +1394,13 @@ const DEMO_SCENARIOS = {
     areaText: '16012KT 2SM -RA OVC008\nAFT 1600Z: 17015KT 2SM -RA OVC006',
     advisory: false,
   },
+  'ifr-all-go': {
+    name: 'IFR — ALL GO',
+    desc: '700ft / 1SM — stagefields exactly meet minimums, Cairns IFR-only',
+    metar: makeDemoMetar({ flt: 'IFR', wdir: 200, wspd: 8, visib: '1', clouds: [{cover:'BKN',base:700}], wxString: 'BR' }),
+    areaText: '20008KT 1SM BR BKN007\nAFT 1500Z: 22010KT 2SM BKN012',
+    advisory: false,
+  },
   'lifr': {
     name: 'LIFR — Cannot Taxi',
     desc: 'Low IFR fog scenario — below taxi minimums',
@@ -1447,13 +1454,6 @@ const DEMO_SCENARIOS = {
       const futureZ = addHoursToZuluString(2);
       return `18006KT 7SM SCT050 BKN120\nAFT ${futureZ}: 20015KT 1SM -RA OVC005`;
     },
-    advisory: false,
-  },
-  'minimums': {
-    name: '700/1 — Right at Stagefield Mins',
-    desc: 'Ceiling 700ft, vis 1SM — stagefields exactly meet minimums, Cairns IFR-only',
-    metar: makeDemoMetar({ flt: 'IFR', wdir: 200, wspd: 8, visib: '1', clouds: [{cover:'BKN',base:700}], wxString: 'BR' }),
-    areaText: '20008KT 1SM BR BKN007\nAFT 1500Z: 22010KT 2SM BKN012',
     advisory: false,
   },
   'mixed-timers': {
