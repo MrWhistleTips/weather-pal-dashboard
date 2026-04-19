@@ -1884,16 +1884,18 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- Bottom row: NWS Radar + Windy.com map, side-by-side, equal size -->
   <div class="grid grid-2" style="margin-bottom: 4px;">
 
-    <!-- Local NWS Radar (KMXX — Maxwell AFB, closest broad coverage) -->
+    <!-- SkyVector Sectional Chart — Fort Rucker area -->
     <div class="card collapsible" data-collapse-key="radar" data-default-open="1">
       <div class="card-header" onclick="toggleCollapse(this)">
-        <div class="card-title"><span class="card-title-icon">📡</span>Local Radar — KMXX</div>
-        <span class="card-subtitle" id="radar-updated">Live NWS NEXRAD loop</span>
+        <div class="card-title"><span class="card-title-icon">🗺️</span>SkyVector Chart — Fort Rucker</div>
+        <span class="card-subtitle">Sectional VFR chart</span>
         <span class="collapse-chevron">▾</span>
       </div>
       <div class="card-body collapsible-body radar-map-body">
-        <img id="radar-img" src="" alt="KMXX NEXRAD radar"
-             style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; image-rendering: -webkit-optimize-contrast;">
+        <div id="sv_3610" style="width: 100%; height: 100%; border-radius: 4px; overflow: hidden;">
+          Loading <a href="https://skyvector.com/" target="_blank">SkyVector</a> chart…
+        </div>
+        <script src="//skyvector.com/api/lchart?ll=31.321849978640195,-85.7565307558679&s=1&c=sv_3610&i=301" type="text/javascript"></script>
       </div>
     </div>
 
@@ -3570,19 +3572,6 @@ function initCollapsibles() {
   });
 }
 
-/// Refresh the radar image with cache-busted URL.
-const RADAR_STATION = 'KMXX';
-function refreshRadar() {
-  const img = document.getElementById('radar-img');
-  const updated = document.getElementById('radar-updated');
-  if (!img) return;
-  const cb = Date.now();
-  img.src = `https://radar.weather.gov/ridge/standard/${RADAR_STATION}_loop.gif?_=${cb}`;
-  if (updated) {
-    const f = new Date();
-    updated.textContent = `Live NWS NEXRAD · refreshed ${String(f.getHours()).padStart(2,'0')}:${String(f.getMinutes()).padStart(2,'0')}L`;
-  }
-}
 
 // TV mode — add ?tv=1 to the URL to enable large-font kiosk display.
 if (TV_MODE) document.body.classList.add('tv');
@@ -3620,8 +3609,6 @@ scheduleDailyReload();
 
 setupPeriodButtons();
 initCollapsibles();
-refreshRadar();
-setInterval(refreshRadar, 5 * 60 * 1000); // refresh radar every 5 min
 updateClock();
 setInterval(updateClock, 30 * 1000);
 // Re-check auto period every minute so the page snaps to the
