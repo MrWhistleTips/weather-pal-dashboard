@@ -2047,7 +2047,10 @@ function renderMETAR(metar) {
     (String(reportDate.getUTCDate()).padStart(2,'0') + ' ' +
      ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][reportDate.getUTCMonth()] + ' ' +
      String(reportDate.getUTCHours()).padStart(2,'0') +
-     String(reportDate.getUTCMinutes()).padStart(2,'0') + 'Z');
+     String(reportDate.getUTCMinutes()).padStart(2,'0') + 'Z' +
+     ' (' +
+     String(reportDate.getHours()).padStart(2,'0') + ':' +
+     String(reportDate.getMinutes()).padStart(2,'0') + 'L)');
 
   let windStr = 'CALM';
   if (metar.wspd) {
