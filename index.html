@@ -2243,20 +2243,13 @@ let lastMetarReportTime = null;
 let lastMetarFetchError = null;
 
 async function fetchMETAR() {
-  // Multiple cache-busting techniques: query param, timestamp, hours param
-  // (hours=2 forces the API to compute fresh rather than serve cached "latest")
+  // Cache-bust via query string only. We deliberately do NOT add Cache-Control
+  // or Pragma request headers — they would trigger a CORS preflight that
+  // aviationweather.gov does not support, blocking all requests.
   const cb = Date.now();
-  const url = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json&hours=2&_=${cb}&t=${cb}`;
+  const url = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json&hours=2&_=${cb}`;
   try {
-    const res = await fetch(url, {
-      cache: 'no-store',
-      mode: 'cors',
-      credentials: 'omit',
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-        'Pragma': 'no-cache'
-      }
-    });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
       lastMetarFetchError = `HTTP ${res.status}`;
       console.warn(`[METAR] HTTP ${res.status} ${res.statusText}`);
