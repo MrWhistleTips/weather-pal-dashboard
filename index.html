@@ -373,11 +373,12 @@ body.tv .solar-strip-icon { font-size: 16px; }
 body.tv .solar-strip-label { font-size: 11px; }
 body.tv .solar-strip-value { font-size: 14px; }
 
-/* METAR STRIP — thin horizontal bar across the page */
+/* METAR STRIP — vertical stack: raw (top) + decoded cells (bottom), both centered */
 .metar-strip {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 2px;
   background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -385,7 +386,6 @@ body.tv .solar-strip-value { font-size: 14px; }
   margin-bottom: 4px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
-  flex-wrap: wrap;
   position: relative;
   overflow: hidden;
 }
@@ -421,11 +421,10 @@ body.tv .solar-strip-value { font-size: 14px; }
 .metar-strip-time { color: var(--text-dim); font-size: 11px; }
 .metar-strip-data {
   display: flex;
-  gap: 14px;
+  gap: 22px;
   align-items: center;
   flex-wrap: wrap;
-  flex: 1;
-  justify-content: space-around;
+  justify-content: center;
 }
 .metar-strip-cell { display: flex; gap: 5px; align-items: baseline; }
 .metar-strip-label {
@@ -447,27 +446,34 @@ body.tv .solar-strip-value { font-size: 14px; }
   font-family: 'Rajdhani', sans-serif;
 }
 .metar-strip-raw {
-  font-size: 10px;
-  color: var(--text-dim);
+  font-size: 11px;
+  color: var(--text);
   font-family: 'JetBrains Mono', monospace;
   letter-spacing: 0;
-  padding-left: 10px;
-  border-left: 1px solid var(--border);
-  margin-left: 4px;
-  flex: 1 1 100%;
-  text-align: left;
-  word-break: break-all;
-  margin-top: 2px;
-  padding-top: 2px;
-  border-top: 1px dashed var(--border);
-  border-left: none;
+  text-align: center;
+  word-break: break-word;
+  width: 100%;
+}
+.metar-strip-old-inline {
+  display: inline-block;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: #000;
+  background: var(--warning);
+  padding: 1px 7px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+  margin-left: 6px;
+  vertical-align: middle;
 }
 body.tv .metar-strip { font-size: 14px; padding: 10px 14px; }
 body.tv .metar-strip-cat { font-size: 20px; padding: 6px 16px; }
 body.tv .metar-strip-station { font-size: 17px; }
 body.tv .metar-strip-time { font-size: 13px; }
 body.tv .metar-strip-label { font-size: 11px; }
-body.tv .metar-strip-raw { font-size: 12px; }
+body.tv .metar-strip-raw { font-size: 13px; }
+body.tv .metar-strip-old-inline { font-size: 11px; padding: 2px 8px; }
 
 /* TRAINING STATUS — console panel lights */
 .training-grid {
@@ -2848,10 +2854,7 @@ function renderMETAR(metar) {
   if (metar.altim) altimStr = (metar.altim / 33.8639).toFixed(2) + '"';
 
   strip.innerHTML = `
-    <div class="metar-strip-cat ${cat || 'unknown'}">${metar.fltCat || '—'}</div>
-    <div class="metar-strip-station">${metar.icaoId || METAR_STATION}</div>
-    <div class="metar-strip-time">${timeStr}</div>
-    ${stale ? '<div class="metar-strip-old">OLD DATA</div>' : ''}
+    ${metar.rawOb ? `<div class="metar-strip-raw">${metar.rawOb}${stale ? ' <span class="metar-strip-old-inline">OLD DATA</span>' : ''}</div>` : ''}
     <div class="metar-strip-data">
       <div class="metar-strip-cell"><span class="metar-strip-label">Wind</span><span class="metar-strip-value">${windStr}</span></div>
       <div class="metar-strip-cell"><span class="metar-strip-label">Vis</span><span class="metar-strip-value">${metar.visib || '—'} SM</span></div>
@@ -2859,7 +2862,6 @@ function renderMETAR(metar) {
       <div class="metar-strip-cell"><span class="metar-strip-label">Temp</span><span class="metar-strip-value">${metar.temp != null ? metar.temp + '°C' : '—'}</span></div>
       <div class="metar-strip-cell"><span class="metar-strip-label">DP</span><span class="metar-strip-value">${metar.dewp != null ? metar.dewp + '°C' : '—'}</span></div>
       <div class="metar-strip-cell"><span class="metar-strip-label">Alt</span><span class="metar-strip-value">${altimStr}</span></div>
-      ${metar.rawOb ? `<span class="metar-strip-raw">${metar.rawOb}</span>` : ''}
     </div>
   `;
 }
