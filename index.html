@@ -572,6 +572,91 @@ body.tv .metar-strip-raw { font-size: 12px; }
   text-transform: uppercase;
 }
 
+/* IFR TRAINING STRIP — dedicated Cairns IFR status card */
+.ifr-training {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.ifr-training::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 4px;
+  background: var(--text-ghost);
+  transition: all 0.3s;
+}
+.ifr-training.go {
+  border-color: var(--go-border);
+  background: linear-gradient(90deg, rgba(95,186,79,0.12), var(--bg-1) 50%);
+  box-shadow: 0 0 14px rgba(95,186,79,0.15);
+}
+.ifr-training.go::before { background: var(--go); box-shadow: 0 0 10px var(--go); }
+.ifr-training.go .ifr-training-status {
+  color: var(--go);
+  text-shadow: 0 0 12px rgba(95,186,79,0.7);
+}
+.ifr-training.nogo {
+  border-color: var(--nogo-border);
+  background: linear-gradient(90deg, rgba(214,69,69,0.12), var(--bg-1) 50%);
+  box-shadow: 0 0 14px rgba(214,69,69,0.15);
+}
+.ifr-training.nogo::before { background: var(--nogo); box-shadow: 0 0 10px var(--nogo); }
+.ifr-training.nogo .ifr-training-status {
+  color: var(--nogo);
+  text-shadow: 0 0 12px rgba(214,69,69,0.7);
+}
+.ifr-training.unknown {
+  border-color: var(--unknown-border);
+  background: linear-gradient(90deg, rgba(230,165,58,0.12), var(--bg-1) 50%);
+}
+.ifr-training.unknown::before { background: var(--unknown); }
+.ifr-training.unknown .ifr-training-status {
+  color: var(--unknown);
+}
+.ifr-training-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--tan);
+  padding-left: 8px;
+}
+.ifr-training-station {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text);
+}
+.ifr-training-status {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.ifr-training-detail {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.8px;
+}
+body.tv .ifr-training { padding: 14px 18px; gap: 18px; }
+body.tv .ifr-training-label { font-size: 13px; }
+body.tv .ifr-training-station { font-size: 17px; }
+body.tv .ifr-training-status { font-size: 30px; }
+body.tv .ifr-training-detail { font-size: 13px; }
+
 /* Solo / Taxi status row at bottom of training panel */
 .training-panel-solo,
 .training-panel-taxi {
@@ -1299,10 +1384,15 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- Thin METAR strip across the page -->
   <div id="metar-strip" class="metar-strip"></div>
 
-  <!-- Training Status full width -->
+  <!-- IFR Training Status (Cairns 200/0.25) -->
+  <div id="ifr-training" class="ifr-training" style="margin-bottom: 6px;">
+    <!-- Rendered by JS -->
+  </div>
+
+  <!-- VFR Training Status (Cairns 1000/3 + Stagefields 700/1) -->
   <div class="card" style="margin-bottom: 6px;">
     <div class="card-header">
-      <div class="card-title"><span class="card-title-icon">🎯</span>Training Status</div>
+      <div class="card-title"><span class="card-title-icon">🎯</span>VFR Training Status</div>
       <div class="card-subtitle">Cairns ≥1000/3 · Stagefields ≥700/1</div>
     </div>
     <div id="training-body"></div>
@@ -1932,7 +2022,41 @@ function metarMeetsTaxi(metar) {
   return ceil >= 200 && vis >= 0.25;
 }
 
+/// Standalone IFR training card — Cairns ≥200/0.25 = GO for IFR training departure.
+/// IFR training does not require any stagefield, so this is purely a Cairns check.
+function renderIFRTraining(metar) {
+  const el = document.getElementById('ifr-training');
+  if (!el) return;
+
+  let status = 'unknown';
+  let statusLabel = 'UNKNOWN';
+  let detail = 'No METAR available';
+
+  if (metar && !isMetarStale(metar)) {
+    const ifrOk = metarMeetsTaxi(metar); // 200/0.25
+    status = ifrOk ? 'go' : 'nogo';
+    statusLabel = ifrOk ? 'IFR GO' : 'IFR NO GO';
+    const ceil = metarCeiling(metar);
+    const ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
+    const visStr = (metar.visib != null) ? `${metar.visib} SM` : '—';
+    detail = `${ceilStr} · ${visStr}  ·  Mins ≥200ft / ¼ SM`;
+  } else if (metar && isMetarStale(metar)) {
+    detail = 'METAR is stale — cannot verify';
+  }
+
+  el.className = `ifr-training ${status}`;
+  el.innerHTML = `
+    <div class="ifr-training-label">🎯 IFR Training</div>
+    <div class="ifr-training-station">CAIRNS · KOZR</div>
+    <div class="ifr-training-detail">${detail}</div>
+    <div class="ifr-training-status">${statusLabel}</div>
+  `;
+}
+
 function renderTraining(metar, forecast) {
+  // Render the standalone IFR Training card first
+  renderIFRTraining(metar);
+
   const body = document.getElementById('training-body');
   const stagefields = [
     { name: 'Allen', area: 'GOLDFISH' },
@@ -1944,38 +2068,23 @@ function renderTraining(metar, forecast) {
   // Solo only applies to AM and PM forecasts
   const showSolo = forecast && (forecast.type === 'AM' || forecast.type === 'PM');
 
+  // Cairns VFR-only logic (1000/3) — IFR is shown separately above
   let cairnsStatus = 'unknown';
   let cairnsLabel = 'UNKNOWN';
   let cairnsArea = 'KOZR · NO METAR';
-  let taxi = null;
   if (metar && !isMetarStale(metar)) {
     const vfrOk = metarMeetsTraining(metar); // 1000/3
-    const ifrOk = metarMeetsTaxi(metar);     // 200/0.25
-    const cat = (metar.fltCat || '').toLowerCase();
-    if (vfrOk) {
-      cairnsStatus = 'go';
-      cairnsLabel = 'VFR/IFR GO';
-    } else {
-      // Color the panel by the actual METAR flight category
-      cairnsStatus = (cat === 'mvfr' || cat === 'ifr' || cat === 'lifr')
-        ? `cat-${cat}` : 'cat-ifr';
-      const catName = metar.fltCat || 'IFR';
-      cairnsLabel = ifrOk ? `${catName} GO` : `${catName} NO GO`;
-    }
+    cairnsStatus = vfrOk ? 'go' : 'nogo';
+    cairnsLabel = vfrOk ? 'VFR GO' : 'VFR NO GO';
     const ceil = metarCeiling(metar);
     const ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
     const visStr = (metar.visib != null) ? `${metar.visib}SM` : '—';
     cairnsArea = `KOZR · ${ceilStr} · ${visStr}`;
-    // IFR Taxi badge (200/0.25)
-    taxi = { status: ifrOk ? 'go' : 'nogo', label: ifrOk ? 'TAXI GO' : 'NO TAXI' };
   } else if (metar && isMetarStale(metar)) {
     cairnsArea = 'KOZR · OLD DATA';
-    taxi = { status: 'unknown', label: 'UNKNOWN' };
-  } else {
-    taxi = { status: 'unknown', label: 'UNKNOWN' };
   }
-  // Cairns has no solo (no solo flights at Cairns), but it does have taxi
-  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, taxi);
+  // Cairns has no solo or taxi badge in the VFR card now
+  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
