@@ -2239,24 +2239,45 @@ function findWindAdvisoryDuringPeriod(advisories) {
   return null;
 }
 
+let lastMetarReportTime = null;
+let lastMetarFetchError = null;
+
 async function fetchMETAR() {
+  // Multiple cache-busting techniques: query param, timestamp, hours param
+  // (hours=2 forces the API to compute fresh rather than serve cached "latest")
+  const cb = Date.now();
+  const url = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json&hours=2&_=${cb}&t=${cb}`;
   try {
-    // Cache-bust the URL so intermediate CDNs / proxies don't serve stale METARs
-    const url = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json&_=${Date.now()}`;
     const res = await fetch(url, {
       cache: 'no-store',
+      mode: 'cors',
+      credentials: 'omit',
       headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'Pragma': 'no-cache'
       }
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      lastMetarFetchError = `HTTP ${res.status}`;
+      console.warn(`[METAR] HTTP ${res.status} ${res.statusText}`);
+      return null;
+    }
     const arr = await res.json();
-    if (!arr || arr.length === 0) return null;
-    console.log(`[METAR] Fetched ${arr[0].icaoId} reportTime=${arr[0].reportTime}`);
-    return arr[0];
+    if (!arr || arr.length === 0) {
+      lastMetarFetchError = 'No observations returned';
+      console.warn('[METAR] API returned empty array');
+      return null;
+    }
+    // The API returns observations newest-first when hours param is used.
+    // Take the first (most recent) one.
+    const latest = arr[0];
+    lastMetarReportTime = latest.reportTime;
+    lastMetarFetchError = null;
+    console.log(`[METAR] ${new Date().toISOString()} → ${latest.icaoId} reportTime=${latest.reportTime} (${arr.length} obs available)`);
+    return latest;
   } catch (e) {
-    console.warn('METAR fetch failed:', e);
+    lastMetarFetchError = e.message || String(e);
+    console.warn('[METAR] Fetch failed:', e);
     return null;
   }
 }
@@ -2980,9 +3001,19 @@ function updateFetchedLabel() {
   if (!el) return;
   if (!lastFetchedAt) { el.textContent = '—'; return; }
   const secs = Math.floor((Date.now() - lastFetchedAt.getTime()) / 1000);
-  if (secs < 60) el.textContent = secs + 's ago';
-  else if (secs < 3600) el.textContent = Math.floor(secs / 60) + 'm ago';
-  else el.textContent = Math.floor(secs / 3600) + 'h ago';
+  let txt;
+  if (secs < 60) txt = secs + 's ago';
+  else if (secs < 3600) txt = Math.floor(secs / 60) + 'm ago';
+  else txt = Math.floor(secs / 3600) + 'h ago';
+  if (lastMetarFetchError) {
+    txt += ' ⚠';
+    el.title = `Live METAR fetch error: ${lastMetarFetchError}`;
+    el.style.color = 'var(--warning)';
+  } else {
+    el.title = lastMetarReportTime ? `Last METAR: ${lastMetarReportTime}` : '';
+    el.style.color = '';
+  }
+  el.textContent = txt;
 }
 
 async function refresh() { await loadData(); }
