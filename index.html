@@ -1847,11 +1847,19 @@ function soloStatus(forecast, amendment) {
 
 async function fetchMETAR() {
   try {
-    const url = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json`;
-    const res = await fetch(url, { cache: 'no-store' });
+    // Cache-bust the URL so intermediate CDNs / proxies don't serve stale METARs
+    const url = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json&_=${Date.now()}`;
+    const res = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (!res.ok) return null;
     const arr = await res.json();
     if (!arr || arr.length === 0) return null;
+    console.log(`[METAR] Fetched ${arr[0].icaoId} reportTime=${arr[0].reportTime}`);
     return arr[0];
   } catch (e) {
     console.warn('METAR fetch failed:', e);
