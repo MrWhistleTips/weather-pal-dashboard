@@ -1421,27 +1421,55 @@ body.tv .aero-cat { font-size: 11px; }
 body.tv .aero-period { font-size: 12px; }
 body.tv .aero-period-time { font-size: 11px; }
 
-/* FLIGHT LEVEL WINDS */
-.flw-grid {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0 10px;
+/* FLIGHT LEVEL WINDS — horizontal strip with all levels inline */
+.flw-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 12px;
+  position: relative;
+  overflow: hidden;
+}
+.flw-strip-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  color: var(--tan);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.flw-strip-cells {
+  display: flex;
+  flex: 1;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: space-around;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  line-height: 1.3;
 }
-.flw-header {
-  font-size: 8px; color: var(--tan);
-  letter-spacing: 1.2px; font-weight: 700;
-  text-transform: uppercase;
-  padding: 2px 0;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2px;
+.flw-strip-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
 }
-.flw-cell { padding: 1px 0; }
-.flw-level { color: var(--tan); font-weight: 600; }
-.flw-wind-high { color: var(--amber); }
-.flw-temp-cold { color: var(--mvfr); }
+.flw-strip-level {
+  color: var(--tan);
+  font-weight: 700;
+  font-size: 10px;
+}
+.flw-strip-wind { color: var(--text); }
+.flw-strip-wind.high { color: var(--amber); font-weight: 600; }
+.flw-strip-temp { color: var(--text-dim); }
+.flw-strip-temp.cold { color: var(--mvfr); font-weight: 600; }
+body.tv .flw-strip { padding: 6px 14px; }
+body.tv .flw-strip-label { font-size: 12px; }
+body.tv .flw-strip-cells { font-size: 14px; }
+body.tv .flw-strip-level { font-size: 12px; }
 
 /* SOLAR / LUNAR */
 .solar-grid {
@@ -1740,24 +1768,20 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- Thin METAR strip across the page -->
   <div id="metar-strip" class="metar-strip"></div>
 
-  <!-- Flight Hazards + Flight Level Winds (collapsible, default collapsed) -->
-  <div class="grid grid-2" style="margin-bottom: 4px;">
-    <div class="card collapsible" data-collapse-key="hazards">
-      <div class="card-header" onclick="toggleCollapse(this)">
-        <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
-        <span id="hazards-badge" class="hazards-present-badge" style="display:none;">⚠️ Hazards Present, Click to View</span>
-        <span class="collapse-chevron">▾</span>
-      </div>
-      <div class="card-body collapsible-body" id="hazards-body">—</div>
+  <!-- Flight Hazards (collapsible, default collapsed) -->
+  <div class="card collapsible" data-collapse-key="hazards" style="margin-bottom: 4px;">
+    <div class="card-header" onclick="toggleCollapse(this)">
+      <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
+      <span id="hazards-badge" class="hazards-present-badge" style="display:none;">⚠️ Hazards Present, Click to View</span>
+      <span class="collapse-chevron">▾</span>
     </div>
+    <div class="card-body collapsible-body" id="hazards-body">—</div>
+  </div>
 
-    <div class="card collapsible" data-collapse-key="flw">
-      <div class="card-header" onclick="toggleCollapse(this)">
-        <div class="card-title"><span class="card-title-icon">💨</span>Flight Level Winds</div>
-        <span class="collapse-chevron">▾</span>
-      </div>
-      <div class="card-body collapsible-body" id="flw-body">—</div>
-    </div>
+  <!-- Flight Level Winds — horizontal strip showing all levels inline -->
+  <div id="flw-strip" class="flw-strip" style="margin-bottom: 4px;">
+    <span class="flw-strip-label">💨 FLIGHT LEVEL WINDS</span>
+    <div class="flw-strip-cells" id="flw-body"></div>
   </div>
 
   <!-- Active Advisories (shown above both sections when active) -->
@@ -3176,34 +3200,44 @@ function periodFlightCategory(period) {
 
 function renderFLW(forecast) {
   const body = document.getElementById('flw-body');
+  const strip = document.getElementById('flw-strip');
   if (!forecast || !forecast.mef || !forecast.mef.flightLevelWinds || forecast.mef.flightLevelWinds.length === 0) {
-    body.innerHTML = '<div style="color:var(--text-dim)">No data.</div>';
+    if (strip) strip.style.display = 'none';
     return;
   }
+  if (strip) strip.style.display = 'flex';
   const winds = forecast.mef.flightLevelWinds;
-  let html = `
-    <div class="flw-grid">
-      <div class="flw-header">Level</div>
-      <div class="flw-header">Wind</div>
-      <div class="flw-header">Temp</div>
-  `;
-  for (const w of winds) {
+  body.innerHTML = winds.map(w => {
     const levelFt = parseInt(w.level) * 100;
-    const levelStr = levelFt >= 1000 ? (levelFt/1000).toFixed(0) + 'k ft' : levelFt + ' ft';
-    const windMatch = (w.wind || '').match(/(\d{3})(\d{2,3})KT/);
-    const windSpd = windMatch ? parseInt(windMatch[2]) : 0;
-    const windClass = windSpd >= 20 ? 'flw-wind-high' : '';
+    const levelStr = levelFt >= 1000 ? (levelFt/1000).toFixed(0) + 'k' : levelFt + 'ft';
+    // Compact wind display: "180/10" or "180/10G18"
+    const windMatch = (w.wind || '').match(/(\d{3})(\d{2,3})(G(\d{2,3}))?/);
+    let windDisplay = w.wind || '—';
+    let windSpd = 0;
+    if (windMatch) {
+      windSpd = parseInt(windMatch[2]);
+      windDisplay = `${windMatch[1]}/${windMatch[2]}`;
+      if (windMatch[4]) windDisplay += `G${windMatch[4]}`;
+    }
+    const windClass = windSpd >= 20 ? 'high' : '';
+    // Compact temp: "+15°" or "-05°"
     const tempMatch = (w.temp || '').match(/-?\d+/);
-    const tempC = tempMatch ? parseInt(tempMatch[0]) : 99;
-    const tempClass = tempC <= 4 ? 'flw-temp-cold' : '';
-    html += `
-      <div class="flw-cell flw-level">${levelStr}</div>
-      <div class="flw-cell ${windClass}">${w.wind || '—'}</div>
-      <div class="flw-cell ${tempClass}">${w.temp || '—'}</div>
+    let tempDisplay = '—';
+    let tempC = 99;
+    if (tempMatch) {
+      tempC = parseInt(tempMatch[0]);
+      const sign = tempC > 0 ? '+' : '';
+      tempDisplay = `${sign}${tempC}°`;
+    }
+    const tempClass = tempC <= 4 ? 'cold' : '';
+    return `
+      <div class="flw-strip-cell">
+        <span class="flw-strip-level">${levelStr}</span>
+        <span class="flw-strip-wind ${windClass}">${windDisplay}</span>
+        <span class="flw-strip-temp ${tempClass}">${tempDisplay}</span>
+      </div>
     `;
-  }
-  html += '</div>';
-  body.innerHTML = html;
+  }).join('');
 }
 
 function renderHazards(forecast) {
