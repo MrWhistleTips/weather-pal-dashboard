@@ -989,6 +989,46 @@ body.tv .ifr-training-status { font-size: 30px; }
 body.tv .ifr-training-detail { font-size: 13px; }
 body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
 
+/* Landing direction row inside training panel */
+.training-panel-landing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 2px;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+}
+.land-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--tan);
+  font-weight: 700;
+}
+.land-rwy {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 700;
+}
+.land-arrow {
+  font-size: 13px;
+  font-weight: 700;
+}
+.land-arrow.green { color: var(--go); text-shadow: 0 0 6px rgba(95,186,79,0.6); }
+.land-arrow.red { color: var(--nogo); text-shadow: 0 0 6px rgba(214,69,69,0.6); }
+.land-hw { color: var(--text); }
+.land-xw { color: var(--text-dim); }
+.land-xw.orange { color: var(--amber); font-weight: 700; }
+.land-calm { color: var(--text-dim); font-style: italic; }
+.land-vrb { color: var(--amber); font-weight: 700; }
+body.tv .training-panel-landing { font-size: 12px; }
+body.tv .land-label { font-size: 11px; }
+body.tv .land-rwy, body.tv .land-arrow { font-size: 16px; }
+
 /* Solo / Taxi status row at bottom of training panel */
 .training-panel-solo,
 .training-panel-taxi {
@@ -2561,6 +2601,87 @@ function currentTrainingGo(forecast, amendment) {
   return (ceil === null ? 99999 : ceil) >= 700 && (vis === null ? 99 : vis) >= 1;
 }
 
+/// Stagefield runway pairs (degrees, reciprocal). Pulled from iOS app.
+const RUNWAYS = {
+  'Cairns':    [[60, 240], [180, 360]],   // 06/24 and 18/36
+  'Allen':     [[120, 300]],               // 12/30
+  'Toth':      [[70, 250]],                // 07/25
+  'Highbluff': [[100, 280]],               // 10/28
+  'Lucas':     [[180, 360]],               // 18/36
+};
+
+/// Parse the 1000ft wind from MEF flightLevelWinds.
+/// Returns { dir, spd, isVariable } — null if not parseable.
+function parse1000ftWind(forecast) {
+  const winds = forecast && forecast.mef && forecast.mef.flightLevelWinds;
+  if (!winds) return null;
+  // Find the level="010" (or first available) entry
+  const w = winds.find(x => x.level === '010') || winds[0];
+  if (!w || !w.wind) return null;
+  const text = String(w.wind).toUpperCase().replace(/\s+/g, '');
+  // Variable: VRB05KT
+  const vrb = text.match(/^VRB(\d{2,3})/);
+  if (vrb) return { dir: 0, spd: parseInt(vrb[1]), isVariable: true };
+  // Standard: 18010KT or 180/10
+  const m = text.match(/^(\d{3})(\d{2,3})/);
+  if (!m) return null;
+  return { dir: parseInt(m[1]), spd: parseInt(m[2]), isVariable: false };
+}
+
+/// Pick the best landing runway given wind. Returns the chosen heading (deg)
+/// + headwind/crosswind components.
+function bestLanding(runways, wind) {
+  if (!wind || wind.spd === 0) {
+    return { heading: null, headwind: 0, crosswind: 0, calm: true };
+  }
+  if (wind.isVariable) {
+    // Variable wind → no preferred runway, all crosswind risk
+    return { heading: null, headwind: 0, crosswind: wind.spd, variable: true };
+  }
+  let best = null;
+  for (const [a, b] of runways) {
+    for (const heading of [a, b]) {
+      // Difference between wind and runway heading
+      const diff = ((wind.dir - heading + 540) % 360) - 180;  // -180..+180
+      const rad = diff * Math.PI / 180;
+      const headwind = wind.spd * Math.cos(rad);
+      const crosswind = Math.abs(wind.spd * Math.sin(rad));
+      if (!best || headwind > best.headwind) {
+        best = { heading, headwind: Math.round(headwind), crosswind: Math.round(crosswind) };
+      }
+    }
+  }
+  return best || { heading: null, headwind: 0, crosswind: 0 };
+}
+
+/// Build a small landing direction badge for a station.
+function landingHTML(stationName, forecast) {
+  const runways = RUNWAYS[stationName];
+  if (!runways) return '';
+  const wind = parse1000ftWind(forecast);
+  const land = bestLanding(runways, wind);
+  if (land.calm) {
+    return `<div class="training-panel-landing"><span class="land-label">RWY</span><span class="land-calm">CALM</span></div>`;
+  }
+  if (land.variable) {
+    return `<div class="training-panel-landing"><span class="land-label">RWY</span><span class="land-vrb">VRB</span><span class="land-xw orange">XW ${land.crosswind}kt</span></div>`;
+  }
+  // Display the runway as a 2-digit identifier (e.g., 06, 24, 18, 36)
+  const rwy = String(Math.round(land.heading / 10)).padStart(2, '0');
+  const arrow = land.headwind >= 0 ? '↓' : '↑';
+  const arrowClass = land.headwind >= 0 ? 'green' : 'red';
+  const xwClass = land.crosswind >= 15 ? 'orange' : '';
+  return `
+    <div class="training-panel-landing">
+      <span class="land-label">RWY</span>
+      <span class="land-rwy">${rwy}</span>
+      <span class="land-arrow ${arrowClass}">${arrow}</span>
+      <span class="land-hw">HW ${Math.abs(land.headwind)}kt</span>
+      <span class="land-xw ${xwClass}">XW ${land.crosswind}kt</span>
+    </div>
+  `;
+}
+
 /// Time-aware trainability info with countdown.
 /// Returns { status: 'trainable'|'trainable-soon'|'untrainable-soon'|'untrainable',
 ///           label, icon }
@@ -2894,7 +3015,8 @@ function renderTraining(metar, forecast) {
     cairnsArea = 'KOZR · OLD DATA';
   }
   // Cairns has no solo or taxi badge in the VFR card now
-  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null);
+  const cairnsLanding = landingHTML('Cairns', forecast);
+  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
@@ -2918,13 +3040,14 @@ function renderTraining(metar, forecast) {
     }
     // Advisory pip — true if any active advisory affects this area
     const affectingAdv = activeAdvs.find(a => advisoryAffectsArea(a, sf.area));
-    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv);
+    const landing = landingHTML(sf.name, forecast);
+    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
 }
 
-function panelHTML(status, label, name, area, solo, taxi, advisory) {
+function panelHTML(status, label, name, area, solo, taxi, advisory, landing) {
   let soloHTML = '';
   if (solo) {
     const soloClass = solo.go ? 'go' : 'nogo';
@@ -2962,6 +3085,7 @@ function panelHTML(status, label, name, area, solo, taxi, advisory) {
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-status">${label}</div>
       <div class="training-panel-area">${area}</div>
+      ${landing || ''}
       ${soloHTML}
       ${taxiHTML}
     </div>
