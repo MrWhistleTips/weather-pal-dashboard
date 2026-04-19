@@ -1138,6 +1138,48 @@ body.tv .advisory-expires { font-size: 12px; }
   border-color: rgba(237,137,54,0.4);
 }
 body.tv .area-status { font-size: 13px; padding: 3px 9px; }
+
+/* Area advisory line — appears between header and forecast text */
+.area-advisory {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 3px 0 4px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  border-left: 2px solid;
+}
+.area-advisory.active {
+  background: rgba(230,165,58,0.10);
+  border-color: var(--warning);
+  animation: pipPulse 2s ease-in-out infinite;
+}
+.area-advisory.upcoming {
+  background: rgba(74,144,226,0.08);
+  border-color: var(--mvfr);
+}
+.area-advisory-icon { font-size: 11px; }
+.area-advisory-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 9px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.area-advisory.active .area-advisory-label { color: var(--warning); }
+.area-advisory.upcoming .area-advisory-label { color: var(--mvfr); }
+.area-advisory-text {
+  font-size: 10px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.tv .area-advisory { font-size: 12px; padding: 4px 10px; }
+body.tv .area-advisory-label { font-size: 11px; }
+body.tv .area-advisory-text { font-size: 12px; }
 .area-text {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
@@ -2660,6 +2702,11 @@ function renderAreas(forecast) {
     return;
   }
   const areas = forecast.mef.areaForecasts;
+  const advs = (forecast.mef.weatherAdvisories) || [];
+  const activeAdvs = activeAdvisories(advs);
+  const upcomingAdvs = upcomingAdvisories(advs);
+  const now = zuluMinutes();
+
   const cells = areas.map(a => {
     const text = a.amendmentText || a.forecast || '';
     const segs = splitSegments(text);
@@ -2674,6 +2721,37 @@ function renderAreas(forecast) {
     const amdHTML = a.amendmentNumber
       ? `<span class="badge unknown" style="font-size:10px">${a.amendmentNumber}${a.amendmentTime ? `<span class="area-amd-time">@ ${a.amendmentTime}</span>` : ''}</span>`
       : '';
+
+    // Active advisory affecting this area
+    const activeAdv = activeAdvs.find(adv => advisoryAffectsArea(adv, a.name));
+    // Upcoming advisory affecting this area (find soonest)
+    const upcomingAdv = upcomingAdvs.find(adv => advisoryAffectsArea(adv, a.name));
+
+    let activeAdvHTML = '';
+    if (activeAdv) {
+      activeAdvHTML = `
+        <div class="area-advisory active">
+          <span class="area-advisory-icon">⚠️</span>
+          <span class="area-advisory-label">${activeAdv.type} ${activeAdv.number || ''} ACTIVE</span>
+          <span class="area-advisory-text">${activeAdv.criteria || ''}</span>
+        </div>
+      `;
+    } else if (upcomingAdv) {
+      const fromMin = parseZuluFromText(upcomingAdv.validFrom);
+      let mins = fromMin - now;
+      if (mins < 0) mins += 1440;
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      activeAdvHTML = `
+        <div class="area-advisory upcoming">
+          <span class="area-advisory-icon">🕐</span>
+          <span class="area-advisory-label">${upcomingAdv.type} ${upcomingAdv.number || ''} IN ${timeStr}</span>
+          <span class="area-advisory-text">${upcomingAdv.criteria || ''}</span>
+        </div>
+      `;
+    }
+
     return `
       <div class="area-card">
         <div class="area-header">
@@ -2683,6 +2761,7 @@ function renderAreas(forecast) {
             <span class="area-status ${info.status}">${info.icon} ${info.label}</span>
           </div>
         </div>
+        ${activeAdvHTML}
         <div class="area-text">${colored}</div>
       </div>
     `;
