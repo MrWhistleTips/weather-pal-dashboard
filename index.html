@@ -453,7 +453,23 @@ body.tv .solar-strip-value { font-size: 14px; }
   text-align: center;
   word-break: break-word;
   width: 100%;
+  font-weight: 500;
+  transition: color 0.3s;
 }
+/* Color the raw METAR text and decoded values by flight category */
+.metar-strip.cat-vfr  .metar-strip-raw,
+.metar-strip.cat-vfr  .metar-strip-value { color: var(--vfr); }
+.metar-strip.cat-mvfr .metar-strip-raw,
+.metar-strip.cat-mvfr .metar-strip-value { color: var(--mvfr); }
+.metar-strip.cat-ifr  .metar-strip-raw,
+.metar-strip.cat-ifr  .metar-strip-value { color: var(--ifr); }
+.metar-strip.cat-lifr .metar-strip-raw,
+.metar-strip.cat-lifr .metar-strip-value { color: var(--lifr); }
+/* Subtle border tint by category for visual continuity */
+.metar-strip.cat-vfr  { border-color: rgba(95,186,79,0.4); }
+.metar-strip.cat-mvfr { border-color: rgba(74,144,226,0.4); }
+.metar-strip.cat-ifr  { border-color: rgba(214,69,69,0.4); }
+.metar-strip.cat-lifr { border-color: rgba(179,71,217,0.4); }
 .metar-strip-old-inline {
   display: inline-block;
   font-family: 'Rajdhani', sans-serif;
@@ -2819,16 +2835,17 @@ function renderMETAR(metar) {
   if (!strip) return;
 
   if (!metar) {
+    strip.className = 'metar-strip';
     strip.innerHTML = `
-      <div class="metar-strip-cat unknown">—</div>
-      <div class="metar-strip-station">${METAR_STATION}</div>
-      <div class="metar-strip-time">No METAR available</div>
+      <div class="metar-strip-raw">No METAR available for ${METAR_STATION}</div>
     `;
     return;
   }
 
   const stale = isMetarStale(metar);
   const cat = (metar.fltCat || '').toLowerCase();
+  // Apply categorical color class so raw + values inherit the right color
+  strip.className = 'metar-strip' + (cat ? ` cat-${cat}` : '');
   const reportDate = new Date(metar.reportTime);
   const timeStr = isNaN(reportDate) ? metar.reportTime :
     (String(reportDate.getUTCDate()).padStart(2,'0') + ' ' +
