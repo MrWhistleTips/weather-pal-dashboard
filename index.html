@@ -1853,6 +1853,153 @@ function addHoursToZuluString(hoursAhead) {
          String(future.getUTCMinutes()).padStart(2,'0') + 'Z';
 }
 
+/// Build demo aerodrome forecasts (TAFs) for the given scenario.
+/// Generates 6 representative airfields with conditions matching the scenario.
+function buildDemoAerodromes(scenario) {
+  // Base period times relative to current Zulu time
+  const fromZ = addHoursToZuluString(0);
+  const midZ = addHoursToZuluString(3);
+  const endZ = addHoursToZuluString(6);
+
+  // Conditions templates per scenario
+  const conditions = aerodromeConditionsFor(scenario);
+  // Six common Fort Rucker / regional airfields
+  const stations = [
+    { icao: 'KOZR', sameAs: ['KLOR','KHEY','KSXS'] },
+    { icao: 'KDHN', sameAs: ['KEDN','KMAI'] },
+    { icao: 'KMGM', sameAs: [] },
+    { icao: 'KTLH', sameAs: [] },
+    { icao: 'KPNS', sameAs: [] },
+    { icao: 'KMOB', sameAs: [] },
+  ];
+
+  return stations.map((s, i) => {
+    // Slight variation per airfield so they don't all look identical
+    const c = conditions[i % conditions.length];
+    return {
+      icao: s.icao,
+      periods: [
+        {
+          periodType: 'FROM',
+          validFrom: fromZ.replace('Z',''),
+          validTo: midZ.replace('Z',''),
+          surfaceWind: c.from.wind,
+          visibility: c.from.vis,
+          weather: c.from.wx,
+          skyCondition: c.from.sky,
+          altimeter: 'A3018'
+        },
+        ...(c.tempo ? [{
+          periodType: 'TEMPO',
+          validFrom: fromZ.replace('Z',''),
+          validTo: midZ.replace('Z',''),
+          surfaceWind: '',
+          visibility: c.tempo.vis,
+          weather: c.tempo.wx,
+          skyCondition: c.tempo.sky,
+          altimeter: ''
+        }] : []),
+        {
+          periodType: 'FROM',
+          validFrom: midZ.replace('Z',''),
+          validTo: endZ.replace('Z',''),
+          surfaceWind: c.to.wind,
+          visibility: c.to.vis,
+          weather: c.to.wx,
+          skyCondition: c.to.sky,
+          altimeter: 'A3020'
+        }
+      ],
+      sameAs: s.sameAs
+    };
+  });
+}
+
+/// Per-scenario weather profiles for aerodrome forecasts.
+function aerodromeConditionsFor(s) {
+  const m = s.metarOpts || {};
+  // Default VFR-ish profile
+  const vfrSet = [
+    { from: { wind: '18008KT', vis: '7SM', wx: '', sky: 'SCT050 BKN150' },
+      to:   { wind: '20010KT', vis: '7SM', wx: '', sky: 'SCT070 BKN180' } },
+    { from: { wind: '17010KT', vis: '7SM', wx: '', sky: 'BKN120' },
+      to:   { wind: '19012KT', vis: '7SM', wx: '', sky: 'SCT100' } },
+    { from: { wind: '20008KT', vis: '7SM', wx: '', sky: 'FEW040 BKN200' },
+      to:   { wind: '22010KT', vis: '7SM', wx: '', sky: 'SCT080' } },
+    { from: { wind: '19010KT', vis: '7SM', wx: '', sky: 'SCT060 BKN140' },
+      to:   { wind: '21012KT', vis: '7SM', wx: '', sky: 'BKN130' } },
+    { from: { wind: '18012KT', vis: '7SM', wx: '', sky: 'BKN180' },
+      to:   { wind: '20014KT', vis: '7SM', wx: '', sky: 'SCT100 BKN180' } },
+    { from: { wind: '17008KT', vis: '7SM', wx: '', sky: 'SCT060 BKN150' },
+      to:   { wind: '19010KT', vis: '7SM', wx: '', sky: 'SCT080' } },
+  ];
+  const mvfrSet = [
+    { from: { wind: '21012KT', vis: '4SM', wx: 'BR', sky: 'BKN012' },
+      to:   { wind: '22015KT', vis: '5SM', wx: 'BR', sky: 'BKN025' },
+      tempo:{ vis: '3SM', wx: '-RA BR', sky: 'OVC008' } },
+    { from: { wind: '22015KT', vis: '4SM', wx: 'BR', sky: 'BKN015' },
+      to:   { wind: '24015KT', vis: '5SM', wx: '', sky: 'BKN030' } },
+    { from: { wind: '20014KT', vis: '5SM', wx: '', sky: 'BKN018' },
+      to:   { wind: '22014KT', vis: '6SM', wx: '', sky: 'SCT025 BKN040' } },
+    { from: { wind: '23012KT', vis: '4SM', wx: 'BR', sky: 'BKN020' },
+      to:   { wind: '24014KT', vis: '5SM', wx: '', sky: 'BKN025' } },
+    { from: { wind: '21015KT', vis: '4SM', wx: 'HZ', sky: 'OVC020' },
+      to:   { wind: '22015KT', vis: '5SM', wx: '', sky: 'BKN030' } },
+    { from: { wind: '19013KT', vis: '5SM', wx: 'BR', sky: 'BKN015' },
+      to:   { wind: '21014KT', vis: '6SM', wx: '', sky: 'BKN025' } },
+  ];
+  const ifrSet = [
+    { from: { wind: '16012KT', vis: '2SM', wx: '-RA BR', sky: 'OVC008' },
+      to:   { wind: '17015KT', vis: '2SM', wx: '-RA BR', sky: 'OVC006' } },
+    { from: { wind: '18012KT', vis: '2SM', wx: '-RA', sky: 'OVC010' },
+      to:   { wind: '20015KT', vis: '3SM', wx: 'BR', sky: 'BKN012' } },
+    { from: { wind: '17010KT', vis: '1 1/2SM', wx: '-RA BR', sky: 'OVC005' },
+      to:   { wind: '19012KT', vis: '2SM', wx: 'BR', sky: 'OVC008' } },
+    { from: { wind: '15010KT', vis: '2SM', wx: 'BR', sky: 'OVC007' },
+      to:   { wind: '17012KT', vis: '2SM', wx: 'BR', sky: 'OVC008' } },
+    { from: { wind: '16012KT', vis: '2SM', wx: '-RA', sky: 'OVC006' },
+      to:   { wind: '18014KT', vis: '3SM', wx: 'BR', sky: 'BKN012' } },
+    { from: { wind: '14010KT', vis: '2SM', wx: 'BR', sky: 'OVC008' },
+      to:   { wind: '16012KT', vis: '3SM', wx: '', sky: 'BKN015' } },
+  ];
+  const lifrSet = [
+    { from: { wind: 'VRB03KT', vis: '1/4SM', wx: 'FG', sky: 'OVC002' },
+      to:   { wind: 'VRB03KT', vis: '1SM', wx: 'BR', sky: 'OVC003' } },
+    { from: { wind: '04003KT', vis: '1/2SM', wx: 'FG', sky: 'OVC003' },
+      to:   { wind: '05005KT', vis: '1SM', wx: 'BR', sky: 'OVC005' } },
+    { from: { wind: 'VRB02KT', vis: '1/4SM', wx: 'FG', sky: 'OVC002' },
+      to:   { wind: 'VRB04KT', vis: '3/4SM', wx: 'BR', sky: 'OVC005' } },
+    { from: { wind: 'VRB03KT', vis: '1/2SM', wx: 'FG', sky: 'OVC002' },
+      to:   { wind: 'VRB05KT', vis: '1SM', wx: 'BR', sky: 'OVC004' } },
+    { from: { wind: 'VRB02KT', vis: '1/4SM', wx: 'FG', sky: 'OVC003' },
+      to:   { wind: 'VRB04KT', vis: '1SM', wx: 'BR', sky: 'OVC005' } },
+    { from: { wind: 'VRB03KT', vis: '3/4SM', wx: 'BR', sky: 'OVC005' },
+      to:   { wind: 'VRB05KT', vis: '2SM', wx: 'BR', sky: 'BKN010' } },
+  ];
+  const highwindsSet = [
+    { from: { wind: '24022G30KT', vis: '7SM', wx: '', sky: 'SCT040 BKN100' },
+      to:   { wind: '25025G35KT', vis: '7SM', wx: '', sky: 'SCT050 BKN120' } },
+    { from: { wind: '25025G35KT', vis: '7SM', wx: '', sky: 'BKN120' },
+      to:   { wind: '26025G35KT', vis: '7SM', wx: '', sky: 'SCT080' } },
+    { from: { wind: '23020G28KT', vis: '7SM', wx: '', sky: 'BKN150' },
+      to:   { wind: '25025G33KT', vis: '7SM', wx: '', sky: 'SCT100' } },
+    { from: { wind: '24020G28KT', vis: '7SM', wx: '', sky: 'SCT060 BKN130' },
+      to:   { wind: '25022G30KT', vis: '7SM', wx: '', sky: 'SCT080' } },
+    { from: { wind: '22020G28KT', vis: '7SM', wx: '', sky: 'BKN140' },
+      to:   { wind: '24025G35KT', vis: '7SM', wx: '', sky: 'BKN160' } },
+    { from: { wind: '23018G25KT', vis: '7SM', wx: '', sky: 'BKN150' },
+      to:   { wind: '25020G28KT', vis: '7SM', wx: '', sky: 'SCT100' } },
+  ];
+
+  // Pick the right set based on scenario flight category / opts
+  const cat = (m.flt || '').toUpperCase();
+  if (s === DEMO_SCENARIOS['highwinds'] || s === DEMO_SCENARIOS['advisory']) return highwindsSet;
+  if (cat === 'LIFR') return lifrSet;
+  if (cat === 'IFR')  return ifrSet;
+  if (cat === 'MVFR') return mvfrSet;
+  return vfrSet;
+}
+
 function makeDemoMetar(opts) {
   const reportDate = new Date(Date.now() - (opts.hoursAgo || 0) * 3600 * 1000);
   return {
@@ -1963,6 +2110,9 @@ function buildDemoData(key) {
     return `${d.getDate()}-${months[d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
   })();
 
+  // Demo aerodrome forecasts (TAFs) appropriate to the scenario's conditions
+  const aerodromeForecasts = buildDemoAerodromes(s);
+
   const makeForecast = (type, validPeriod) => ({
     type, fetchedAt: new Date().toISOString(),
     amendmentNumber: s.amendmentNumber || null,
@@ -1972,6 +2122,10 @@ function buildDemoData(key) {
       areaForecasts: areas, weatherAdvisories: advisories,
       flightLevelWinds: flw, solarLunar, flightHazards,
       forecasterInitials: 'DEMO'
+    },
+    flightBriefing: {
+      date: todayDisplay,
+      aerodromeForecasts: aerodromeForecasts
     }
   });
 
