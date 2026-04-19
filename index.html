@@ -1023,6 +1023,12 @@ body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
 .land-hw { color: var(--text); }
 .land-xw { color: var(--text-dim); }
 .land-xw.orange { color: var(--amber); font-weight: 700; }
+.land-xw-arrow {
+  font-size: 13px;
+  font-weight: 700;
+  margin-right: 2px;
+}
+body.tv .land-xw-arrow { font-size: 16px; }
 .land-calm { color: var(--text-dim); font-style: italic; }
 .land-vrb { color: var(--amber); font-weight: 700; }
 body.tv .training-panel-landing { font-size: 12px; }
@@ -2673,7 +2679,7 @@ function landingHTML(stationName, forecast) {
     return `<div class="training-panel-landing"><span class="land-label">RWY</span><span class="land-calm">CALM</span></div>`;
   }
   if (land.variable) {
-    return `<div class="training-panel-landing"><span class="land-label">RWY</span><span class="land-vrb">VRB</span><span class="land-xw orange">↔ ${land.crosswind}kt</span></div>`;
+    return `<div class="training-panel-landing"><span class="land-label">RWY</span><span class="land-vrb">VRB</span><span class="land-xw orange"><span class="land-xw-arrow">↔</span>${land.crosswind}kt</span></div>`;
   }
   // Display the runway as a 2-digit identifier (e.g., 06, 24, 18, 36)
   const rwy = String(Math.round(land.heading / 10)).padStart(2, '0');
@@ -2691,7 +2697,7 @@ function landingHTML(stationName, forecast) {
       <span class="land-rwy">${rwy}</span>
       <span class="land-arrow ${hwClass}">${hwArrow}</span>
       <span class="land-hw">HW ${Math.abs(land.headwind)}kt</span>
-      <span class="land-xw ${xwClass}">${xwArrow} ${land.crosswind}kt</span>
+      <span class="land-xw ${xwClass}"><span class="land-xw-arrow">${xwArrow}</span>${land.crosswind}kt</span>
     </div>
   `;
 }
