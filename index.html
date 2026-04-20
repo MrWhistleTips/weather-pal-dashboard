@@ -759,6 +759,174 @@ body.tv .section-header-title { font-size: 23px; letter-spacing: 4px; }
 body.tv .section-header-icon { font-size: 22px; }
 body.tv .section-header-detail { font-size: 13px; }
 
+/* Flex spacer inside the section header — pushes the center widget
+   to the middle while the detail chip stays anchored to the right. */
+.section-header-spacer { flex: 1 1 0; min-width: 0; }
+
+/* 7-day outlook dropdown button sitting in the center of the VFR
+   Operations banner. Compact row of 7 day dots (worst of CIG/VIS/
+   WIND for that day). Clicking toggles the expanded detail panel
+   directly below the banner. */
+.sevenday-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 8px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(192,168,120,0.35);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.sevenday-toggle:hover {
+  background: rgba(0,0,0,0.4);
+  border-color: rgba(192,168,120,0.6);
+}
+.sevenday-toggle[aria-expanded="true"] {
+  background: rgba(230,165,58,0.12);
+  border-color: rgba(230,165,58,0.5);
+}
+.sevenday-toggle-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--tan);
+  white-space: nowrap;
+}
+.sevenday-toggle-days {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+.sevenday-toggle-day {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.3px;
+  min-width: 14px;
+}
+.sevenday-toggle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-ghost);
+  box-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+.sevenday-toggle-dot.go       { background: var(--go);     box-shadow: 0 0 5px rgba(93,199,107,0.65); }
+.sevenday-toggle-dot.marginal { background: var(--warning);box-shadow: 0 0 5px rgba(230,165,58,0.65); }
+.sevenday-toggle-dot.nogo     { background: var(--nogo);   box-shadow: 0 0 5px rgba(214,69,69,0.65); }
+.sevenday-toggle-chevron {
+  font-size: 10px;
+  color: var(--tan);
+  transition: transform 0.2s;
+}
+.sevenday-toggle[aria-expanded="true"] .sevenday-toggle-chevron {
+  transform: rotate(180deg);
+}
+body.tv .sevenday-toggle { padding: 5px 12px; gap: 10px; }
+body.tv .sevenday-toggle-label { font-size: 14px; letter-spacing: 2px; }
+body.tv .sevenday-toggle-day { font-size: 11px; min-width: 18px; }
+body.tv .sevenday-toggle-dot { width: 11px; height: 11px; }
+body.tv .sevenday-toggle-chevron { font-size: 13px; }
+
+/* Expanded detail panel below the banner */
+.sevenday-detail {
+  background: linear-gradient(180deg, rgba(18,22,15,0.92), rgba(12,15,10,0.92));
+  border: 1px solid rgba(93,112,70,0.45);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  margin: 0 0 4px 0;
+  padding: 10px 14px;
+  position: relative;
+}
+.sevenday-synopsis {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgba(255,255,255,0.82);
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  background: rgba(93,112,70,0.12);
+  border-left: 2px solid var(--tan);
+  border-radius: 2px;
+}
+.sevenday-grid {
+  display: grid;
+  gap: 2px 6px;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+.sevenday-grid-category {
+  color: var(--tan);
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding-right: 6px;
+}
+.sevenday-grid-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+}
+.sevenday-grid-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-ghost);
+}
+.sevenday-grid-dot.go       { background: var(--go); }
+.sevenday-grid-dot.marginal { background: var(--warning); }
+.sevenday-grid-dot.nogo     { background: var(--nogo); }
+.sevenday-grid-dayhdr {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  text-transform: uppercase;
+}
+.sevenday-grid-periodhdr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+.sevenday-grid-daysep {
+  border-right: 1px dashed rgba(192,168,120,0.2);
+}
+.sevenday-legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(93,112,70,0.25);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.4px;
+}
+.sevenday-legend-item { display: inline-flex; align-items: center; gap: 5px; }
+body.tv .sevenday-detail { padding: 14px 18px; }
+body.tv .sevenday-synopsis { font-size: 14px; padding: 10px 14px; }
+body.tv .sevenday-grid { font-size: 13px; gap: 3px 8px; }
+body.tv .sevenday-grid-dot { width: 13px; height: 13px; }
+body.tv .sevenday-grid-dayhdr { font-size: 14px; }
+body.tv .sevenday-grid-periodhdr { font-size: 10px; }
+body.tv .sevenday-grid-cell { height: 20px; }
+body.tv .sevenday-legend { font-size: 11px; }
+
 /* Thin sub-header — visually nested under a section-header above it.
    Used by the Alternate Planning bar which sits directly below the
    IFR OPERATIONS banner as a subordinate grouping. No top stripe,
@@ -2198,8 +2366,17 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div class="section-header vfr-section-header">
     <span class="section-header-icon">🎯</span>
     <span class="section-header-title">VFR Operations</span>
+    <span class="section-header-spacer"></span>
+    <button type="button" id="sevenday-toggle" class="sevenday-toggle" onclick="toggleSevenDay()" aria-expanded="false" title="7-Day Outlook — worst of Ceiling / Visibility / Surface Wind">
+      <span class="sevenday-toggle-label">📅 7-Day</span>
+      <span class="sevenday-toggle-days" id="sevenday-toggle-days"></span>
+      <span class="sevenday-toggle-chevron">▾</span>
+    </button>
+    <span class="section-header-spacer"></span>
     <span class="section-header-detail">Cairns ≥1000/3 · Stagefields ≥700/1</span>
   </div>
+  <!-- 7-day expanded detail panel (collapsed by default) -->
+  <div id="sevenday-detail" class="sevenday-detail" style="display:none;"></div>
 
   <div class="card" style="margin-bottom: 4px;">
     <div id="training-body"></div>
@@ -3952,6 +4129,170 @@ function renderAreas(forecast) {
   body.innerHTML = `<div class="areas-grid">${cells}</div>`;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   7-Day Outlook — compact dropdown in VFR Operations banner
+   ─────────────────────────────────────────────────────────────
+   Day rollup dot reflects the worst of CIG/VIS/WIND only (per
+   user policy — turbulence/icing/TS/UAS are shown in the expanded
+   grid but don't drive the single-dot summary).
+
+   Status precedence: nogo > marginal > go > unknown. */
+const SEVENDAY_SUMMARY_CATS = ['ceiling', 'visibility', 'surface wind'];
+
+function normalizeStatus(v) {
+  const s = String(v || '').toLowerCase().trim();
+  if (s === 'go' || s === 'g')        return 'go';
+  if (s === 'marginal' || s === 'm' || s === 'y')  return 'marginal';
+  if (s === 'nogo' || s === 'no-go' || s === 'no_go' || s === 'r') return 'nogo';
+  return '';
+}
+
+function worstStatus(a, b) {
+  const rank = { '': 0, go: 1, marginal: 2, nogo: 3 };
+  return (rank[a] || 0) >= (rank[b] || 0) ? a : b;
+}
+
+/// Build per-day summary (worst of CIG/VIS/WIND across periods for that day)
+function sevenDayDaySummaries(sd) {
+  if (!sd) return [];
+  const cats = (sd.categories || []).filter(c =>
+    SEVENDAY_SUMMARY_CATS.includes(String(c.name || '').toLowerCase())
+  );
+  const periodsPerDay = sd.periodsPerDay || [];
+  const dayLabels = sd.dayLabels || [];
+  const out = [];
+  let offset = 0;
+  for (let d = 0; d < dayLabels.length; d++) {
+    const n = periodsPerDay[d] || 1;
+    let worst = '';
+    for (const c of cats) {
+      for (let p = 0; p < n; p++) {
+        worst = worstStatus(worst, normalizeStatus((c.statuses || [])[offset + p]));
+      }
+    }
+    out.push({ label: dayLabels[d], status: worst, periods: n });
+    offset += n;
+  }
+  return out;
+}
+
+function renderSevenDay() {
+  const toggle = document.getElementById('sevenday-toggle');
+  const daysEl = document.getElementById('sevenday-toggle-days');
+  const detail = document.getElementById('sevenday-detail');
+  if (!toggle || !daysEl || !detail) return;
+
+  const sd = DATA && DATA.sevenDay;
+  if (!sd) {
+    toggle.style.display = 'none';
+    detail.style.display = 'none';
+    return;
+  }
+  toggle.style.display = 'inline-flex';
+
+  // Compact day dots
+  const summaries = sevenDayDaySummaries(sd);
+  daysEl.innerHTML = summaries.map(d => `
+    <span class="sevenday-toggle-day" title="${d.label}: ${d.status || 'n/a'} (CIG/VIS/WIND rollup)">
+      <span>${escapeHtml(d.label || '')}</span>
+      <span class="sevenday-toggle-dot ${d.status}"></span>
+    </span>
+  `).join('');
+
+  // Build the full grid (only when currently expanded, but we populate regardless
+  // so opening is instant)
+  detail.innerHTML = buildSevenDayDetailHTML(sd);
+}
+
+function buildSevenDayDetailHTML(sd) {
+  const dayLabels = sd.dayLabels || [];
+  const periodsPerDay = sd.periodsPerDay || [];
+  const totalPeriods = periodsPerDay.reduce((a, b) => a + (b || 1), 0);
+  // Grid columns: 1 for category labels + one per period column
+  const cols = `200px repeat(${totalPeriods}, 1fr)`;
+
+  // Header row 1: day labels spanning their period count
+  let dayHdrCells = '<div></div>';
+  let periodHdrCells = '<div></div>';
+  let sepIdx = [];
+  let col = 1;
+  for (let d = 0; d < dayLabels.length; d++) {
+    const n = periodsPerDay[d] || 1;
+    dayHdrCells += `<div class="sevenday-grid-dayhdr" style="grid-column: span ${n};">${escapeHtml(dayLabels[d])}</div>`;
+    const periods = n === 3 ? ['AM', 'PM', 'N1'] : (n === 2 ? ['AM', 'PM'] : ['—']);
+    for (let p = 0; p < n; p++) {
+      periodHdrCells += `<div class="sevenday-grid-periodhdr">${periods[p] || ''}</div>`;
+    }
+    col += n;
+    if (d < dayLabels.length - 1) sepIdx.push(col);
+  }
+
+  // Body rows — one per category
+  const catRows = (sd.categories || []).map(c => {
+    let cells = `<div class="sevenday-grid-category">${escapeHtml(c.name || '')}</div>`;
+    const statuses = c.statuses || [];
+    for (let i = 0; i < totalPeriods; i++) {
+      const st = normalizeStatus(statuses[i]);
+      cells += `<div class="sevenday-grid-cell"><span class="sevenday-grid-dot ${st}"></span></div>`;
+    }
+    return cells;
+  }).join('');
+
+  const synopsis = sd.synopsis
+    ? `<div class="sevenday-synopsis">${escapeHtml(sd.synopsis)}</div>`
+    : '';
+
+  return `
+    ${synopsis}
+    <div class="sevenday-grid" style="grid-template-columns: ${cols};">
+      ${dayHdrCells}
+      ${periodHdrCells}
+      ${catRows}
+    </div>
+    <div class="sevenday-legend">
+      <span class="sevenday-legend-item"><span class="sevenday-grid-dot go"></span>GO</span>
+      <span class="sevenday-legend-item"><span class="sevenday-grid-dot marginal"></span>MARGINAL</span>
+      <span class="sevenday-legend-item"><span class="sevenday-grid-dot nogo"></span>NO GO</span>
+      <span class="sevenday-legend-item" style="margin-left:auto;">Banner dot = worst of CIG / VIS / WIND</span>
+    </div>
+  `;
+}
+
+function toggleSevenDay() {
+  const toggle = document.getElementById('sevenday-toggle');
+  const detail = document.getElementById('sevenday-detail');
+  if (!toggle || !detail) return;
+  const open = toggle.getAttribute('aria-expanded') === 'true';
+  toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+  detail.style.display = open ? 'none' : 'block';
+  localStorage.setItem('sevenDayOpen', open ? '0' : '1');
+}
+
+// Restore open state on load
+(function restoreSevenDayState() {
+  const shouldOpen = localStorage.getItem('sevenDayOpen') === '1';
+  if (shouldOpen) {
+    // Defer until after first render populates the detail panel
+    window.addEventListener('load', () => {
+      const toggle = document.getElementById('sevenday-toggle');
+      const detail = document.getElementById('sevenday-detail');
+      if (toggle && detail) {
+        toggle.setAttribute('aria-expanded', 'true');
+        detail.style.display = 'block';
+      }
+    });
+  }
+})();
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function renderAerodromes(forecast) {
   const card = document.getElementById('aerodromes-card');
   const header = document.getElementById('aerodromes-header');
@@ -4142,6 +4483,7 @@ function renderAll() {
   renderFLW(forecast);
   renderHazards(forecast);
   renderSolar(forecast);
+  renderSevenDay();
 
   const alertEl = document.getElementById('data-alert');
   if (!forecast) {
