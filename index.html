@@ -776,9 +776,31 @@ body.tv .section-header-detail { font-size: 13px; }
   margin-left: 10px;
   animation: amdPulse 2s ease-in-out infinite;
 }
-@keyframes amdPulse {
-  0%, 100% { box-shadow: 0 0 0 rgba(230,165,58,0); }
-  50%      { box-shadow: 0 0 10px rgba(230,165,58,0.5); }
+/* Opacity-based pulse for all WWA / amendment / advisory glows.
+   Box-shadow is rasterized once on a pseudo-element; each frame only
+   changes opacity, which the GPU composites with zero paint cost. */
+@keyframes glowOpacityPulse {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+@keyframes glowOpacityPulseSoft {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
+}
+.mef-amd-badge {
+  position: relative;
+  animation: none;
+}
+.mef-amd-badge::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 12px rgba(230,165,58,0.55);
+  opacity: 0;
+  pointer-events: none;
+  animation: glowOpacityPulse 2s ease-in-out infinite;
+  will-change: opacity;
 }
 body.tv .mef-amd-badge { font-size: 13px; padding: 4px 10px; }
 
@@ -831,9 +853,52 @@ body.tv .pending-advisory-time { font-size: 12px; }
   animation: pipPulse 2s ease-in-out infinite;
   cursor: help;
 }
-@keyframes pipPulse {
-  0%, 100% { box-shadow: 0 0 0 rgba(230,165,58,0); }
-  50%      { box-shadow: 0 0 8px rgba(230,165,58,0.7); }
+/* pipPulse replacement — every element that was animating box-shadow
+   via @keyframes pipPulse now uses an ::after overlay with pre-baked
+   shadow and an opacity-only animation. The original @keyframes
+   pipPulse is deliberately deleted so the `animation: pipPulse …`
+   declaration on the element becomes a no-op. Circular pips get
+   radial overlays; rectangular badges get inset (parent may have
+   overflow hidden) or outward glows depending on their context. */
+.nav-amd-badge,
+.hazards-present-badge,
+.area-advisory.active {
+  position: relative;
+}
+.training-panel-advisory-pip::after,
+.ifr-training-pip::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(230,165,58,0.75);
+  opacity: 0;
+  pointer-events: none;
+  animation: glowOpacityPulse 2s ease-in-out infinite;
+  will-change: opacity;
+}
+.nav-amd-badge::after,
+.hazards-present-badge::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 12px rgba(230,165,58,0.6);
+  opacity: 0;
+  pointer-events: none;
+  animation: glowOpacityPulse 2s ease-in-out infinite;
+  will-change: opacity;
+}
+.area-advisory.active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 14px rgba(230,165,58,0.35);
+  opacity: 0;
+  pointer-events: none;
+  animation: glowOpacityPulse 2s ease-in-out infinite;
+  will-change: opacity;
 }
 body.tv .training-panel-advisory-pip { width: 22px; height: 22px; font-size: 12px; }
 
@@ -851,9 +916,19 @@ body.tv .area-amd-time { font-size: 11px; }
 .ifr-training.advisory-affecting {
   animation: ifrAdvFlash 2.5s ease-in-out infinite;
 }
-@keyframes ifrAdvFlash {
-  0%, 100% { box-shadow: 0 0 12px rgba(95,186,79,0.12); }
-  50%      { box-shadow: 0 0 22px rgba(230,165,58,0.4); }
+/* ifrAdvFlash converted to an opacity-fade on an ::after overlay.
+   Parent has overflow:hidden so we use an inset shadow — the amber
+   glow reads inside the strip instead of radiating outward. */
+.ifr-training.advisory-affecting::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 30px rgba(230,165,58,0.45);
+  opacity: 0;
+  pointer-events: none;
+  animation: glowOpacityPulse 2.5s ease-in-out infinite;
+  will-change: opacity;
 }
 /* Circular pip indicator inside the IFR strip when an advisory affects IFR */
 .ifr-training-pip {
@@ -1291,10 +1366,24 @@ body.tv .land-rwy, body.tv .land-arrow { font-size: 16px; }
   text-transform: none;
   margin-left: 4px;
 }
-/* Subtle pulse on GO panels for liveness */
-@keyframes panelGlow {
-  0%, 100% { box-shadow: 0 0 18px rgba(95,186,79,0.18), inset 0 0 30px rgba(95,186,79,0.06); }
-  50%      { box-shadow: 0 0 28px rgba(95,186,79,0.28), inset 0 0 35px rgba(95,186,79,0.10); }
+/* Subtle pulse on GO panels — rendered as an ::after opacity fade so
+   the shadow is rasterized once and only compositor work runs every
+   frame. Note: training-panel.go uses ::before for the top stripe, so
+   we use ::after here. */
+.training-panel.go { position: relative; }
+.training-panel.go::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* Parent has overflow:hidden — use inset glow only, otherwise the
+     outer shadow gets clipped at the panel edge and the animation
+     looks like a flicker instead of a pulse. */
+  box-shadow: inset 0 0 35px rgba(95,186,79,0.22);
+  opacity: 0;
+  pointer-events: none;
+  animation: glowOpacityPulseSoft 4s ease-in-out infinite;
+  will-change: opacity;
 }
 .training-panel.go {
   animation: panelGlow 4s ease-in-out infinite;
@@ -1407,11 +1496,11 @@ body.tv .training-panel-solo-reason { font-size: 11px; }
 /* ADVISORIES — pulsing alert glow */
 #advisories-card {
   border-color: var(--warning);
-  animation: alertPulse 2.5s ease-in-out infinite;
-}
-@keyframes alertPulse {
-  0%, 100% { box-shadow: 0 0 0 rgba(230,165,58,0); }
-  50%      { box-shadow: 0 0 14px rgba(230,165,58,0.25); }
+  /* Static soft glow — no animation. The amber border + HUD corner
+     brackets already signal active advisories clearly. Animated
+     box-shadow here was the worst offender for CPU paint cost on
+     low-end GPUs. */
+  box-shadow: 0 0 14px rgba(230,165,58,0.22);
 }
 #advisories-card::before, #advisories-card::after {
   border-color: var(--warning);
