@@ -4141,6 +4141,46 @@ function scheduleDailyReload() {
 }
 scheduleDailyReload();
 
+// Auto-update check: detects new deploys of index.html by comparing the
+// page's initial ETag against the current server ETag. Runs every 5 min.
+// When a new version is detected on the server, the page silently reloads
+// to pick up the new HTML/CSS/JS without any human intervention. Perfect
+// for a kiosk display running unattended.
+let INITIAL_HTML_ETAG = null;
+async function captureInitialHTMLETag() {
+  try {
+    const res = await fetch(location.pathname, { method: 'HEAD', cache: 'no-store' });
+    INITIAL_HTML_ETAG = res.headers.get('etag') || res.headers.get('last-modified');
+    console.log('[Auto-update] Initial page fingerprint:', INITIAL_HTML_ETAG);
+  } catch (e) {
+    console.warn('[Auto-update] Could not capture initial fingerprint:', e);
+  }
+}
+async function checkForDashboardUpdate() {
+  try {
+    const res = await fetch(location.pathname + '?cb=' + Date.now(), {
+      method: 'HEAD',
+      cache: 'no-store'
+    });
+    const current = res.headers.get('etag') || res.headers.get('last-modified');
+    // If we failed to capture an initial fingerprint, set it now and wait
+    // for the next tick rather than reloading immediately.
+    if (!INITIAL_HTML_ETAG) {
+      INITIAL_HTML_ETAG = current;
+      return;
+    }
+    if (current && current !== INITIAL_HTML_ETAG) {
+      console.log('[Auto-update] New version detected — reloading');
+      location.reload();
+    }
+  } catch (e) {
+    console.warn('[Auto-update] Check failed:', e);
+  }
+}
+captureInitialHTMLETag();
+// Check every 5 minutes for a new deploy
+setInterval(checkForDashboardUpdate, 5 * 60 * 1000);
+
 setupPeriodButtons();
 initCollapsibles();
 updateClock();
