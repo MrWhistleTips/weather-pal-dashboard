@@ -770,71 +770,77 @@ body.tv .section-header-detail { font-size: 13px; }
 .sevenday-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 3px 8px;
-  background: rgba(0,0,0,0.25);
-  border: 1px solid rgba(192,168,120,0.35);
+  gap: 12px;
+  padding: 2px 12px;
+  background: rgba(0,0,0,0.28);
+  border: 1px solid rgba(192,168,120,0.4);
   border-radius: 4px;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s, border-color 0.15s;
+  line-height: 1;
 }
 .sevenday-toggle:hover {
-  background: rgba(0,0,0,0.4);
-  border-color: rgba(192,168,120,0.6);
+  background: rgba(0,0,0,0.45);
+  border-color: rgba(192,168,120,0.7);
 }
 .sevenday-toggle[aria-expanded="true"] {
-  background: rgba(230,165,58,0.12);
-  border-color: rgba(230,165,58,0.5);
+  background: rgba(230,165,58,0.15);
+  border-color: rgba(230,165,58,0.6);
 }
 .sevenday-toggle-label {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 1.4px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
   color: var(--tan);
   white-space: nowrap;
 }
 .sevenday-toggle-days {
   display: inline-flex;
-  gap: 3px;
+  gap: 8px;
   align-items: center;
 }
+/* Day letter sits LEFT of the dot, both on the same baseline */
 .sevenday-toggle-day {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 1px;
+  gap: 4px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 8px;
-  color: rgba(255,255,255,0.75);
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
   letter-spacing: 0.3px;
-  min-width: 14px;
+  line-height: 1;
 }
 .sevenday-toggle-dot {
-  width: 8px;
-  height: 8px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   background: var(--text-ghost);
   box-shadow: 0 0 3px rgba(0,0,0,0.5);
+  flex-shrink: 0;
 }
-.sevenday-toggle-dot.go       { background: var(--go);     box-shadow: 0 0 5px rgba(93,199,107,0.65); }
-.sevenday-toggle-dot.marginal { background: var(--warning);box-shadow: 0 0 5px rgba(230,165,58,0.65); }
-.sevenday-toggle-dot.nogo     { background: var(--nogo);   box-shadow: 0 0 5px rgba(214,69,69,0.65); }
+.sevenday-toggle-dot.go       { background: var(--go);     box-shadow: 0 0 6px rgba(93,199,107,0.7); }
+.sevenday-toggle-dot.marginal { background: var(--warning);box-shadow: 0 0 6px rgba(230,165,58,0.7); }
+.sevenday-toggle-dot.nogo     { background: var(--nogo);   box-shadow: 0 0 6px rgba(214,69,69,0.7); }
 .sevenday-toggle-chevron {
-  font-size: 10px;
+  font-size: 13px;
   color: var(--tan);
   transition: transform 0.2s;
+  line-height: 1;
 }
 .sevenday-toggle[aria-expanded="true"] .sevenday-toggle-chevron {
   transform: rotate(180deg);
 }
-body.tv .sevenday-toggle { padding: 5px 12px; gap: 10px; }
-body.tv .sevenday-toggle-label { font-size: 14px; letter-spacing: 2px; }
-body.tv .sevenday-toggle-day { font-size: 11px; min-width: 18px; }
-body.tv .sevenday-toggle-dot { width: 11px; height: 11px; }
-body.tv .sevenday-toggle-chevron { font-size: 13px; }
+body.tv .sevenday-toggle { padding: 4px 16px; gap: 16px; }
+body.tv .sevenday-toggle-label { font-size: 20px; letter-spacing: 2.5px; }
+body.tv .sevenday-toggle-days { gap: 12px; }
+body.tv .sevenday-toggle-day { font-size: 18px; gap: 6px; }
+body.tv .sevenday-toggle-dot { width: 15px; height: 15px; }
+body.tv .sevenday-toggle-chevron { font-size: 17px; }
 
 /* Expanded detail panel below the banner */
 .sevenday-detail {
@@ -2368,7 +2374,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <span class="section-header-title">VFR Operations</span>
     <span class="section-header-spacer"></span>
     <button type="button" id="sevenday-toggle" class="sevenday-toggle" onclick="toggleSevenDay()" aria-expanded="false" title="7-Day Outlook — worst of Ceiling / Visibility / Surface Wind">
-      <span class="sevenday-toggle-label">7-Day</span>
+      <span class="sevenday-toggle-label">7-Day Outlook</span>
       <span class="sevenday-toggle-days" id="sevenday-toggle-days"></span>
       <span class="sevenday-toggle-chevron">▾</span>
     </button>
