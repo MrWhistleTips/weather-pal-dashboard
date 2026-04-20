@@ -3191,18 +3191,16 @@ function parseMetarVis(visib) {
 }
 
 // Returns "go" | "nogo" | "unknown" for alternate planning.
-// Green (go) requires wx to be MORE THAN 400 ft ceiling AND 1 SM
-// ABOVE the published alternate minimums (Army alternate planning rule).
-// UNKNOWN only if METAR missing or stale.
+// Green (go) = current METAR ceiling AND visibility are at or above the
+// published alternate minimums. Red = either falls below. UNKNOWN only if
+// METAR missing or stale.
 function alternateStatus(metar, minCeil, minVis) {
   if (!metar || isMetarStale(metar)) return 'unknown';
   const c = metarCeiling(metar);
   const ceil = (c === null) ? 99999 : c;   // no BKN/OVC = unlimited ceiling
   const vis = parseMetarVis(metar.visib);
   if (vis === null) return 'unknown';
-  const goCeil = minCeil + 400;
-  const goVis  = minVis + 1;
-  return (ceil > goCeil && vis > goVis) ? 'go' : 'nogo';
+  return (ceil >= minCeil && vis >= minVis) ? 'go' : 'nogo';
 }
 
 // Format a visibility number back to a display string (keeps fractions readable)
