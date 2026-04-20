@@ -1002,8 +1002,8 @@ body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 5px 9px;
   border: 1px solid rgba(93,112,70,0.35);
   border-left-width: 3px;
   border-radius: 4px;
@@ -1013,20 +1013,20 @@ body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
 .alt-row.go { border-left-color: var(--go); box-shadow: inset 0 0 8px rgba(93,199,107,0.08); }
 .alt-row.nogo { border-left-color: var(--nogo); box-shadow: inset 0 0 8px rgba(214,69,69,0.08); }
 .alt-row.unknown { border-left-color: var(--unknown); }
-.alt-row-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.alt-row-left { display: flex; flex-direction: column; gap: 0; min-width: 0; line-height: 1.15; }
 .alt-row-id {
   font-family: 'Rajdhani', sans-serif;
   font-weight: 700;
-  font-size: 18px;
-  letter-spacing: 2px;
+  font-size: 15px;
+  letter-spacing: 1.5px;
   color: var(--tan);
-  text-shadow: 0 0 4px rgba(192,168,120,0.3);
+  text-shadow: 0 0 3px rgba(192,168,120,0.3);
 }
 .alt-row-name {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: rgba(255,255,255,0.55);
-  letter-spacing: 0.5px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.4px;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
@@ -1036,14 +1036,13 @@ body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   color: rgba(255,255,255,0.4);
-  margin-top: 1px;
 }
 .alt-row-cur-wrap {
-  margin-top: 3px;
+  margin-top: 1px;
 }
 .alt-row-cur {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.3px;
 }
 .alt-row-cur-missing {
@@ -1075,14 +1074,15 @@ body.tv .alt-row-stale { font-size: 11px; }
 .alt-badge {
   font-family: 'Rajdhani', sans-serif;
   font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 1.2px;
+  font-size: 10px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 4px 9px;
+  padding: 3px 7px;
   border-radius: 3px;
   border: 1px solid;
   white-space: nowrap;
   flex-shrink: 0;
+  line-height: 1.15;
 }
 .alt-badge.go {
   color: var(--go);
@@ -1101,11 +1101,11 @@ body.tv .alt-row-stale { font-size: 11px; }
   background: rgba(214,179,69,0.12);
   border-color: rgba(214,179,69,0.45);
 }
-body.tv .alt-row { padding: 14px 18px; }
-body.tv .alt-row-id { font-size: 24px; }
-body.tv .alt-row-name { font-size: 12px; }
+body.tv .alt-row { padding: 8px 14px; }
+body.tv .alt-row-id { font-size: 20px; }
+body.tv .alt-row-name { font-size: 11px; }
 body.tv .alt-row-mins { font-size: 11px; }
-body.tv .alt-badge { font-size: 14px; padding: 6px 12px; }
+body.tv .alt-badge { font-size: 12px; padding: 4px 10px; }
 
 /* Landing direction row inside training panel */
 .training-panel-landing {
@@ -3174,9 +3174,8 @@ function renderAlternates() {
       <div class="alt-row ${status}">
         <div class="alt-row-left">
           <div class="alt-row-id">${a.id}</div>
-          <div class="alt-row-name">${a.name}</div>
-          <div class="alt-row-cur-wrap">${curLine}</div>
-          <div class="alt-row-mins">${a.approach} · min ${a.minCeil}/${visMinDisplay(a.minVis)}</div>
+          <div class="alt-row-cur-wrap">${curLine} <span class="alt-row-mins">· min ${a.minCeil}/${visMinDisplay(a.minVis)}</span></div>
+          <div class="alt-row-name">${a.name} · ${a.approach}</div>
         </div>
         <div class="alt-badge ${status}">${badgeLabel}</div>
       </div>
