@@ -2243,10 +2243,19 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <span class="section-subheader-detail">Airfield is green if wx is &gt;400/1 above approach mins.</span>
   </div>
 
-  <div class="card" style="margin-bottom: 4px;">
+ <div class="card" style="margin-bottom: 4px;">
     <div id="alt-body" class="alt-grid">
       <!-- Rendered by JS -->
     </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- AERODROME FORECASTS — thin subheader nested under IFR OPS -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div id="aerodromes-header" class="section-subheader alt-section-subheader" style="display: none;">
+    <span class="section-subheader-icon">🛫</span>
+    <span class="section-subheader-title">Aerodrome Forecasts</span>
+    <span class="section-subheader-detail">TAF-style forecasts · embedded METARs</span>
   </div>
 
   <div id="aerodromes-card" class="card" style="margin-bottom: 4px; display: none;">
@@ -3926,15 +3935,18 @@ function renderAreas(forecast) {
 
 function renderAerodromes(forecast) {
   const card = document.getElementById('aerodromes-card');
+  const header = document.getElementById('aerodromes-header');
   const body = document.getElementById('aerodromes-body');
   const count = document.getElementById('aerodromes-count');
 
   const aerodromes = (forecast && forecast.flightBriefing && forecast.flightBriefing.aerodromeForecasts) || [];
   if (aerodromes.length === 0) {
     if (card) card.style.display = 'none';
+    if (header) header.style.display = 'none';
     return;
   }
   if (card) card.style.display = 'block';
+  if (header) header.style.display = 'flex';
   if (count) count.textContent = `${aerodromes.length} airfields`;
 
   body.innerHTML = `<div class="aerodromes-grid">${
