@@ -142,7 +142,19 @@ body::before {
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
+.brand-byline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.8px;
+  text-transform: none;
+}
+body.tv .brand-byline { font-size: 13px; }
 .brand-sub {
   font-size: 9px;
   color: var(--tan);
@@ -1980,7 +1992,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div class="brand">
     <div class="brand-logo">⛅</div>
     <div class="brand-title">
-      <div class="brand-name">Weather Pal</div>
+      <div class="brand-name">Weather Pal<span class="brand-byline">Created by Scott Nissen</span></div>
       <div class="brand-sub">Fort Rucker · USAACE</div>
     </div>
   </div>
