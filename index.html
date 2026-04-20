@@ -2987,8 +2987,9 @@ function parseSegmentWind(text) {
 ///       gust spread > 10 KT, OR any wind advisory >15 KT in effect
 ///       or upcoming during the period
 function soloStatus(forecast, amendment, advisories) {
-  // Gap 2: check wind advisories first (active OR upcoming during period)
-  const windAdv = findWindAdvisoryDuringPeriod(advisories);
+  // Gap 2: check wind advisories first — any WWA >15 kt that overlaps the
+  // forecast's training period grounds solos.
+  const windAdv = findWindAdvisoryDuringPeriod(advisories, forecast);
   if (windAdv) {
     return { go: false, reason: `${windAdv.type} Wind` };
   }
@@ -3021,36 +3022,69 @@ function soloStatus(forecast, amendment, advisories) {
   return { go: true, reason: 'OK' };
 }
 
-/// Returns the first wind-related advisory (>15kt) that is active OR upcoming.
+/// Parse a forecast's validPeriod string (e.g. "AM 1200Z-1800Z", "PM 1800Z-0030Z")
+/// into {from, to} minutes-since-00Z. Returns null if unparseable.
+function parseTrainingWindow(forecast) {
+  const s = String(forecast && forecast.mef && forecast.mef.validPeriod || '').toUpperCase();
+  const m = s.match(/(\d{4})\s*Z?\s*-\s*(\d{4})\s*Z?/);
+  if (!m) return null;
+  const toMin = (h) => parseInt(h.slice(0,2)) * 60 + parseInt(h.slice(2,4));
+  return { from: toMin(m[1]), to: toMin(m[2]) };
+}
+
+/// Do two Zulu-minute intervals overlap at any point? Each interval is
+/// treated as possibly crossing midnight (to < from means wrap).
+function windowsOverlap(aFrom, aTo, bFrom, bTo) {
+  const expand = (f, t) => t < f ? [[f, 1440], [0, t]] : [[f, t]];
+  const as = expand(aFrom, aTo);
+  const bs = expand(bFrom, bTo);
+  for (const [af, at] of as) {
+    for (const [bf, bt] of bs) {
+      if (af <= bt && bf <= at) return true;
+    }
+  }
+  return false;
+}
+
+/// Returns the first wind-related advisory (>15kt) whose validity overlaps
+/// the forecast's training period at any point. CURR/UFN advisories have
+/// unparseable times and are treated as always-in-effect. If the forecast's
+/// training period can't be parsed we fall back to active-now OR upcoming
+/// within 6 hours (previous behavior).
 /// Returns null if no such advisory exists.
-function findWindAdvisoryDuringPeriod(advisories) {
+function findWindAdvisoryDuringPeriod(advisories, forecast) {
   if (!advisories) return null;
+  const tw = parseTrainingWindow(forecast);
+  const now = zuluMinutes();
   for (const a of advisories) {
     if (!a || !a.criteria) continue;
     const t = String(a.criteria).toUpperCase();
-    // Must mention wind/gust to qualify
     if (!/WIND|GUST/.test(t)) continue;
-    // Find any number followed by KT/KNOTS in the criteria
     const numMatches = [...t.matchAll(/(\d+)\s*(?:KT|KNOTS?)/g)].map(m => parseInt(m[1]));
-    // If it explicitly cites wind speed > 15, ground solos
     const exceeds15 = numMatches.length > 0
       ? numMatches.some(n => n > 15)
-      : true;  // no specific number = generic wind advisory, treat as grounding
+      : true;  // generic wind advisory with no stated speed -> grounding
     if (!exceeds15) continue;
-    // Check this advisory is active OR scheduled within the next 6 hours
-    const now = zuluMinutes();
+
     const from = parseZuluFromText(a.validFrom);
     const to = parseZuluFromText(a.validTo);
-    if (from === null || to === null) return a;  // ambiguous timing, treat as in-effect
-    // Active right now?
+    // Ambiguous timing (CURR/UFN, missing) — always in effect
+    if (from === null || to === null) return a;
+
+    // If we have a training window, any overlap grounds solos
+    if (tw) {
+      if (windowsOverlap(from, to, tw.from, tw.to)) return a;
+      continue;
+    }
+
+    // Fallback: active right now or upcoming within 6 hours
     const active = (to < from)
-      ? (now >= from || now <= to)         // cross-midnight
+      ? (now >= from || now <= to)
       : (now >= from && now <= to);
     if (active) return a;
-    // Upcoming within 6 hours?
     let minsUntil = from - now;
-    if (minsUntil < 0) minsUntil += 1440;  // wrap past midnight
-    if (minsUntil <= 360) return a;        // 6 hours
+    if (minsUntil < 0) minsUntil += 1440;
+    if (minsUntil <= 360) return a;
   }
   return null;
 }
