@@ -1085,6 +1085,28 @@ body.tv .alt-row-meta { font-size: 11px; }
   color: var(--nogo);
   text-shadow: 0 0 4px rgba(214,69,69,0.35);
 }
+/* Categorical coloring for current METAR ceil/vis inside the alt row */
+.alt-row-cur.cat-vfr  { color: var(--vfr);  text-shadow: 0 0 4px rgba(95,186,79,0.35); }
+.alt-row-cur.cat-mvfr { color: var(--mvfr); text-shadow: 0 0 4px rgba(74,144,226,0.35); }
+.alt-row-cur.cat-ifr  { color: var(--ifr);  text-shadow: 0 0 4px rgba(214,69,69,0.35); }
+.alt-row-cur.cat-lifr { color: var(--lifr); text-shadow: 0 0 4px rgba(179,71,217,0.35); }
+/* Inline (field name + ceil/vis on same line) */
+.alt-row-nameline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 1px;
+}
+.alt-row-nameline .alt-row-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.alt-row-nameline .alt-row-cur {
+  flex: 0 0 auto;
+  font-weight: 700;
+}
 .alt-row-stale {
   display: inline-block;
   margin-left: 4px;
@@ -3178,25 +3200,17 @@ function renderAlternates() {
     const stale = metar ? isMetarStale(metar) : true;
     const badgeLabel = status === 'unknown' ? 'Unknown' : 'Poss. Alt';
 
-    // Current conditions line — show "CLR" when no BKN/OVC layer
+    // Current conditions line — show "CLR" when no BKN/OVC layer.
+    // Color the whole ceil/vis chunk by the FAA flight category.
     let curLine = '<span class="alt-row-cur alt-row-cur-missing">No METAR</span>';
     if (metar) {
       const c = metarCeiling(metar);
       const vis = parseMetarVis(metar.visib);
-      const ceilStr = c === null ? 'CLR' : `${c}`;
+      const cat = flightCategory(c, vis);  // 'vfr' | 'mvfr' | 'ifr' | 'lifr'
+      const ceilStr = c === null ? 'CLR' : `${c}ft`;
       const visStr = vis === null ? '—' : `${visDisplay(vis)}SM`;
-      // Flag each value red when it fails its own minimum
-      const ceilFail = c !== null && c < a.minCeil;
-      const visFail  = vis !== null && vis < a.minVis;
-      const ceilCls = ceilFail ? 'alt-row-val-bad' : 'alt-row-val-ok';
-      const visCls  = visFail  ? 'alt-row-val-bad' : 'alt-row-val-ok';
       const staleTag = stale ? ' <span class="alt-row-stale">OLD</span>' : '';
-      curLine = `<span class="alt-row-cur">`
-              + `<span class="${ceilCls}">${ceilStr === 'CLR' ? 'CLR' : ceilStr + 'ft'}</span>`
-              + ` · `
-              + `<span class="${visCls}">${visStr}</span>`
-              + staleTag
-              + `</span>`;
+      curLine = `<span class="alt-row-cur cat-${cat}">${ceilStr} · ${visStr}</span>${staleTag}`;
     }
 
     return `
@@ -3208,8 +3222,10 @@ function renderAlternates() {
           </div>
           <div class="alt-badge ${status}">${badgeLabel}</div>
         </div>
-        <div class="alt-row-cur-wrap">${curLine}</div>
-        <div class="alt-row-name">${a.name}</div>
+        <div class="alt-row-nameline">
+          <div class="alt-row-name">${a.name}</div>
+          <div>${curLine}</div>
+        </div>
       </div>
     `;
   });
