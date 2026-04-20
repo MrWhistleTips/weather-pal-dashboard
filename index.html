@@ -863,12 +863,26 @@ body.tv .sevenday-toggle-chevron { font-size: 17px; }
   border-left: 2px solid var(--tan);
   border-radius: 2px;
 }
+/* Wrapper centers the fixed-width grid horizontally and lets it overflow
+   on narrow viewports without stretching the period columns. */
+.sevenday-grid-wrap {
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
 .sevenday-grid {
   display: grid;
-  gap: 2px 6px;
+  gap: 3px 4px;
   align-items: center;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
+}
+/* Spacer columns between days — subtle dashed divider for grouping */
+.sevenday-grid-gap {
+  height: 100%;
+  border-left: 1px dashed rgba(192,168,120,0.18);
+  margin-left: 50%;  /* center the divider inside the gap column */
+  min-height: 16px;
 }
 .sevenday-grid-category {
   color: var(--tan);
@@ -4213,33 +4227,54 @@ function renderSevenDay() {
 function buildSevenDayDetailHTML(sd) {
   const dayLabels = sd.dayLabels || [];
   const periodsPerDay = sd.periodsPerDay || [];
-  const totalPeriods = periodsPerDay.reduce((a, b) => a + (b || 1), 0);
-  // Grid columns: 1 for category labels + one per period column
-  const cols = `200px repeat(${totalPeriods}, 1fr)`;
 
-  // Header row 1: day labels spanning their period count
+  // Build grid-template-columns: fixed-width period columns so periods
+  // within a day stay tight together, plus explicit spacer columns
+  // between days for visual grouping. Stops the grid from spreading all
+  // period columns evenly across the full card width.
+  const LABEL_COL = '180px';
+  const PERIOD_COL = '40px';
+  const DAY_GAP = '20px';
+  const colParts = [LABEL_COL];
+  for (let d = 0; d < dayLabels.length; d++) {
+    const n = periodsPerDay[d] || 1;
+    for (let p = 0; p < n; p++) colParts.push(PERIOD_COL);
+    if (d < dayLabels.length - 1) colParts.push(DAY_GAP);
+  }
+  const cols = colParts.join(' ');
+
+  // Header rows — empty label cell, then day cell (spanning N periods),
+  // then empty spacer cell between days.
   let dayHdrCells = '<div></div>';
   let periodHdrCells = '<div></div>';
-  let sepIdx = [];
-  let col = 1;
   for (let d = 0; d < dayLabels.length; d++) {
     const n = periodsPerDay[d] || 1;
     dayHdrCells += `<div class="sevenday-grid-dayhdr" style="grid-column: span ${n};">${escapeHtml(dayLabels[d])}</div>`;
-    const periods = n === 3 ? ['AM', 'PM', 'N1'] : (n === 2 ? ['AM', 'PM'] : ['—']);
+    const periods = n === 3 ? ['AM', 'PM', 'N1'] : (n === 2 ? ['AM', 'PM'] : ['•']);
     for (let p = 0; p < n; p++) {
       periodHdrCells += `<div class="sevenday-grid-periodhdr">${periods[p] || ''}</div>`;
     }
-    col += n;
-    if (d < dayLabels.length - 1) sepIdx.push(col);
+    if (d < dayLabels.length - 1) {
+      dayHdrCells += '<div class="sevenday-grid-gap"></div>';
+      periodHdrCells += '<div class="sevenday-grid-gap"></div>';
+    }
   }
 
-  // Body rows — one per category
+  // Body rows — category label, N dot cells per day, spacer between days.
   const catRows = (sd.categories || []).map(c => {
     let cells = `<div class="sevenday-grid-category">${escapeHtml(c.name || '')}</div>`;
     const statuses = c.statuses || [];
-    for (let i = 0; i < totalPeriods; i++) {
-      const st = normalizeStatus(statuses[i]);
-      cells += `<div class="sevenday-grid-cell"><span class="sevenday-grid-dot ${st}"></span></div>`;
+    let offset = 0;
+    for (let d = 0; d < dayLabels.length; d++) {
+      const n = periodsPerDay[d] || 1;
+      for (let p = 0; p < n; p++) {
+        const st = normalizeStatus(statuses[offset + p]);
+        cells += `<div class="sevenday-grid-cell"><span class="sevenday-grid-dot ${st}"></span></div>`;
+      }
+      offset += n;
+      if (d < dayLabels.length - 1) {
+        cells += '<div class="sevenday-grid-gap"></div>';
+      }
     }
     return cells;
   }).join('');
@@ -4250,10 +4285,12 @@ function buildSevenDayDetailHTML(sd) {
 
   return `
     ${synopsis}
-    <div class="sevenday-grid" style="grid-template-columns: ${cols};">
-      ${dayHdrCells}
-      ${periodHdrCells}
-      ${catRows}
+    <div class="sevenday-grid-wrap">
+      <div class="sevenday-grid" style="grid-template-columns: ${cols};">
+        ${dayHdrCells}
+        ${periodHdrCells}
+        ${catRows}
+      </div>
     </div>
     <div class="sevenday-legend">
       <span class="sevenday-legend-item"><span class="sevenday-grid-dot go"></span>GO</span>
