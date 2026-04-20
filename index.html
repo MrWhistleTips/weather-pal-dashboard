@@ -1038,6 +1038,40 @@ body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
   color: rgba(255,255,255,0.4);
   margin-top: 1px;
 }
+.alt-row-cur-wrap {
+  margin-top: 3px;
+}
+.alt-row-cur {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+.alt-row-cur-missing {
+  color: rgba(255,255,255,0.35);
+  font-style: italic;
+}
+.alt-row-val-ok {
+  color: rgba(255,255,255,0.9);
+}
+.alt-row-val-bad {
+  color: var(--nogo);
+  text-shadow: 0 0 4px rgba(214,69,69,0.35);
+}
+.alt-row-stale {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 4px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--unknown);
+  border: 1px solid rgba(214,179,69,0.45);
+  border-radius: 2px;
+  background: rgba(214,179,69,0.1);
+}
+body.tv .alt-row-cur { font-size: 15px; }
+body.tv .alt-row-stale { font-size: 11px; }
 .alt-badge {
   font-family: 'Rajdhani', sans-serif;
   font-weight: 700;
@@ -3092,23 +3126,57 @@ function visMinDisplay(vis) {
   return String(vis);
 }
 
+// Format an arbitrary visibility value for display (handles common fractions)
+function visDisplay(vis) {
+  if (vis === null || vis === undefined) return '—';
+  if (Math.abs(vis - Math.round(vis)) < 0.001) return String(Math.round(vis));
+  if (Math.abs(vis - 1.25) < 0.001) return '1¼';
+  if (Math.abs(vis - 1.5) < 0.001) return '1½';
+  if (Math.abs(vis - 1.75) < 0.001) return '1¾';
+  if (Math.abs(vis - 1.4375) < 0.001) return '1 7⁄16';
+  if (Math.abs(vis - 0.75) < 0.001) return '¾';
+  if (Math.abs(vis - 0.5) < 0.001) return '½';
+  if (Math.abs(vis - 0.25) < 0.001) return '¼';
+  return vis.toFixed(2).replace(/\.?0+$/, '');
+}
+
 function renderAlternates() {
   const body = document.getElementById('alt-body');
   if (!body) return;
   const parts = ALTERNATES.map(a => {
     const metar = ALTERNATE_METARS[a.id] || null;
     const status = alternateStatus(metar, a.minCeil, a.minVis);
-    const badgeLabel = status === 'go' ? 'Poss. Alternate'
-                     : status === 'nogo' ? 'Poss. Alternate'
-                     : 'Unknown';
-    // Green for go, red for nogo, yellow for unknown — all say "Poss. Alternate"
-    // except unknown which says Unknown (consistent with other cards).
+    const stale = metar ? isMetarStale(metar) : true;
+    const badgeLabel = status === 'unknown' ? 'Unknown' : 'Poss. Alternate';
+
+    // Current conditions line — show "CLR" when no BKN/OVC layer
+    let curLine = '<span class="alt-row-cur alt-row-cur-missing">No METAR</span>';
+    if (metar) {
+      const c = metarCeiling(metar);
+      const vis = parseMetarVis(metar.visib);
+      const ceilStr = c === null ? 'CLR' : `${c}`;
+      const visStr = vis === null ? '—' : `${visDisplay(vis)}SM`;
+      // Flag each value red when it fails its own minimum
+      const ceilFail = c !== null && c < a.minCeil;
+      const visFail  = vis !== null && vis < a.minVis;
+      const ceilCls = ceilFail ? 'alt-row-val-bad' : 'alt-row-val-ok';
+      const visCls  = visFail  ? 'alt-row-val-bad' : 'alt-row-val-ok';
+      const staleTag = stale ? ' <span class="alt-row-stale">OLD</span>' : '';
+      curLine = `<span class="alt-row-cur">`
+              + `<span class="${ceilCls}">${ceilStr === 'CLR' ? 'CLR' : ceilStr + 'ft'}</span>`
+              + ` · `
+              + `<span class="${visCls}">${visStr}</span>`
+              + staleTag
+              + `</span>`;
+    }
+
     return `
       <div class="alt-row ${status}">
         <div class="alt-row-left">
           <div class="alt-row-id">${a.id}</div>
           <div class="alt-row-name">${a.name}</div>
-          <div class="alt-row-mins">${a.approach} · ${a.minCeil}/${visMinDisplay(a.minVis)}</div>
+          <div class="alt-row-cur-wrap">${curLine}</div>
+          <div class="alt-row-mins">${a.approach} · min ${a.minCeil}/${visMinDisplay(a.minVis)}</div>
         </div>
         <div class="alt-badge ${status}">${badgeLabel}</div>
       </div>
