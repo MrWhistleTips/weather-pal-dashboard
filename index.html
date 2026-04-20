@@ -2908,7 +2908,7 @@ function isMetarStale(metar) {
   if (!metar || !metar.reportTime) return true;
   const rep = new Date(metar.reportTime);
   if (isNaN(rep)) return true;
-  return (Date.now() - rep.getTime()) >= 60 * 60 * 1000;
+  return (Date.now() - rep.getTime()) >= 80 * 60 * 1000;
 }
 
 function metarCeiling(metar) {
