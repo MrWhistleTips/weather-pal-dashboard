@@ -2496,10 +2496,21 @@ function zuluHHMMToLocalString(zStr) {
 /// Used for area forecast text where times are inline.
 function annotateZuluWithLocal(text) {
   if (!text) return text;
-  return text.replace(/\b(\d{4})Z\b/g, (m, hhmm) => {
+  // First handle ranges like "1400-1800Z" where the first time has an implicit Z.
+  // Produces "1400 (09:00L)-1800Z (13:00L)".
+  let out = text.replace(/\b(\d{4})-(\d{4})Z\b/g, (m, a, b) => {
+    const la = zuluHHMMToLocalString(a);
+    const lb = zuluHHMMToLocalString(b);
+    if (!la || !lb) return m;
+    return `${a} (${la})-${b}Z (${lb})`;
+  });
+  // Then annotate any remaining standalone NNNNZ tokens that weren't already
+  // annotated above (skip if immediately followed by " (").
+  out = out.replace(/\b(\d{4})Z(?!\s*\()/g, (m, hhmm) => {
     const local = zuluHHMMToLocalString(hhmm);
     return local ? `${hhmm}Z (${local})` : m;
   });
+  return out;
 }
 
 function parseZuluFromText(s) {
