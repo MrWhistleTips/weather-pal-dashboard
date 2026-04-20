@@ -2177,16 +2177,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- Thin METAR strip across the page -->
   <div id="metar-strip" class="metar-strip"></div>
 
-  <!-- Flight Hazards (collapsible, default collapsed) -->
-  <div class="card collapsible" data-collapse-key="hazards" style="margin-bottom: 4px;">
-    <div class="card-header" onclick="toggleCollapse(this)">
-      <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
-      <span id="hazards-badge" class="hazards-present-badge" style="display:none;">⚠️ Hazards Present, Click to View</span>
-      <span class="collapse-chevron">▾</span>
-    </div>
-    <div class="card-body collapsible-body" id="hazards-body">—</div>
-  </div>
-
   <!-- Flight Level Winds — horizontal strip showing all levels inline -->
   <div id="flw-strip" class="flw-strip" style="margin-bottom: 4px;">
     <span class="flw-strip-label">💨 FLIGHT LEVEL WINDS</span>
@@ -2260,6 +2250,16 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
   <div id="aerodromes-card" class="card" style="margin-bottom: 4px; display: none;">
     <div id="aerodromes-body">—</div>
+  </div>
+
+  <!-- Flight Hazards (collapsible, default collapsed) -->
+  <div class="card collapsible" data-collapse-key="hazards" style="margin-bottom: 4px;">
+    <div class="card-header" onclick="toggleCollapse(this)">
+      <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
+      <span id="hazards-badge" class="hazards-present-badge" style="display:none;">⚠️ Hazards Present, Click to View</span>
+      <span class="collapse-chevron">▾</span>
+    </div>
+    <div class="card-body collapsible-body" id="hazards-body">—</div>
   </div>
 
   <!-- Bottom row: NWS Radar + Windy.com map, side-by-side, equal size -->
