@@ -3742,16 +3742,35 @@ function activeAdvisories(advisories, now) {
 function upcomingAdvisories(advisories, now) {
   if (!advisories) return [];
   if (now == null) now = zuluMinutes();
+  // An advisory is "upcoming" if it's not currently active AND its start
+  // time falls within the next LOOKAHEAD minutes. Uses modular arithmetic
+  // so an advisory that starts after midnight (e.g. "0030Z" when it's
+  // currently 2330Z) is correctly detected — the naive `now < from` check
+  // fails in that case because from=30 < now=1410.
+  const LOOKAHEAD = 6 * 60;  // minutes — matches the wind-WWA look-ahead
+  const minsUntilStart = (from) => {
+    let d = from - now;
+    if (d < 0) d += 1440;   // wrap past midnight
+    return d;
+  };
   return advisories
     .filter(a => {
       const from = parseZuluFromText(a.validFrom);
       const to = parseZuluFromText(a.validTo);
       if (from === null || to === null) return false;
-      // Skip advisories already active or expired
-      if (to < from) return now < from && now > to;  // cross-midnight: between to and from
-      return now < from;
+      // Currently active? (handles cross-midnight advisories too)
+      const isActive = (to < from)
+        ? (now >= from || now <= to)
+        : (now >= from && now <= to);
+      if (isActive) return false;
+      const mu = minsUntilStart(from);
+      return mu > 0 && mu <= LOOKAHEAD;
     })
-    .sort((a, b) => parseZuluFromText(a.validFrom) - parseZuluFromText(b.validFrom));
+    .sort((a, b) => {
+      const fa = parseZuluFromText(a.validFrom);
+      const fb = parseZuluFromText(b.validFrom);
+      return minsUntilStart(fa) - minsUntilStart(fb);
+    });
 }
 
 /// Returns a short countdown string like "in 1h 15m" until the advisory's
