@@ -2098,7 +2098,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div class="section-header ifr-section-header">
     <span class="section-header-icon">🛬</span>
     <span class="section-header-title">Alternate Planning</span>
-    <span class="section-header-detail">Ceil/Vis ≥ published alternate mins</span>
+    <span class="section-header-detail">Airfield is green if wx is &gt;400/1 above approach mins.</span>
   </div>
 
   <div class="card" style="margin-bottom: 4px;">
@@ -3156,15 +3156,19 @@ function parseMetarVis(visib) {
   return isNaN(n) ? null : n;
 }
 
-// Returns "go" | "nogo" | "unknown" for alternate planning per published
-// minimums. UNKNOWN only if METAR missing or stale.
+// Returns "go" | "nogo" | "unknown" for alternate planning.
+// Green (go) requires wx to be MORE THAN 400 ft ceiling AND 1 SM
+// ABOVE the published alternate minimums (Army alternate planning rule).
+// UNKNOWN only if METAR missing or stale.
 function alternateStatus(metar, minCeil, minVis) {
   if (!metar || isMetarStale(metar)) return 'unknown';
   const c = metarCeiling(metar);
   const ceil = (c === null) ? 99999 : c;   // no BKN/OVC = unlimited ceiling
   const vis = parseMetarVis(metar.visib);
   if (vis === null) return 'unknown';
-  return (ceil >= minCeil && vis >= minVis) ? 'go' : 'nogo';
+  const goCeil = minCeil + 400;
+  const goVis  = minVis + 1;
+  return (ceil > goCeil && vis > goVis) ? 'go' : 'nogo';
 }
 
 // Format a visibility number back to a display string (keeps fractions readable)
