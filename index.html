@@ -2776,11 +2776,19 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <span class="sevenday-toggle-days" id="sevenday-toggle-days"></span>
       <span class="sevenday-toggle-chevron">▾</span>
     </button>
+    <!-- KOZR TAF strip — 6 upcoming hours colored by flight category -->
+    <button type="button" id="taf-toggle" class="sevenday-toggle" onclick="toggleTAF()" aria-expanded="false" title="KOZR TAF — next 6 hours colored by flight category. Click to expand full 12-hour view." style="display:none; margin-left: 14px;">
+      <span class="sevenday-toggle-label">TAF 6H</span>
+      <span class="sevenday-toggle-days" id="taf-toggle-hours"></span>
+      <span class="sevenday-toggle-chevron">▾</span>
+    </button>
     <span class="section-header-spacer"></span>
     <span class="section-header-detail">Cairns ≥1000/3 · Stagefields ≥700/1</span>
   </div>
   <!-- 7-day expanded detail panel (collapsed by default) -->
   <div id="sevenday-detail" class="sevenday-detail" style="display:none;"></div>
+  <!-- TAF expanded detail panel (collapsed by default) -->
+  <div id="taf-detail" class="sevenday-detail" style="display:none;"></div>
 
   <div class="card" style="margin-bottom: 4px;">
     <div id="training-body"></div>
@@ -2904,6 +2912,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <a href="#help-advisories">Active &amp; Upcoming Advisories</a>
         <a href="#help-vfr">VFR Operations</a>
         <a href="#help-7day">7-Day Outlook</a>
+        <a href="#help-taf">KOZR TAF Strip</a>
         <a href="#help-training">Training Status Panels</a>
         <a href="#help-landing">Recommended Landing Direction</a>
         <a href="#help-solo">Solo Operations</a>
@@ -3069,6 +3078,26 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>Legend at the bottom</li>
         </ul>
         <p>The widget only drives its dot color from CIG/VIS/WIND; other categories are visible in the grid but don't factor into the banner rollup.</p>
+      </section>
+
+      <section id="help-taf">
+        <h2>KOZR TAF Strip</h2>
+        <p>Compact widget sitting in the VFR Operations banner next to the 7-Day Outlook. Shows the next <b>6 forecast hours</b> from the live KOZR Terminal Aerodrome Forecast with a colored dot per hour.</p>
+        <p>Dot colors use FAA flight categories (not the 7-Day's GO/MARGINAL/NO-GO rollup) so pilots can read exact category at a glance:</p>
+        <ul>
+          <li><span class="help-cat vfr">VFR</span> <span class="help-pip green"></span></li>
+          <li><span class="help-cat mvfr">MVFR</span> <span class="help-pip blue"></span></li>
+          <li><span class="help-cat ifr">IFR</span> <span class="help-pip red"></span></li>
+          <li><span class="help-cat lifr">LIFR</span> magenta dot</li>
+        </ul>
+        <p>Click the widget to expand a detail panel directly below the banner with:</p>
+        <ul>
+          <li>Next <b>12 hours</b> (twice the banner view) as a horizontal row of hour + dot + category-label cells</li>
+          <li>Full raw TAF text in a monospaced block for reference</li>
+          <li>Issue time</li>
+        </ul>
+        <p>Uses the aviationweather.gov TAF API's pre-decoded <code>fcsts</code> groups (no raw TAF regex on the client). The non-TEMPO / non-PROB group in effect at each hour drives that hour's category. Widget hides entirely when KOZR has no published TAF (rare — KOZR issues 30-hour military TAFs every 6 hours at 00/06/12/18Z).</p>
+        <p>State persists via <code>localStorage.tafOpen</code> so the TV keeps the expanded view across the nightly 03:00 reload.</p>
       </section>
 
       <section id="help-training">
@@ -5354,6 +5383,204 @@ function toggleSevenDay() {
   localStorage.setItem('sevenDayOpen', open ? '0' : '1');
 }
 
+/* ─────────────────────────────────────────────────────────────
+   KOZR TAF STRIP — center of VFR banner, next to 7-Day Outlook
+   ──────────────────────────────────────────────────────────── */
+let TAF_OBSERVATION = null;
+let lastTAFFetchError = null;
+
+async function fetchTAF() {
+  const cb = Date.now();
+  const target = `https://aviationweather.gov/api/data/taf?ids=${METAR_STATION}&format=json&_=${cb}`;
+  const url = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) {
+      lastTAFFetchError = `HTTP ${res.status}`;
+      return null;
+    }
+    const arr = await res.json();
+    if (!Array.isArray(arr) || arr.length === 0) {
+      lastTAFFetchError = 'No TAF returned';
+      return null;
+    }
+    lastTAFFetchError = null;
+    return arr[0];
+  } catch (e) {
+    lastTAFFetchError = e.message || String(e);
+    return null;
+  }
+}
+
+/// Pick the predominant (non-TEMPO / non-PROB) forecast group in effect at
+/// the given JS timestamp (seconds since epoch). The aviationweather.gov
+/// API pre-decodes BECMG/FROM/TEMPO into timestamped fcsts[] so no raw
+/// TAF parsing is needed on the client.
+function tafMainGroupAt(taf, tsSec) {
+  if (!taf || !Array.isArray(taf.fcsts)) return null;
+  return taf.fcsts.find(g => {
+    const isMain = g.fcstChange !== 'TEMPO' && g.probability == null;
+    return isMain && tsSec >= g.timeFrom && tsSec < g.timeTo;
+  }) || null;
+}
+
+/// Derive flight category from a TAF fcsts group. Returns 'vfr'|'mvfr'|
+/// 'ifr'|'lifr' or '' when the group lacks enough data.
+function tafGroupCategory(group) {
+  if (!group) return '';
+  // Ceiling: lowest BKN/OVC base, nil = unlimited
+  let ceil = 99999;
+  for (const c of (group.clouds || [])) {
+    if ((c.cover === 'BKN' || c.cover === 'OVC') && typeof c.base === 'number') {
+      if (c.base < ceil) ceil = c.base;
+    }
+  }
+  // Visibility: parseVisib handles "6+", fractions, etc.
+  let vis = 99;
+  if (group.visib != null) {
+    const s = String(group.visib).replace('+', '').trim();
+    if (s.includes('/')) {
+      let total = 0;
+      for (const p of s.split(/\s+/)) {
+        if (p.includes('/')) {
+          const [n, d] = p.split('/').map(Number);
+          if (d) total += n / d;
+        } else {
+          const n = parseFloat(p);
+          if (!isNaN(n)) total += n;
+        }
+      }
+      vis = total;
+    } else {
+      const n = parseFloat(s);
+      if (!isNaN(n)) vis = n;
+    }
+  }
+  return flightCategory(ceil === 99999 ? null : ceil, vis);
+}
+
+/// Build the 6 compact hour slots shown in the banner (next 6 hours
+/// starting at the current UTC hour boundary).
+function tafBannerSlots(taf) {
+  const out = [];
+  const now = new Date();
+  // Anchor to start of the current UTC hour
+  const base = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(),
+                                  now.getUTCDate(), now.getUTCHours(), 0, 0));
+  for (let i = 0; i < 6; i++) {
+    const t = new Date(base.getTime() + i * 3600 * 1000);
+    const tsSec = Math.floor(t.getTime() / 1000);
+    const group = tafMainGroupAt(taf, tsSec);
+    out.push({
+      hour: String(t.getUTCHours()).padStart(2, '0') + 'Z',
+      category: tafGroupCategory(group),
+    });
+  }
+  return out;
+}
+
+function renderTAF() {
+  const toggle = document.getElementById('taf-toggle');
+  const hoursEl = document.getElementById('taf-toggle-hours');
+  const detail = document.getElementById('taf-detail');
+  if (!toggle || !hoursEl || !detail) return;
+
+  if (!TAF_OBSERVATION || !Array.isArray(TAF_OBSERVATION.fcsts) || TAF_OBSERVATION.fcsts.length === 0) {
+    toggle.style.display = 'none';
+    detail.style.display = 'none';
+    return;
+  }
+  toggle.style.display = 'inline-flex';
+
+  const slots = tafBannerSlots(TAF_OBSERVATION);
+  hoursEl.innerHTML = slots.map(s => `
+    <span class="sevenday-toggle-day" title="${s.hour}: ${s.category || 'n/a'}">
+      <span>${escapeHtml(s.hour)}</span>
+      <span class="sevenday-toggle-dot ${s.category === 'vfr' ? 'go' : s.category === 'mvfr' ? '' : s.category === 'ifr' ? 'nogo' : s.category === 'lifr' ? 'nogo' : ''}" style="${tafDotInlineStyle(s.category)}"></span>
+    </span>
+  `).join('');
+
+  detail.innerHTML = buildTAFDetailHTML(TAF_OBSERVATION);
+}
+
+/// TAF flight-category dots use the FAA palette directly, not the
+/// go/marginal/nogo 7-Day palette — a more precise read for pilots.
+function tafDotInlineStyle(cat) {
+  if (cat === 'vfr')  return 'background: var(--vfr); box-shadow: 0 0 5px rgba(95,186,79,0.7);';
+  if (cat === 'mvfr') return 'background: var(--mvfr); box-shadow: 0 0 5px rgba(74,144,226,0.7);';
+  if (cat === 'ifr')  return 'background: var(--ifr); box-shadow: 0 0 5px rgba(214,69,69,0.7);';
+  if (cat === 'lifr') return 'background: var(--lifr); box-shadow: 0 0 5px rgba(179,71,217,0.7);';
+  return '';
+}
+
+function buildTAFDetailHTML(taf) {
+  // Show next 12 hours as a wider strip, plus raw TAF text + decoded groups
+  const now = new Date();
+  const base = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(),
+                                  now.getUTCDate(), now.getUTCHours(), 0, 0));
+  const rows = [];
+  for (let i = 0; i < 12; i++) {
+    const t = new Date(base.getTime() + i * 3600 * 1000);
+    const tsSec = Math.floor(t.getTime() / 1000);
+    const group = tafMainGroupAt(taf, tsSec);
+    const cat = tafGroupCategory(group);
+    const hour = String(t.getUTCHours()).padStart(2, '0') + 'Z';
+    rows.push({ hour, cat, group });
+  }
+
+  const cells = rows.map(r => `
+    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <span style="font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; color:rgba(255,255,255,0.85);">${escapeHtml(r.hour)}</span>
+      <span class="sevenday-toggle-dot" style="width:14px; height:14px; ${tafDotInlineStyle(r.cat)}"></span>
+      <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.55); letter-spacing:0.3px;">${r.cat ? r.cat.toUpperCase() : '—'}</span>
+    </div>
+  `).join('');
+
+  const rawBlock = taf.rawTAF
+    ? `<div style="font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.5; color:rgba(255,255,255,0.8); padding:8px 10px; margin-top:10px; background:rgba(93,112,70,0.12); border-left:2px solid var(--tan); border-radius:2px; word-break:break-word;">${escapeHtml(taf.rawTAF)}</div>`
+    : '';
+
+  const issueLabel = taf.issueTime
+    ? `<span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.55);">Issued ${escapeHtml(taf.issueTime)}</span>`
+    : '';
+
+  return `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span style="font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--tan);">KOZR TAF · NEXT 12H</span>
+      ${issueLabel}
+    </div>
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      ${cells}
+    </div>
+    ${rawBlock}
+  `;
+}
+
+function toggleTAF() {
+  const toggle = document.getElementById('taf-toggle');
+  const detail = document.getElementById('taf-detail');
+  if (!toggle || !detail) return;
+  const open = toggle.getAttribute('aria-expanded') === 'true';
+  toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+  detail.style.display = open ? 'none' : 'block';
+  localStorage.setItem('tafOpen', open ? '0' : '1');
+}
+
+// Restore open state on load
+(function restoreTAFState() {
+  const shouldOpen = localStorage.getItem('tafOpen') === '1';
+  if (shouldOpen) {
+    window.addEventListener('load', () => {
+      const toggle = document.getElementById('taf-toggle');
+      const detail = document.getElementById('taf-detail');
+      if (toggle && detail) {
+        toggle.setAttribute('aria-expanded', 'true');
+        detail.style.display = 'block';
+      }
+    });
+  }
+})();
+
 // Restore open state on load
 (function restoreSevenDayState() {
   const shouldOpen = localStorage.getItem('sevenDayOpen') === '1';
@@ -5582,6 +5809,7 @@ function renderAll() {
   renderHazards(forecast);
   renderSolar(forecast);
   renderSevenDay();
+  renderTAF();
   renderOldWeatherWarning(forecast);
   renderForecastDate(forecast);
 
@@ -5610,6 +5838,8 @@ async function loadData() {
         ALTERNATE_METARS[a.id] = { ...DATA.metar, icaoId: a.id };
       }
     }
+    // Demo mode has no real TAF — hide the widget rather than show stale live data
+    TAF_OBSERVATION = null;
     lastFetchedAt = new Date();
     renderAll();
     updateFetchedLabel();
@@ -5621,11 +5851,14 @@ async function loadData() {
   } catch (e) {
     DATA = DATA || { forecasts: [], metar: null };
   }
-  // Fetch primary KOZR METAR + alternate-planning METARs in parallel
-  const [liveMetar] = await Promise.all([
+  // Fetch primary KOZR METAR + alternate-planning METARs + KOZR TAF
+  // all in parallel — each fetch is independent, no cross-dependency.
+  const [liveMetar, , taf] = await Promise.all([
     fetchMETAR(),
     fetchAlternateMetars(),
+    fetchTAF(),
   ]);
+  if (taf) TAF_OBSERVATION = taf;
   if (liveMetar) {
     if (!DATA) DATA = { forecasts: [], metar: null };
     // Compare timestamps: only keep the newer observation between the
