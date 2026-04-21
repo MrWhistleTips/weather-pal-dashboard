@@ -1275,15 +1275,20 @@ body.tv .pending-advisory-time { font-size: 12px; }
    KOZR METAR. A met tier means recovery under that specific pairing of
    ceiling and visibility is legal; unmet tiers dim. Whole gauge tints
    yellow when METAR is missing or stale. */
+/* SVFR Recovery tier gauge — single inline row, no boxes.
+   Label + three "dot + tier label" pairs all on one horizontal line.
+   Each pair lights up green when its tier is met; unmet pairs dim gray. */
 .training-panel-svfr-gauge {
   width: 100%;
   margin-top: 4px;
   padding: 4px 2px 2px;
   border-top: 1px dashed rgba(93,112,70,0.4);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  line-height: 1;
 }
 .svfr-gauge-label {
   font-family: 'Rajdhani', sans-serif;
@@ -1293,47 +1298,35 @@ body.tv .pending-advisory-time { font-size: 12px; }
   text-transform: uppercase;
   color: var(--tan);
   line-height: 1;
+  white-space: nowrap;
 }
 .svfr-gauge-tiers {
-  display: flex;
-  gap: 4px;
-  width: 100%;
-  justify-content: center;
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
 }
 .svfr-gauge-tier {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 3px 2px;
-  border-radius: 3px;
-  border: 1px solid rgba(93,112,70,0.35);
-  background: rgba(0,0,0,0.25);
-  transition: background 0.2s, border-color 0.2s;
-}
-.svfr-gauge-tier.met {
-  border-color: var(--go-border);
-  background: var(--go-bg);
-  box-shadow: inset 0 0 6px rgba(93,199,107,0.12);
+  gap: 4px;
+  line-height: 1;
 }
 .svfr-gauge-tier-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.22);
   flex-shrink: 0;
 }
 .svfr-gauge-tier.met .svfr-gauge-tier-dot {
   background: var(--go);
-  box-shadow: 0 0 5px rgba(93,199,107,0.7);
+  box-shadow: 0 0 6px rgba(93,199,107,0.7);
 }
 .svfr-gauge-tier-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.5);
   letter-spacing: 0.3px;
   line-height: 1;
   white-space: nowrap;
@@ -1342,23 +1335,20 @@ body.tv .pending-advisory-time { font-size: 12px; }
   color: var(--go);
   text-shadow: 0 0 4px rgba(93,199,107,0.5);
 }
-/* No tiers met — whole gauge tints red */
+/* No tiers met — label glows red */
 .training-panel-svfr-gauge.nogo .svfr-gauge-label {
   color: var(--nogo);
   text-shadow: 0 0 4px rgba(214,69,69,0.4);
 }
-/* Unknown (METAR missing/stale) — yellow tint */
+/* Unknown (METAR missing/stale) — amber tint */
 .training-panel-svfr-gauge.unknown .svfr-gauge-label { color: var(--warning); }
-.training-panel-svfr-gauge.unknown .svfr-gauge-tier {
-  border-color: rgba(230,165,58,0.3);
-  background: rgba(230,165,58,0.06);
-}
 .training-panel-svfr-gauge.unknown .svfr-gauge-tier-label { color: rgba(230,165,58,0.55); }
 .training-panel-svfr-gauge.unknown .svfr-gauge-tier-dot { background: rgba(230,165,58,0.35); }
 body.tv .svfr-gauge-label { font-size: 12px; }
-body.tv .svfr-gauge-tier { padding: 5px 3px; gap: 4px; }
-body.tv .svfr-gauge-tier-dot { width: 10px; height: 10px; }
-body.tv .svfr-gauge-tier-label { font-size: 12px; }
+body.tv .svfr-gauge-tiers { gap: 14px; }
+body.tv .svfr-gauge-tier { gap: 6px; }
+body.tv .svfr-gauge-tier-dot { width: 11px; height: 11px; }
+body.tv .svfr-gauge-tier-label { font-size: 13px; }
 
 /* Per-stagefield advisory pip */
 .training-panel-advisory-pip {
