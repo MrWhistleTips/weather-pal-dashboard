@@ -2671,6 +2671,10 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div class="nav-center">
     <div id="nav-amd-left" class="nav-amd-badge" style="display:none;">⚠️ AMENDMENT</div>
     <div class="nav-datum">
+      <div class="nav-datum-label"><span id="forecast-date-type">Forecast</span> Date</div>
+      <div class="nav-datum-value" id="forecast-date">—</div>
+    </div>
+    <div class="nav-datum">
       <div class="nav-datum-label">Zulu Time</div>
       <div class="nav-datum-value" id="zulu-time">—</div>
     </div>
@@ -5159,6 +5163,26 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeHelp();
 });
 
+/* Render the forecast date next to the Zulu time in the navbar.
+   Uses mef.date (e.g. "20-Apr-26") when it's a full string, falls
+   back to just the day number when that's all the parser extracted.
+   Night forecasts carry tomorrow's date because the valid period
+   crosses midnight — we accept that as-is (it matches the PDF). */
+function renderForecastDate(forecast) {
+  const label = document.getElementById('forecast-date-type');
+  const value = document.getElementById('forecast-date');
+  if (!label || !value) return;
+  if (!forecast) {
+    label.textContent = 'Forecast';
+    value.textContent = '—';
+    return;
+  }
+  label.textContent = forecast.type || 'Forecast';
+  const raw = String((forecast.mef && forecast.mef.date) || (forecast.flightBriefing && forecast.flightBriefing.date) || '').trim();
+  value.textContent = raw || '—';
+  value.title = raw ? `${forecast.type} forecast date (per MEF header)` : '';
+}
+
 /* ─────────────────────────────────────────────────────────────
    OLD WEATHER warning — triggered when the currently displayed
    forecast was exported on a previous calendar day (operator's
@@ -5429,6 +5453,7 @@ function renderAll() {
   renderSolar(forecast);
   renderSevenDay();
   renderOldWeatherWarning(forecast);
+  renderForecastDate(forecast);
 
   const alertEl = document.getElementById('data-alert');
   if (!forecast) {
