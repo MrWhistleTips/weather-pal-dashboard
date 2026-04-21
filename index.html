@@ -1269,6 +1269,57 @@ body.tv .pending-advisory { font-size: 13px; padding: 8px 14px; }
 body.tv .pending-advisory-label { font-size: 12px; }
 body.tv .pending-advisory-time { font-size: 12px; }
 
+/* Per-stagefield SVFR Recovery badge — top-left corner.
+   Green when KOZR METAR meets the published SVFR recovery sliding scale
+   (≥700/1 or ≥600/2 or ≥500/3). Red otherwise. Yellow UNKNOWN when
+   METAR is missing or stale. Stagefields only — not shown on Cairns. */
+.training-panel-svfr {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 1.2;
+  z-index: 2;
+}
+.training-panel-svfr.go {
+  color: var(--go);
+  background: var(--go-bg);
+  border-color: var(--go-border);
+  text-shadow: 0 0 4px rgba(93,199,107,0.5);
+}
+.training-panel-svfr.nogo {
+  color: var(--nogo);
+  background: var(--nogo-bg);
+  border-color: var(--nogo-border);
+  text-shadow: 0 0 4px rgba(214,69,69,0.5);
+}
+.training-panel-svfr.unknown {
+  color: var(--warning);
+  background: rgba(230,165,58,0.12);
+  border-color: rgba(230,165,58,0.5);
+}
+.training-panel-svfr-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 4px currentColor;
+  flex-shrink: 0;
+}
+body.tv .training-panel-svfr { top: 8px; left: 8px; padding: 3px 9px; font-size: 11px; gap: 5px; }
+body.tv .training-panel-svfr-dot { width: 6px; height: 6px; }
+
 /* Per-stagefield advisory pip */
 .training-panel-advisory-pip {
   position: absolute;
@@ -2825,6 +2876,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Big status text</b> — <b>VFR GO</b> / <b>NO GO</b> / <b>UNKNOWN</b></li>
           <li><b>Subtitle line</b> — current ceiling/vis for Cairns; area name + trainability countdown for stagefields</li>
           <li><b>Recommended landing direction</b> — favorable runway + headwind/crosswind</li>
+          <li><b>SVFR Recovery badge</b> (stagefields only, top-left corner) — green when KOZR METAR meets <b>≥700/1 OR ≥600/2 OR ≥500/3</b> (sliding scale; both ceiling AND visibility must meet one tier). Red when below. Yellow UNKNOWN when METAR missing or stale.</li>
           <li><b>SOLO badge</b> (stagefields only, AM/PM only) — teal SOLO GO or orange NO SOLO with reason</li>
           <li><b>Advisory pip</b> — small pulsing ⚠️ in the top right if an active advisory affects that stagefield's area; hover for the full advisory text</li>
         </ul>
@@ -4296,7 +4348,12 @@ function renderTraining(metar, forecast) {
   }
   // Cairns has no solo or taxi badge in the VFR card now
   const cairnsLanding = landingHTML('Cairns', forecast);
-  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding);
+  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, null);
+
+  // SVFR Recovery status from KOZR METAR — shared across all 4 stagefields.
+  // Sliding scale per published SVFR recovery criteria: green when ceiling
+  // AND visibility meet at least one of the tiers: ≥700/1, ≥600/2, ≥500/3.
+  const svfrStatus = computeSVFRRecovery(metar);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
@@ -4321,13 +4378,43 @@ function renderTraining(metar, forecast) {
     // Advisory pip — true if any active advisory affects this area
     const affectingAdv = activeAdvs.find(a => advisoryAffectsArea(a, sf.area));
     const landing = landingHTML(sf.name, forecast);
-    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing);
+    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, svfrStatus);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
 }
 
-function panelHTML(status, label, name, area, solo, taxi, advisory, landing) {
+/// Evaluate KOZR SVFR Recovery status against the sliding scale:
+///   ≥700ft / 1SM   OR   ≥600ft / 2SM   OR   ≥500ft / 3SM
+/// Both ceiling AND vis must meet one tier. Returns {status, label}.
+/// Unknown when METAR is missing or stale.
+function computeSVFRRecovery(metar) {
+  if (!metar || isMetarStale(metar)) {
+    return { status: 'unknown', label: 'SVFR —' };
+  }
+  const c = metarCeiling(metar);
+  const ceil = (c === null) ? 99999 : c;  // no BKN/OVC = unlimited
+  const vis = parseMetarVis(metar.visib);
+  if (vis === null) return { status: 'unknown', label: 'SVFR —' };
+  const meets = (ceil >= 700 && vis >= 1)
+             || (ceil >= 600 && vis >= 2)
+             || (ceil >= 500 && vis >= 3);
+  return {
+    status: meets ? 'go' : 'nogo',
+    label: 'SVFR Recovery'
+  };
+}
+
+function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svfr) {
+  let svfrHTML = '';
+  if (svfr) {
+    svfrHTML = `
+      <div class="training-panel-svfr ${svfr.status}" title="SVFR Recovery — KOZR must meet ≥700/1, ≥600/2, or ≥500/3">
+        <span class="training-panel-svfr-dot"></span>
+        <span>${svfr.label}</span>
+      </div>
+    `;
+  }
   let soloHTML = '';
   if (solo) {
     const soloClass = solo.go ? 'go' : 'nogo';
@@ -4361,6 +4448,7 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing) {
   }
   return `
     <div class="training-panel ${status}">
+      ${svfrHTML}
       ${pipHTML}
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-status">${label}</div>
