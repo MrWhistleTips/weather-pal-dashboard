@@ -202,6 +202,199 @@ body.tv .nav-amd-badge { font-size: 14px; padding: 6px 12px; letter-spacing: 2.2
   display: inline-block;
 }
 .nav-btn:hover { background: var(--od); border-color: var(--tan); color: var(--text); }
+.nav-btn.help-btn { color: #84c1e3; border-color: rgba(132,193,227,0.4); }
+.nav-btn.help-btn:hover { background: rgba(132,193,227,0.15); border-color: #84c1e3; color: #cfe9f7; }
+
+/* ─────────────────────────────────────────────────────────────
+   HELP MODAL
+   ──────────────────────────────────────────────────────────── */
+.help-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+.help-dialog {
+  background: linear-gradient(180deg, rgba(18,22,15,0.98), rgba(12,15,10,0.98));
+  border: 1px solid rgba(192,168,120,0.45);
+  border-radius: 6px;
+  max-width: 980px;
+  width: 100%;
+  padding: 24px 30px 30px;
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  color: var(--text);
+}
+.help-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(192,168,120,0.4);
+  background: var(--bg-2);
+  color: var(--tan);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.help-close:hover { background: var(--od); color: var(--text); }
+.help-body { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.55; }
+.help-body h1 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--tan);
+  margin: 0 0 4px;
+  text-shadow: 0 0 8px rgba(192,168,120,0.3);
+}
+.help-body .help-sub {
+  color: rgba(255,255,255,0.7);
+  margin: 0 0 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(93,112,70,0.4);
+}
+.help-body .help-sub a { color: var(--mvfr); }
+.help-body h2 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #e8dfb8;
+  margin: 22px 0 8px;
+  padding: 4px 10px;
+  border-left: 3px solid var(--tan);
+  background: rgba(93,112,70,0.18);
+  border-radius: 0 3px 3px 0;
+}
+.help-body h3 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--tan);
+  margin: 14px 0 6px;
+}
+.help-body p { margin: 6px 0 10px; }
+.help-body ul, .help-body ol { margin: 4px 0 10px; padding-left: 22px; }
+.help-body li { margin: 3px 0; }
+.help-body code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: rgba(255,255,255,0.08);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: #e8dfb8;
+}
+.help-body a { color: var(--mvfr); }
+.help-body a:hover { color: #a9cdf0; }
+.help-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(93,112,70,0.3);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+.help-toc a {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  color: var(--tan);
+  text-decoration: none;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: rgba(93,112,70,0.18);
+}
+.help-toc a:hover { background: var(--od); color: var(--text); }
+
+/* Inline legend badges inside help text */
+.help-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid;
+  margin: 0 2px;
+}
+.help-badge.green  { color: var(--go);      border-color: var(--go-border);     background: var(--go-bg); }
+.help-badge.red    { color: var(--nogo);    border-color: var(--nogo-border);   background: var(--nogo-bg); }
+.help-badge.yellow { color: var(--warning); border-color: rgba(230,165,58,0.5); background: rgba(230,165,58,0.15); }
+.help-badge.amber  { color: var(--warning); border-color: rgba(230,165,58,0.5); background: rgba(230,165,58,0.15); }
+.help-badge.blue   { color: var(--mvfr);    border-color: rgba(74,144,226,0.5); background: rgba(74,144,226,0.15); }
+.help-badge.teal   { color: #5fb3b3;        border-color: rgba(95,179,179,0.5); background: rgba(95,179,179,0.15); }
+.help-badge.orange { color: #e88a3e;        border-color: rgba(232,138,62,0.5); background: rgba(232,138,62,0.15); }
+
+.help-cat {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: 1px solid;
+  margin: 0 2px;
+}
+.help-cat.vfr  { color: var(--vfr);  border-color: rgba(95,186,79,0.5);  background: rgba(95,186,79,0.1); }
+.help-cat.mvfr { color: var(--mvfr); border-color: rgba(74,144,226,0.5); background: rgba(74,144,226,0.1); }
+.help-cat.ifr  { color: var(--ifr);  border-color: rgba(214,69,69,0.5);  background: rgba(214,69,69,0.1); }
+.help-cat.lifr { color: var(--lifr); border-color: rgba(179,71,217,0.5); background: rgba(179,71,217,0.1); }
+
+.help-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 11px;
+}
+.help-table th, .help-table td {
+  padding: 5px 8px;
+  border: 1px solid rgba(93,112,70,0.35);
+  text-align: left;
+}
+.help-table th {
+  background: rgba(93,112,70,0.25);
+  color: var(--tan);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.help-emoji-grid {
+  columns: 2;
+  column-gap: 20px;
+  list-style: none !important;
+  padding: 0 !important;
+}
+.help-emoji-grid li { margin: 2px 0; }
+.help-footer {
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(93,112,70,0.35);
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+  text-align: center;
+}
 
 /* LAYOUT */
 .container { max-width: 1800px; margin: 0 auto; padding: 4px 10px; }
@@ -2337,6 +2530,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <button class="demo-menu-btn" onclick="toggleDemoMenu()">🧪 Demo</button>
       <div class="demo-menu-list" id="demo-menu-list"></div>
     </div>
+    <button class="nav-btn help-btn" onclick="openHelp()">❔ Help</button>
     <button class="nav-btn" onclick="refresh()">↻ Refresh</button>
     <a class="nav-btn" href="https://www.army.mil/rucker#org-weather" target="_blank">📡 Source</a>
   </div>
@@ -2496,6 +2690,361 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
   </div>
 
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     Help modal — opened from the HELP button in the navbar.
+     Covers every feature on the dashboard; scrollable content.
+     ═══════════════════════════════════════════════════════════ -->
+<div id="help-modal" class="help-modal" style="display:none;" onclick="onHelpBackdrop(event)">
+  <div class="help-dialog" role="dialog" aria-labelledby="help-title" onclick="event.stopPropagation()">
+    <button class="help-close" onclick="closeHelp()" aria-label="Close help">✕</button>
+    <div class="help-body">
+
+      <h1 id="help-title">My Weather Pal — Dashboard Help</h1>
+      <p class="help-sub">Real-time training weather dashboard for Fort Novosel (Cairns AAF · USAACE). Data is pulled from the official weather product PDFs on <a href="https://www.army.mil/rucker" target="_blank">army.mil/rucker</a>, decoded by the iOS app, and pushed here. Live METAR comes directly from <a href="https://aviationweather.gov" target="_blank">aviationweather.gov</a>.</p>
+
+      <nav class="help-toc">
+        <a href="#help-top-bar">Top Bar · Navbar</a>
+        <a href="#help-period">Period Selector · AM / PM / N1</a>
+        <a href="#help-solar">Solar / Lunar Strip</a>
+        <a href="#help-metar">METAR Strip</a>
+        <a href="#help-flw">Flight Level Winds</a>
+        <a href="#help-advisories">Active &amp; Upcoming Advisories</a>
+        <a href="#help-vfr">VFR Operations</a>
+        <a href="#help-7day">7-Day Outlook</a>
+        <a href="#help-training">Training Status Panels</a>
+        <a href="#help-landing">Recommended Landing Direction</a>
+        <a href="#help-solo">Solo Operations</a>
+        <a href="#help-areas">Area Forecasts</a>
+        <a href="#help-ifr">IFR Operations</a>
+        <a href="#help-ifr-strip">IFR Training Strip</a>
+        <a href="#help-alternate">Alternate Planning</a>
+        <a href="#help-aerodromes">Aerodrome Forecasts</a>
+        <a href="#help-arrival">Arrival Time Assistant</a>
+        <a href="#help-hazards">Flight Hazards</a>
+        <a href="#help-colors">Color &amp; Status Legend</a>
+        <a href="#help-emoji">Weather Emoji Guide</a>
+        <a href="#help-refresh">Data Refresh &amp; Auto-Update</a>
+        <a href="#help-demo">Demo Mode</a>
+        <a href="#help-tv">TV Kiosk Mode</a>
+      </nav>
+
+      <section id="help-top-bar">
+        <h2>Top Bar · Navbar</h2>
+        <p>The top strip shows branding and quick actions.</p>
+        <ul>
+          <li><b>Weather Pal logo</b> — app icon + title. When an amendment is active the navbar tints a soft gold and pulsing <span class="help-badge amber">⚠️ AMENDMENT</span> badges flank the time display.</li>
+          <li><b>Zulu / Local time</b> — kept current with a 30-second tick. Matches UTC and the system clock of the display.</li>
+          <li><b>Fetched Xm ago</b> — time since the last successful fetch of <code>data.json</code> + live METAR. A ⚠ symbol means the most recent METAR fetch failed (hover for details).</li>
+          <li><b>🧪 Demo</b> — 13 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
+          <li><b>❔ Help</b> — opens this document.</li>
+          <li><b>↻ Refresh</b> — forces an immediate re-fetch. Auto-refresh runs every 5 minutes anyway.</li>
+          <li><b>📡 Source</b> — opens the army.mil weather page in a new tab.</li>
+        </ul>
+      </section>
+
+      <section id="help-period">
+        <h2>Period Selector · AM / PM / N1</h2>
+        <p>Three buttons below the navbar pick which forecast to display. The active period is auto-selected by local time and re-checks every minute:</p>
+        <ul>
+          <li><b>04:00 – 10:44 local</b> → <b>AM</b> forecast</li>
+          <li><b>10:45 – 16:59 local</b> → <b>PM</b> forecast</li>
+          <li><b>17:00 – 03:59 local</b> → <b>N1</b> (Night) forecast</li>
+        </ul>
+        <p>You can tap any period to override; the selection sticks until the next auto-snap.</p>
+      </section>
+
+      <section id="help-solar">
+        <h2>Solar / Lunar Strip</h2>
+        <p>Single centered strip between the period selectors. Shows Sunrise, Sunset, EENT (End Evening Nautical Twilight — civil dark), Moonrise, Moonset, and % illumination. All times are local. Empty when the MEF for the active period doesn't include solar/lunar data.</p>
+      </section>
+
+      <section id="help-metar">
+        <h2>METAR Strip</h2>
+        <p>Stacked layout centered on the page:</p>
+        <ol>
+          <li><b>Raw METAR</b> text — the full observation as delivered by aviationweather.gov. Colored by FAA flight category (<span class="help-cat vfr">VFR</span> <span class="help-cat mvfr">MVFR</span> <span class="help-cat ifr">IFR</span> <span class="help-cat lifr">LIFR</span>).</li>
+          <li><b>Decoded cells</b> — Wind, Visibility, Ceiling, Temp, Dew Point, Altimeter.</li>
+        </ol>
+        <p>Inline <span class="help-badge yellow">OLD DATA</span> badge next to the raw text when the observation is more than <b>80 minutes</b> old. In that case Cairns status becomes <span class="help-badge yellow">UNKNOWN</span> and Alternate Planning badges switch to yellow.</p>
+      </section>
+
+      <section id="help-flw">
+        <h2>Flight Level Winds</h2>
+        <p>Horizontal strip showing wind direction/speed and temp for every forecast altitude inline (1k, 3k, 6k, 9k, etc.).</p>
+        <ul>
+          <li>Wind text turns <span style="color:var(--warning);font-weight:700;">amber</span> when speed ≥ 20 kt</li>
+          <li>Temp text turns <span style="color:var(--mvfr);font-weight:700;">blue</span> when temp ≤ 4°C</li>
+          <li>Blue <span class="help-badge blue">POSS ICE</span> badge appended when temp ≤ 4°C (liquid water + cold = icing risk)</li>
+        </ul>
+      </section>
+
+      <section id="help-advisories">
+        <h2>Active &amp; Upcoming Advisories</h2>
+        <p>WWA = Weather Watch, Warning, or Advisory. Pulled from the MEF Block 16.</p>
+        <ul>
+          <li><b>AWA</b> · Area Weather Advisory — within 60 NM of Cairns. Badge color <span class="help-badge yellow">AMBER</span>.</li>
+          <li><b>TWA</b> · Terminal Weather Advisory — within 15 NM of Cairns. Badge color <span class="help-badge red">RED</span>.</li>
+          <li><b>WATCH</b> — severe conditions possible. Amber.</li>
+          <li><b>WARNING</b> — severe conditions imminent or occurring. Red.</li>
+        </ul>
+        <p>The card only appears when at least one advisory is <b>active</b> (current Zulu time within its valid window) or <b>upcoming</b> (starts within the next 6 hours). Each active advisory shows an expiry countdown (e.g. <i>Expires in 2h 15m</i>). Upcoming advisories show a blue banner above the active list with a "Starts in Xh Xm" countdown.</p>
+        <p>Special time tokens <b>CURR</b> (currently active) and <b>UFN</b> (until further notice) are recognized — they're treated as open-ended and always active.</p>
+      </section>
+
+      <section id="help-vfr">
+        <h2>VFR Operations</h2>
+        <p>The green banner marks the start of the VFR training section. Subtitle shows the minimums — <b>Cairns ≥1000 ft / 3 SM</b>, <b>Stagefields ≥700 ft / 1 SM</b>.</p>
+        <p>In the center of the banner is the <b>7-Day Outlook</b> dropdown.</p>
+      </section>
+
+      <section id="help-7day">
+        <h2>7-Day Outlook</h2>
+        <p>The center of the VFR banner has a row of 7 day letters, each with a colored dot. Each dot = the <b>worst of Ceiling / Visibility / Surface Wind</b> across that day's AM/PM/N1 periods.</p>
+        <ul>
+          <li>🟢 GO — both ceiling and visibility are above the standard mins all day</li>
+          <li>🟡 MARGINAL — at least one category drops into the marginal band (700 ft / 2 SM for CIG/VIS)</li>
+          <li>🔴 NO GO — at least one category drops below minimums (500 ft / 1 SM or worse)</li>
+        </ul>
+        <p>Click the widget to expand a detail panel below the banner showing:</p>
+        <ul>
+          <li>The forecaster's <b>synopsis</b> — plain-English summary of the week</li>
+          <li>Full grid of <b>7 categories × days × periods</b> (Ceiling, Visibility, Surface Wind, Turbulence, Icing, Thunderstorms, UAS Winds)</li>
+          <li>Dashed vertical lines separating each day</li>
+          <li>Legend at the bottom</li>
+        </ul>
+        <p>The widget only drives its dot color from CIG/VIS/WIND; other categories are visible in the grid but don't factor into the banner rollup.</p>
+      </section>
+
+      <section id="help-training">
+        <h2>Training Status Panels</h2>
+        <p>5 panels — Cairns AAF + 4 stagefields (Allen, Toth, Highbluff, Lucas). Each panel shows:</p>
+        <ul>
+          <li><b>Top light bar</b> glowing green/red/yellow based on GO/NO-GO/UNKNOWN</li>
+          <li><b>Station name</b> in tracked uppercase</li>
+          <li><b>Big status text</b> — <b>VFR GO</b> / <b>NO GO</b> / <b>UNKNOWN</b></li>
+          <li><b>Subtitle line</b> — current ceiling/vis for Cairns; area name + trainability countdown for stagefields</li>
+          <li><b>Recommended landing direction</b> — favorable runway + headwind/crosswind</li>
+          <li><b>SOLO badge</b> (stagefields only, AM/PM only) — teal SOLO GO or orange NO SOLO with reason</li>
+          <li><b>Advisory pip</b> — small pulsing ⚠️ in the top right if an active advisory affects that stagefield's area; hover for the full advisory text</li>
+        </ul>
+        <p><b>Cairns logic is pure VFR</b> — green if ≥1000/3 from the live METAR, red below, yellow when METAR is missing or stale. IFR is handled by a separate strip in the IFR section.</p>
+        <p><b>Stagefield logic is area-forecast driven.</b> Mapping: Allen → GOLDFISH, Toth → GOLDFISH, Highbluff → BEARCAT, Lucas → VANGUARD C. The panel reads the <b>current active segment</b> of the area forecast and checks ≥700/1.</p>
+      </section>
+
+      <section id="help-landing">
+        <h2>Recommended Landing Direction</h2>
+        <p>Each VFR training panel shows the runway most favorable right now based on the <b>1,000 ft MSL flight-level wind</b> (the lowest altitude the MEF reports).</p>
+        <p>Format: <code>RWY 24 ↓ HW 12kt ← 5kt</code></p>
+        <ul>
+          <li><b>↓ green</b> — favorable headwind · <b>↑ red</b> — tailwind (bad)</li>
+          <li><b>← arrow</b> — right crosswind (wind pushing aircraft left)</li>
+          <li><b>→ arrow</b> — left crosswind (wind pushing aircraft right)</li>
+          <li><b>↔</b> — variable wind direction</li>
+          <li>Arrow turns <b>orange</b> when crosswind ≥ 15 kt</li>
+          <li><b>RWY CALM</b> — wind speed zero</li>
+          <li><b>RWY VRB ↔ Xkt</b> — variable wind direction</li>
+        </ul>
+        <p>Runways hardcoded: Cairns 06/24 + 18/36, Allen 12/30, Toth 07/25, Highbluff 10/28, Lucas 18/36.</p>
+      </section>
+
+      <section id="help-solo">
+        <h2>Solo Operations</h2>
+        <p>Student solo weather rules are <b>stricter</b> than standard training minimums and use both observed and forecast weather. Solo badges appear on stagefield panels for <b>AM and PM only</b> (no solos at night).</p>
+        <ul>
+          <li>Ceiling ≥ 1,200 ft AGL (BKN/OVC)</li>
+          <li>Visibility ≥ 3 SM</li>
+          <li>Surface wind ≤ 15 kt (including gusts)</li>
+          <li>Gust spread ≤ 10 kt (gust − sustained)</li>
+          <li><b>Any active or upcoming WWA mentioning wind &gt; 15 kt</b> whose valid window overlaps the training period = automatic <b>NO SOLO</b></li>
+          <li>The rule is applied to the <b>entire forecast period</b>, not just the current minute. If <i>any</i> future main segment drops below limits, the panel shows NO SOLO with "(later)" in the reason.</li>
+        </ul>
+        <p>Reason codes: <i>Ceil 900ft</i>, <i>Vis 2SM</i>, <i>Wind 18kt</i>, <i>Gust G20</i>, <i>Spread 12kt</i>, <i>AWA Wind</i>.</p>
+      </section>
+
+      <section id="help-areas">
+        <h2>Area Forecasts</h2>
+        <p>Six training zones — GOLDFISH, VANGUARD N, VANGUARD C, VANGUARD S, HAWK, BEARCAT. Each card shows time-based segments:</p>
+        <ul>
+          <li><b>Initial segment</b> — valid from the start of the forecast</li>
+          <li><b>AFT NNNNZ:</b> — new predominant conditions from the stated Zulu time</li>
+          <li><b>ISOLD NNNN-NNNNZ:</b> or <b>TEMPO:</b> — temporary windows. Rendered in light gray and do not trigger NO GO by themselves.</li>
+        </ul>
+        <p>Each Zulu time is annotated with local time in parens — e.g. <code>AFT 1500Z (10:00L):</code>. Flight category colors are applied per segment (<span class="help-cat vfr">VFR</span> <span class="help-cat mvfr">MVFR</span> <span class="help-cat ifr">IFR</span> <span class="help-cat lifr">LIFR</span>).</p>
+        <p>Cards include:</p>
+        <ul>
+          <li><b>Trainability badge</b> — ✅ Weather is Trainable · 🕐 Trainable in Xh Xm · ⚠️ Untrainable in Xh Xm · ❌ Weather is Untrainable</li>
+          <li><b>Amendment badge</b> — pulsing amber with the amendment number + time when the area has been amended</li>
+          <li><b>Advisory pill</b> — amber/red indicator when an active or upcoming advisory affects that specific area</li>
+        </ul>
+      </section>
+
+      <section id="help-ifr">
+        <h2>IFR Operations</h2>
+        <p>Green banner with subtitle <b>KOZR ≥ 200ft / ¼ SM</b>. Everything below in this section treats weather as IFR-capable operations.</p>
+      </section>
+
+      <section id="help-ifr-strip">
+        <h2>IFR Training Strip</h2>
+        <p>Single-row indicator centered in the IFR section:</p>
+        <ul>
+          <li>✓ <span class="help-badge green">TAXI AUTHORIZED</span> when ceiling ≥ 200 ft AND vis ≥ ¼ SM</li>
+          <li>✗ <span class="help-badge red">TAXI NOT AUTHORIZED</span> below those mins</li>
+          <li>Right-side big status: <b>IFR GO</b> / <b>IFR NO GO</b> / <b>UNKNOWN</b></li>
+          <li>Detail text with current ceiling/vis</li>
+          <li>Colored left bar matches status</li>
+          <li>When an advisory affects IFR ops (WIND/GUST/CEIL/VIS/FOG/SHRA/TS/ICING/FRZG/LLWS), the strip gets a pulsing amber border and a circular ⚠️ pip in the corner</li>
+        </ul>
+      </section>
+
+      <section id="help-alternate">
+        <h2>Alternate Planning</h2>
+        <p>Thin sub-header under IFR Operations. Shows 5 commonly-used alternates with live METAR data:</p>
+        <table class="help-table">
+          <thead><tr><th>ICAO</th><th>Field</th><th>Approach</th><th>Mins (already +400/+1)</th></tr></thead>
+          <tbody>
+            <tr><td>KCEW</td><td>Bob Sikes · Crestview</td><td>ILS RWY 07</td><td>600 ft / 1¼ SM</td></tr>
+            <tr><td>KOZR</td><td>Cairns AAF</td><td>ILS RWY 06</td><td>600 ft / 1¼ SM</td></tr>
+            <tr><td>KDHN</td><td>Dothan Regional</td><td>ILS RWY 32</td><td>600 ft / 1¼ SM</td></tr>
+            <tr><td>KTOI</td><td>Troy Municipal</td><td>ILS RWY 07</td><td>700 ft / 1 7/16 SM</td></tr>
+            <tr><td>KMGM</td><td>Montgomery Regional</td><td>ILS RWY 28</td><td>600 ft / 1¼ SM</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><span class="help-badge green">POSS. ALT</span> (green) — current ceiling AND visibility ≥ published alternate mins</li>
+          <li><span class="help-badge red">POSS. ALT</span> (red) — either ceiling or vis falls below</li>
+          <li><span class="help-badge yellow">UNKNOWN</span> — METAR missing or >80 min stale</li>
+        </ul>
+        <p>Each row shows ICAO, approach + mins, current conditions (colored by flight category), and the badge. Current conditions are fetched in a single batched API call every 5 minutes.</p>
+      </section>
+
+      <section id="help-aerodromes">
+        <h2>Aerodrome Forecasts</h2>
+        <p>Thin sub-header under IFR Operations. TAF-style terminal forecasts for airfields on the DD Form 175-1 Part III plus the continuation sheet.</p>
+        <p>Each aerodrome card shows:</p>
+        <ul>
+          <li><b>ICAO header</b> colored by the first non-TEMPO period's flight category</li>
+          <li><b>Embedded METAR</b> — current observation directly under the header (green-tinted if current, red if stale)</li>
+          <li><b>Predominant periods</b> (FROM) with valid time, wind, vis, sky, altimeter — colored by flight category</li>
+          <li><b>TEMPO</b> periods rendered in gray, indented beneath the FROM they modify</li>
+          <li><b>Also:</b> list — other airfields sharing the identical forecast</li>
+          <li><b>ALL STATIONS W/IN 100NM</b> flag when applicable</li>
+        </ul>
+      </section>
+
+      <section id="help-arrival">
+        <h2>Arrival Time Assistant</h2>
+        <p>Above the aerodrome cards. Toggle-enabled feature for picking two local arrival times. Each selection highlights the matching forecast period at every airfield:</p>
+        <ul>
+          <li><b>Time 1</b> — gold dot + gold outline on matching periods</li>
+          <li><b>Time 2</b> — green dot + green outline on matching periods</li>
+          <li><b>Both times same period</b> — double outline (gold outer, green inner)</li>
+        </ul>
+        <p>Times persist across page reloads (UserDefaults on iOS, localStorage on the dashboard).</p>
+      </section>
+
+      <section id="help-hazards">
+        <h2>Flight Hazards</h2>
+        <p>Collapsible card at the bottom of the IFR section. Default closed. When <b>any</b> hazard is active, a yellow <span class="help-badge yellow">⚠️ HAZARDS PRESENT, CLICK TO VIEW</span> badge appears in the header.</p>
+        <p>Shows values for:</p>
+        <ul>
+          <li>Thunderstorms (coverage · type · max tops · location)</li>
+          <li>Turbulence</li>
+          <li>Icing</li>
+          <li>Precipitation</li>
+          <li>Obscurations at flight level</li>
+          <li>Min ceiling (FT AGL) · LLWS · Min freezing level (FT MSL)</li>
+        </ul>
+        <p>All altitudes are converted from aviation 3-digit format to readable ft (e.g. <code>132</code> → <code>13,200 ft</code>).</p>
+      </section>
+
+      <section id="help-colors">
+        <h2>Color &amp; Status Legend</h2>
+        <h3>Flight categories</h3>
+        <ul>
+          <li><span class="help-cat vfr">VFR</span> — Ceiling &gt; 3,000 ft AND Vis &gt; 5 SM</li>
+          <li><span class="help-cat mvfr">MVFR</span> — Ceiling 1,000–3,000 ft OR Vis 3–5 SM</li>
+          <li><span class="help-cat ifr">IFR</span> — Ceiling 500–999 ft OR Vis 1–&lt;3 SM</li>
+          <li><span class="help-cat lifr">LIFR</span> — Ceiling &lt; 500 ft OR Vis &lt; 1 SM</li>
+        </ul>
+        <p>Only BKN and OVC layers count as ceilings. FEW and SCT do not.</p>
+        <h3>Training / solo status</h3>
+        <ul>
+          <li><span class="help-badge green">GO</span> — meets minimums</li>
+          <li><span class="help-badge red">NO GO</span> — below minimums</li>
+          <li><span class="help-badge yellow">UNKNOWN</span> — METAR missing or stale</li>
+          <li><span class="help-badge teal">SOLO GO</span> — student solo authorized</li>
+          <li><span class="help-badge orange">NO SOLO</span> — student solo not authorized</li>
+        </ul>
+      </section>
+
+      <section id="help-emoji">
+        <h2>Weather Emoji Guide</h2>
+        <p>Appended to METAR <code>wxString</code> for quick scanning:</p>
+        <ul class="help-emoji-grid">
+          <li>⛈️ TS · thunderstorms</li>
+          <li>🌧️ RA · rain</li>
+          <li>❄️ SN · snow</li>
+          <li>🌦️ DZ · drizzle</li>
+          <li>🌫️ FG · fog</li>
+          <li>🌁 BR · mist</li>
+          <li>😶‍🌫️ HZ · haze</li>
+          <li>🥶 FZ · freezing</li>
+          <li>🧊 PL · ice pellets</li>
+          <li>🪨 GR/GS · hail</li>
+          <li>💨 DU/SA · dust / sand</li>
+          <li>🌪️ FC · funnel cloud</li>
+        </ul>
+      </section>
+
+      <section id="help-refresh">
+        <h2>Data Refresh &amp; Auto-Update</h2>
+        <ul>
+          <li><b>Forecast + METAR data</b> re-fetched every <b>5 minutes</b> automatically. Live METAR is always compared against the cached one and only replaces it if newer.</li>
+          <li><b>Period auto-snap</b> re-evaluates every <b>1 minute</b> — AM→PM→N1 transitions happen without refresh.</li>
+          <li><b>Dashboard auto-reload</b> — every 5 minutes the page checks GitHub Pages for a new <code>index.html</code> (via ETag). When a new version is detected it silently reloads so the TV picks up pushed changes without human intervention.</li>
+          <li><b>Daily reload</b> — full page reload at <b>03:00 local</b> to prevent memory bloat on always-on TV displays.</li>
+          <li><b>Manual ↻ Refresh</b> — forces immediate re-fetch of <code>data.json</code> + METAR.</li>
+        </ul>
+      </section>
+
+      <section id="help-demo">
+        <h2>Demo Mode</h2>
+        <p>The 🧪 Demo dropdown in the navbar replaces live data with 13 preset scenarios — useful for verifying layout or demonstrating how the dashboard reacts to different conditions:</p>
+        <ul>
+          <li>VFR · All GO</li>
+          <li>MVFR · Mixed</li>
+          <li>IFR · All NO GO</li>
+          <li>IFR · ALL GO (700/1)</li>
+          <li>LIFR · Cannot Taxi</li>
+          <li>High Winds · No Solo</li>
+          <li>Stale METAR · OLD DATA badge</li>
+          <li>No METAR · Unknown</li>
+          <li>Active Wind Advisory</li>
+          <li>⚠️ Amendment Issued</li>
+          <li>🕐 Upcoming Advisory</li>
+          <li>⏱️ Improving / Degrading / Mixed Timers</li>
+        </ul>
+        <p>Demo mode persists in localStorage. A yellow banner + yellow viewport border appear while active. Select "Off" from the dropdown to return to live data.</p>
+      </section>
+
+      <section id="help-tv">
+        <h2>TV Kiosk Mode</h2>
+        <p>Append <code>?tv=1</code> to the URL to enable large-font kiosk display:</p>
+        <ul>
+          <li>Base font 15px → 20px</li>
+          <li>Training panel status text 26px → 38px</li>
+          <li>All card elements scaled 25–50% larger</li>
+          <li>Cursor auto-hides after 3 seconds of inactivity</li>
+        </ul>
+        <p>Designed for distance viewing on a 4K TV in the briefing room.</p>
+      </section>
+
+      <p class="help-footer">Dashboard built by <b>Scott Nissen</b> · reach out for feature requests or bug reports.</p>
+
+    </div>
+  </div>
 </div>
 
 <footer class="footer">
@@ -4300,6 +4849,33 @@ function buildSevenDayDetailHTML(sd) {
     </div>
   `;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   HELP MODAL open/close
+   ──────────────────────────────────────────────────────────── */
+function openHelp() {
+  const modal = document.getElementById('help-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  // Scroll content to top on each open
+  const dlg = modal.querySelector('.help-dialog');
+  if (dlg) dlg.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+function closeHelp() {
+  const modal = document.getElementById('help-modal');
+  if (!modal) return;
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+function onHelpBackdrop(event) {
+  // Called when user clicks the dimmed backdrop (not the dialog itself)
+  closeHelp();
+}
+// Close on Esc
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeHelp();
+});
 
 function toggleSevenDay() {
   const toggle = document.getElementById('sevenday-toggle');
