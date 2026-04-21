@@ -4594,10 +4594,13 @@ function renderIFRTraining(metar, forecast) {
   const pipHTML = ifrAdvisory
     ? `<div class="ifr-training-pip" title="${escapeAttr(`${ifrAdvisory.type} ${ifrAdvisory.number || ''}: ${ifrAdvisory.criteria || ''}`)}">⚠️</div>`
     : '';
+  const fallbackBadge = (metar && metar._isForecastFallback)
+    ? ' <span class="metar-strip-fallback-inline" title="Live METAR stale — using GOLDFISH forecast">USING FORECAST</span>'
+    : '';
   el.innerHTML = `
     ${pipHTML}
     <div class="ifr-training-label">🎯 IFR Training</div>
-    <div class="ifr-training-station">CAIRNS · KOZR</div>
+    <div class="ifr-training-station">CAIRNS · KOZR${fallbackBadge}</div>
     <div class="ifr-training-detail">${detail}</div>
     ${taxiBadge}
     <div class="ifr-training-status">${statusLabel}</div>
@@ -4648,7 +4651,8 @@ function renderTraining(metar, forecast) {
   const svfrStatus = computeSVFRRecovery(metar);
 
   const cairnsLanding = landingHTML('Cairns', forecast);
-  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus);
+  const isFallback = !!(metar && metar._isForecastFallback);
+  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus, isFallback);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
@@ -4705,7 +4709,7 @@ function computeSVFRRecovery(metar) {
   return { status: anyMet ? 'go' : 'nogo', tiers };
 }
 
-function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svfr) {
+function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svfr, isFallback) {
   // SVFR Recovery tier gauge — three segments showing which of ≥700/1,
   // ≥600/2, ≥500/3 are currently satisfied by the live KOZR METAR.
   let svfrHTML = '';
@@ -4756,12 +4760,18 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
     const tooltip = `${advisory.type} ${advisory.number || ''}: ${advisory.criteria || ''}`;
     pipHTML = `<div class="training-panel-advisory-pip" title="${escapeAttr(tooltip)}">⚠️</div>`;
   }
+  // Fallback badge — shown on the Cairns panel when the live METAR is
+  // stale and we're reading GOLDFISH forecast conditions instead.
+  const fallbackHTML = isFallback
+    ? `<div class="metar-strip-fallback-inline" style="margin: 2px 0;" title="Live METAR stale — using GOLDFISH forecast">USING FORECAST</div>`
+    : '';
   return `
     <div class="training-panel ${status}">
       ${pipHTML}
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-status">${label}</div>
       <div class="training-panel-area">${area}</div>
+      ${fallbackHTML}
       ${landing || ''}
       ${soloHTML}
       ${taxiHTML}
