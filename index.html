@@ -6073,6 +6073,12 @@ setInterval(updateClock, 30 * 1000);
 setInterval(applyAutoPeriod, 60 * 1000);
 // "Fetched Xm ago" label tick
 setInterval(updateFetchedLabel, 30 * 1000);
+// Re-render the TAF strip every minute so the hour labels stay in sync
+// as the UTC clock advances — without this, the strip would only update
+// on the 5-min data cycle and could show stale hours for up to 5 min
+// after an hour rollover. TAF_OBSERVATION itself is still only re-fetched
+// on the data cycle; this just reprojects which 6 hours are "next."
+setInterval(() => { renderTAF(); }, 60 * 1000);
 loadData();
 setInterval(loadData, DATA_REFRESH_MS);
 </script>
