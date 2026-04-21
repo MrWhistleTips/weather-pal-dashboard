@@ -1269,56 +1269,96 @@ body.tv .pending-advisory { font-size: 13px; padding: 8px 14px; }
 body.tv .pending-advisory-label { font-size: 12px; }
 body.tv .pending-advisory-time { font-size: 12px; }
 
-/* Per-stagefield SVFR Recovery badge — top-left corner.
-   Green when KOZR METAR meets the published SVFR recovery sliding scale
-   (≥700/1 or ≥600/2 or ≥500/3). Red otherwise. Yellow UNKNOWN when
-   METAR is missing or stale. Stagefields only — not shown on Cairns. */
-.training-panel-svfr {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  display: inline-flex;
+/* SVFR Recovery tier gauge — Cairns panel only, bottom row.
+   Three segments represent the sliding scale (≥700/1, ≥600/2, ≥500/3).
+   Each segment lights up green when its tier is satisfied by the live
+   KOZR METAR. A met tier means recovery under that specific pairing of
+   ceiling and visibility is legal; unmet tiers dim. Whole gauge tints
+   yellow when METAR is missing or stale. */
+.training-panel-svfr-gauge {
+  width: 100%;
+  margin-top: 4px;
+  padding: 4px 2px 2px;
+  border-top: 1px dashed rgba(93,112,70,0.4);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
-  border-radius: 3px;
+  gap: 3px;
+}
+.svfr-gauge-label {
   font-family: 'Rajdhani', sans-serif;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  border: 1px solid;
-  white-space: nowrap;
-  line-height: 1.2;
-  z-index: 2;
+  color: var(--tan);
+  line-height: 1;
 }
-.training-panel-svfr.go {
-  color: var(--go);
-  background: var(--go-bg);
+.svfr-gauge-tiers {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  justify-content: center;
+}
+.svfr-gauge-tier {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 2px;
+  border-radius: 3px;
+  border: 1px solid rgba(93,112,70,0.35);
+  background: rgba(0,0,0,0.25);
+  transition: background 0.2s, border-color 0.2s;
+}
+.svfr-gauge-tier.met {
   border-color: var(--go-border);
-  text-shadow: 0 0 4px rgba(93,199,107,0.5);
+  background: var(--go-bg);
+  box-shadow: inset 0 0 6px rgba(93,199,107,0.12);
 }
-.training-panel-svfr.nogo {
-  color: var(--nogo);
-  background: var(--nogo-bg);
-  border-color: var(--nogo-border);
-  text-shadow: 0 0 4px rgba(214,69,69,0.5);
-}
-.training-panel-svfr.unknown {
-  color: var(--warning);
-  background: rgba(230,165,58,0.12);
-  border-color: rgba(230,165,58,0.5);
-}
-.training-panel-svfr-dot {
-  width: 5px;
-  height: 5px;
+.svfr-gauge-tier-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 4px currentColor;
+  background: rgba(255,255,255,0.2);
   flex-shrink: 0;
 }
-body.tv .training-panel-svfr { top: 8px; left: 8px; padding: 3px 9px; font-size: 11px; gap: 5px; }
-body.tv .training-panel-svfr-dot { width: 6px; height: 6px; }
+.svfr-gauge-tier.met .svfr-gauge-tier-dot {
+  background: var(--go);
+  box-shadow: 0 0 5px rgba(93,199,107,0.7);
+}
+.svfr-gauge-tier-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.3px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.svfr-gauge-tier.met .svfr-gauge-tier-label {
+  color: var(--go);
+  text-shadow: 0 0 4px rgba(93,199,107,0.5);
+}
+/* No tiers met — whole gauge tints red */
+.training-panel-svfr-gauge.nogo .svfr-gauge-label {
+  color: var(--nogo);
+  text-shadow: 0 0 4px rgba(214,69,69,0.4);
+}
+/* Unknown (METAR missing/stale) — yellow tint */
+.training-panel-svfr-gauge.unknown .svfr-gauge-label { color: var(--warning); }
+.training-panel-svfr-gauge.unknown .svfr-gauge-tier {
+  border-color: rgba(230,165,58,0.3);
+  background: rgba(230,165,58,0.06);
+}
+.training-panel-svfr-gauge.unknown .svfr-gauge-tier-label { color: rgba(230,165,58,0.55); }
+.training-panel-svfr-gauge.unknown .svfr-gauge-tier-dot { background: rgba(230,165,58,0.35); }
+body.tv .svfr-gauge-label { font-size: 12px; }
+body.tv .svfr-gauge-tier { padding: 5px 3px; gap: 4px; }
+body.tv .svfr-gauge-tier-dot { width: 10px; height: 10px; }
+body.tv .svfr-gauge-tier-label { font-size: 12px; }
 
 /* Per-stagefield advisory pip */
 .training-panel-advisory-pip {
@@ -2876,7 +2916,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Big status text</b> — <b>VFR GO</b> / <b>NO GO</b> / <b>UNKNOWN</b></li>
           <li><b>Subtitle line</b> — current ceiling/vis for Cairns; area name + trainability countdown for stagefields</li>
           <li><b>Recommended landing direction</b> — favorable runway + headwind/crosswind</li>
-          <li><b>SVFR Recovery badge</b> (Cairns only, top-left corner) — green when live KOZR METAR meets <b>≥700/1 OR ≥600/2 OR ≥500/3</b> (sliding scale; both ceiling AND visibility must clear one tier). Red when below all tiers. Yellow UNKNOWN when METAR missing or stale. Lives on Cairns because stagefield recoveries all happen into Cairns.</li>
+          <li><b>SVFR Recovery tier gauge</b> (Cairns only, bottom row) — three segments showing which of the sliding-scale tiers (<b>≥700/1 · ≥600/2 · ≥500/3</b>) the live KOZR METAR currently satisfies. Each met tier lights green; unmet tiers stay dim gray. If zero tiers are met, the label turns red. Yellow when METAR missing or stale. Lives on Cairns because stagefield recoveries all happen into Cairns, and the per-tier display tells you how much buffer you have if ceiling or visibility degrade.</li>
           <li><b>SOLO badge</b> (stagefields only, AM/PM only) — teal SOLO GO or orange NO SOLO with reason</li>
           <li><b>Advisory pip</b> — small pulsing ⚠️ in the top right if an active advisory affects that stagefield's area; hover for the full advisory text</li>
         </ul>
@@ -4384,34 +4424,49 @@ function renderTraining(metar, forecast) {
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
 }
 
-/// Evaluate KOZR SVFR Recovery status against the sliding scale:
-///   ≥700ft / 1SM   OR   ≥600ft / 2SM   OR   ≥500ft / 3SM
-/// Both ceiling AND vis must meet one tier. Returns {status, label}.
-/// Unknown when METAR is missing or stale.
+/// Evaluate KOZR SVFR Recovery against the 3-tier sliding scale:
+///   tier 1: ≥ 700 ft / 1 SM
+///   tier 2: ≥ 600 ft / 2 SM
+///   tier 3: ≥ 500 ft / 3 SM
+/// Returns { status, tiers: [bool,bool,bool] }. Status is:
+///   'go'      — at least one tier met
+///   'nogo'    — zero tiers met
+///   'unknown' — METAR missing or stale (tiers will all be null)
+const SVFR_TIERS = [
+  { ceil: 700, vis: 1, label: '700/1' },
+  { ceil: 600, vis: 2, label: '600/2' },
+  { ceil: 500, vis: 3, label: '500/3' },
+];
 function computeSVFRRecovery(metar) {
   if (!metar || isMetarStale(metar)) {
-    return { status: 'unknown', label: 'SVFR —' };
+    return { status: 'unknown', tiers: [null, null, null] };
   }
   const c = metarCeiling(metar);
-  const ceil = (c === null) ? 99999 : c;  // no BKN/OVC = unlimited
+  const ceil = (c === null) ? 99999 : c;
   const vis = parseMetarVis(metar.visib);
-  if (vis === null) return { status: 'unknown', label: 'SVFR —' };
-  const meets = (ceil >= 700 && vis >= 1)
-             || (ceil >= 600 && vis >= 2)
-             || (ceil >= 500 && vis >= 3);
-  return {
-    status: meets ? 'go' : 'nogo',
-    label: 'SVFR Recovery'
-  };
+  if (vis === null) return { status: 'unknown', tiers: [null, null, null] };
+  const tiers = SVFR_TIERS.map(t => ceil >= t.ceil && vis >= t.vis);
+  const anyMet = tiers.some(Boolean);
+  return { status: anyMet ? 'go' : 'nogo', tiers };
 }
 
 function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svfr) {
+  // SVFR Recovery tier gauge — three segments showing which of ≥700/1,
+  // ≥600/2, ≥500/3 are currently satisfied by the live KOZR METAR.
   let svfrHTML = '';
   if (svfr) {
+    const tierCells = SVFR_TIERS.map((t, i) => {
+      const met = svfr.tiers[i] === true;
+      return `
+        <div class="svfr-gauge-tier ${met ? 'met' : ''}">
+          <span class="svfr-gauge-tier-dot"></span>
+          <span class="svfr-gauge-tier-label">${t.label}</span>
+        </div>`;
+    }).join('');
     svfrHTML = `
-      <div class="training-panel-svfr ${svfr.status}" title="SVFR Recovery — KOZR must meet ≥700/1, ≥600/2, or ≥500/3">
-        <span class="training-panel-svfr-dot"></span>
-        <span>${svfr.label}</span>
+      <div class="training-panel-svfr-gauge ${svfr.status}" title="SVFR Recovery — green segment means that tier is currently satisfied by the KOZR METAR">
+        <div class="svfr-gauge-label">SVFR Recovery</div>
+        <div class="svfr-gauge-tiers">${tierCells}</div>
       </div>
     `;
   }
@@ -4448,7 +4503,6 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
   }
   return `
     <div class="training-panel ${status}">
-      ${svfrHTML}
       ${pipHTML}
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-status">${label}</div>
@@ -4456,6 +4510,7 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
       ${landing || ''}
       ${soloHTML}
       ${taxiHTML}
+      ${svfrHTML}
     </div>
   `;
 }
