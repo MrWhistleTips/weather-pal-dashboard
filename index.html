@@ -164,6 +164,38 @@ body.tv .brand-byline { font-size: 13px; }
   margin-top: 1px;
 }
 
+/* Publish heartbeat pip — next to the "Published Xm ago" timestamp.
+   Green <20 min, yellow 20–40 min, red >40 min or no timestamp.
+   Confirms the iOS publish-dashboard automation is still firing. */
+.publish-heartbeat-pip {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  margin-right: 4px;
+  vertical-align: 1px;
+  box-shadow: 0 0 3px rgba(0,0,0,0.5);
+  position: relative;
+}
+.publish-heartbeat-pip.ok {
+  background: var(--go);
+  box-shadow: 0 0 5px rgba(93,199,107,0.75);
+}
+.publish-heartbeat-pip.warn {
+  background: var(--warning);
+  box-shadow: 0 0 5px rgba(230,165,58,0.75);
+}
+.publish-heartbeat-pip.bad {
+  background: var(--nogo);
+  box-shadow: 0 0 6px rgba(214,69,69,0.85);
+  /* Gentle opacity pulse so an unhealthy state catches the eye from
+     across the room but doesn't trigger the expensive box-shadow
+     animation path */
+  animation: glowOpacityPulse 2s ease-in-out infinite;
+}
+body.tv .publish-heartbeat-pip { width: 9px; height: 9px; }
+
 .nav-actions { display: flex; gap: 8px; align-items: center; }
 
 /* Amendment indicator: light gold tint on the navbar + flanking badges */
@@ -2635,6 +2667,13 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <div class="nav-datum-label">Fetched</div>
       <div class="nav-datum-value" id="fetched-ago">—</div>
     </div>
+    <div class="nav-datum">
+      <div class="nav-datum-label">Published</div>
+      <div class="nav-datum-value">
+        <span id="publish-heartbeat-pip" class="publish-heartbeat-pip"></span>
+        <span id="publish-heartbeat-text">—</span>
+      </div>
+    </div>
     <div id="nav-amd-right" class="nav-amd-badge" style="display:none;">⚠️ <span id="nav-amd-right-text">AMD</span></div>
   </div>
 
@@ -2850,6 +2889,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Weather Pal logo</b> — app icon + title. When an amendment is active the navbar tints a soft gold and pulsing <span class="help-badge amber">⚠️ AMENDMENT</span> badges flank the time display.</li>
           <li><b>Zulu / Local time</b> — kept current with a 30-second tick. Matches UTC and the system clock of the display.</li>
           <li><b>Fetched Xm ago</b> — time since the last successful fetch of <code>data.json</code> + live METAR. A ⚠ symbol means the most recent METAR fetch failed (hover for details).</li>
+          <li><b>Published Xm ago</b> — heartbeat indicator confirming the iOS publish-dashboard automation is still firing. Colored pip: <b>green</b> when the iOS app last exported data <20 min ago, <b>yellow</b> 20–40 min, <b>red (pulsing)</b> >40 min or no data yet. If this goes red, the spare phone probably went to sleep or the Shortcut stopped running — unlock the phone and open the Shortcuts app.</li>
           <li><b>🧪 Demo</b> — 13 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
           <li><b>❔ Help</b> — opens this document.</li>
           <li><b>↻ Refresh</b> — forces an immediate re-fetch. Auto-refresh runs every 5 minutes anyway.</li>
@@ -5392,6 +5432,42 @@ function updateFetchedLabel() {
     el.style.color = '';
   }
   el.textContent = txt;
+
+  updatePublishHeartbeat();
+}
+
+/* Publish heartbeat — confirms the iOS spare-phone automation is still
+   firing. Green pip when DATA.exportedAt is <20 min old, yellow 20–40
+   min, red >40 min or missing. Pulses red when unhealthy so a stalled
+   phone is hard to miss on the TV. */
+function updatePublishHeartbeat() {
+  const pip = document.getElementById('publish-heartbeat-pip');
+  const text = document.getElementById('publish-heartbeat-text');
+  if (!pip || !text) return;
+  const ts = DATA && DATA.exportedAt;
+  if (!ts) {
+    pip.className = 'publish-heartbeat-pip bad';
+    text.textContent = '—';
+    pip.title = 'No exportedAt in data.json — has the app ever published?';
+    return;
+  }
+  const exported = new Date(ts);
+  if (isNaN(exported)) {
+    pip.className = 'publish-heartbeat-pip bad';
+    text.textContent = 'bad ts';
+    return;
+  }
+  const secs = Math.max(0, Math.floor((Date.now() - exported.getTime()) / 1000));
+  let label;
+  if (secs < 60) label = secs + 's ago';
+  else if (secs < 3600) label = Math.floor(secs / 60) + 'm ago';
+  else label = Math.floor(secs / 3600) + 'h ago';
+  text.textContent = label;
+  let cls = 'ok';
+  if (secs >= 2400) cls = 'bad';        // >40 min
+  else if (secs >= 1200) cls = 'warn';  // 20–40 min
+  pip.className = 'publish-heartbeat-pip ' + cls;
+  pip.title = `Last iOS publish: ${exported.toISOString()} (${label})`;
 }
 
 async function refresh() { await loadData(); }
