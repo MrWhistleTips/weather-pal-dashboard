@@ -3021,7 +3021,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Decoded cells</b> — Wind, Visibility, Ceiling, Temp, Dew Point, Altimeter.</li>
         </ol>
         <p>Inline <span class="help-badge yellow">OLD DATA</span> badge next to the raw text when the observation is more than <b>80 minutes</b> old.</p>
-        <p>When the live METAR is stale or missing (e.g. aviationweather.gov is having issues for this station), the dashboard automatically falls back to <b>synthesized conditions from the current GOLDFISH area-forecast segment</b> and shows a cyan <span class="help-badge blue">USING FORECAST</span> badge in place of OLD DATA. In fallback mode the Cairns training panel and IFR training strip both read against the forecast rather than going UNKNOWN — the raw text line is prefixed <code>FCST</code> so it's obviously not an observation. The dashboard auto-switches back to the live METAR as soon as a fresh one is published.</p>
+        <p>When the live METAR is stale or missing (e.g. aviationweather.gov is having issues for this station), the dashboard automatically falls back to <b>synthesized conditions from the current GOLDFISH area-forecast segment</b> and shows a cyan <span class="help-badge blue">USING FORECAST</span> badge in place of OLD DATA. GOLDFISH is the correct fallback source because <b>Cairns Army Airfield sits inside the GOLDFISH training area</b> — its forecast already describes conditions over Cairns. In fallback mode the Cairns training panel and IFR training strip both read against the forecast rather than going UNKNOWN — the raw text line is prefixed <code>FCST</code> so it's obviously not an observation. The dashboard auto-switches back to the live METAR as soon as a fresh one is published.</p>
       </section>
 
       <section id="help-flw">
@@ -4133,10 +4133,17 @@ function parseSegmentWind(text) {
 }
 
 /// Build a synthetic METAR-shaped object from the active GOLDFISH forecast
-/// segment. Used as a fallback when the live METAR is stale/missing (e.g.
-/// aviationweather.gov is down for the station). The returned object
-/// conforms to the fields downstream renderers read from a real METAR so
-/// the rest of the dashboard can consume it transparently, plus flags:
+/// segment. Used as a fallback when the live KOZR METAR is stale/missing
+/// (e.g. aviationweather.gov is down for the station).
+///
+/// GOLDFISH is the correct fallback source because Cairns Army Airfield
+/// sits inside the GOLDFISH training area — the GOLDFISH forecast already
+/// covers Cairns, so its ceiling/visibility/wind values are the most
+/// authoritative substitute for an observation.
+///
+/// The returned object conforms to the fields downstream renderers read
+/// from a real METAR so the rest of the dashboard can consume it
+/// transparently, plus flags:
 ///   _isForecastFallback: true   — drives the USING FORECAST badge
 ///   _sourceSegment:      string — the raw segment text (for tooltips)
 /// Returns null when the forecast has no GOLDFISH area or no current
@@ -5555,8 +5562,11 @@ function renderAll() {
   const liveMetar = DATA && DATA.metar;
   // When the live METAR is stale or missing, synthesize one from the
   // current GOLDFISH forecast segment so the dashboard stays useful
-  // instead of graying out into UNKNOWN. Carries the _isForecastFallback
-  // flag so renderers can surface a "USING FORECAST" badge.
+  // instead of graying out into UNKNOWN. GOLDFISH is the correct source
+  // because Cairns AAF sits inside the GOLDFISH training area — its
+  // forecast already describes Cairns's conditions.
+  // Carries the _isForecastFallback flag so renderers can surface a
+  // "USING FORECAST" badge.
   let metar = liveMetar;
   if ((!liveMetar || isMetarStale(liveMetar))) {
     const fallback = buildForecastMetarFallback(forecast);
