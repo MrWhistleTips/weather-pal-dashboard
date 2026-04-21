@@ -2876,7 +2876,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Big status text</b> — <b>VFR GO</b> / <b>NO GO</b> / <b>UNKNOWN</b></li>
           <li><b>Subtitle line</b> — current ceiling/vis for Cairns; area name + trainability countdown for stagefields</li>
           <li><b>Recommended landing direction</b> — favorable runway + headwind/crosswind</li>
-          <li><b>SVFR Recovery badge</b> (stagefields only, top-left corner) — green when KOZR METAR meets <b>≥700/1 OR ≥600/2 OR ≥500/3</b> (sliding scale; both ceiling AND visibility must meet one tier). Red when below. Yellow UNKNOWN when METAR missing or stale.</li>
+          <li><b>SVFR Recovery badge</b> (Cairns only, top-left corner) — green when live KOZR METAR meets <b>≥700/1 OR ≥600/2 OR ≥500/3</b> (sliding scale; both ceiling AND visibility must clear one tier). Red when below all tiers. Yellow UNKNOWN when METAR missing or stale. Lives on Cairns because stagefield recoveries all happen into Cairns.</li>
           <li><b>SOLO badge</b> (stagefields only, AM/PM only) — teal SOLO GO or orange NO SOLO with reason</li>
           <li><b>Advisory pip</b> — small pulsing ⚠️ in the top right if an active advisory affects that stagefield's area; hover for the full advisory text</li>
         </ul>
@@ -4346,14 +4346,14 @@ function renderTraining(metar, forecast) {
   } else if (metar && isMetarStale(metar)) {
     cairnsArea = 'KOZR · OLD DATA';
   }
-  // Cairns has no solo or taxi badge in the VFR card now
-  const cairnsLanding = landingHTML('Cairns', forecast);
-  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, null);
-
-  // SVFR Recovery status from KOZR METAR — shared across all 4 stagefields.
-  // Sliding scale per published SVFR recovery criteria: green when ceiling
-  // AND visibility meet at least one of the tiers: ≥700/1, ≥600/2, ≥500/3.
+  // SVFR Recovery status from KOZR METAR. Shown on the CAIRNS panel only —
+  // stagefield recoveries all happen INTO Cairns, so Cairns is where the
+  // recovery gate lives. Sliding scale: green when both ceiling AND vis
+  // meet at least one of ≥700/1, ≥600/2, ≥500/3.
   const svfrStatus = computeSVFRRecovery(metar);
+
+  const cairnsLanding = landingHTML('Cairns', forecast);
+  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
@@ -4378,7 +4378,7 @@ function renderTraining(metar, forecast) {
     // Advisory pip — true if any active advisory affects this area
     const affectingAdv = activeAdvs.find(a => advisoryAffectsArea(a, sf.area));
     const landing = landingHTML(sf.name, forecast);
-    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, svfrStatus);
+    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, null);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
