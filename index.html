@@ -2905,7 +2905,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Weather Pal logo</b> — app icon + title. When an amendment is active the navbar tints a soft gold and pulsing <span class="help-badge amber">⚠️ AMENDMENT</span> badges flank the time display.</li>
           <li><b>Zulu / Local time</b> — kept current with a 30-second tick. Matches UTC and the system clock of the display.</li>
           <li><b>Fetched Xm ago</b> — time since the last successful fetch of <code>data.json</code> + live METAR. A ⚠ symbol means the most recent METAR fetch failed (hover for details).</li>
-          <li><b>Published Xm ago</b> — heartbeat indicator confirming the iOS publish-dashboard automation is still firing. Colored pip: <b>green</b> when the iOS app last exported data <20 min ago, <b>yellow</b> 20–40 min, <b>red (pulsing)</b> >40 min or no data yet. If this goes red, the spare phone probably went to sleep or the Shortcut stopped running — unlock the phone and open the Shortcuts app.</li>
+          <li><b>Published Xm ago</b> — heartbeat indicator confirming the publishing server is still pushing fresh data. Colored pip: <b>green</b> when the server last exported data &lt;20 min ago, <b>yellow</b> 20–40 min, <b>red (pulsing)</b> &gt;40 min or no data yet. If this goes red, the server probably went idle — check the publishing automation.</li>
           <li><b>🧪 Demo</b> — 13 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
           <li><b>❔ Help</b> — opens this document.</li>
           <li><b>↻ Refresh</b> — forces an immediate re-fetch. Auto-refresh runs every 5 minutes anyway.</li>
@@ -2922,15 +2922,15 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <p>A ⚠ symbol appended here means the last live METAR fetch failed; hover for details. Otherwise it's just a freshness indicator for the browser.</p>
 
         <h3>Published Xm ago</h3>
-        <p><b>"When did the <em>iOS app</em> last push new data to GitHub?"</b> Server-side source of truth. Reads from <code>DATA.exportedAt</code>, which is stamped on the JSON at the moment the Publish Shortcut ran on the spare phone. This is the <em>real</em> "is our data fresh?" signal — if the spare phone's automation stops firing, this climbs even while Fetched keeps ticking at 0s.</p>
+        <p><b>"When did the <em>publishing server</em> last push new data to GitHub?"</b> Server-side source of truth. Reads from <code>DATA.exportedAt</code>, which is stamped on the JSON at the moment the publish automation ran on the server. This is the <em>real</em> "is our data fresh?" signal — if the server's automation stops firing, this climbs even while Fetched keeps ticking at 0s.</p>
 
         <h3>Heartbeat Pip Colors</h3>
         <table class="help-table">
           <thead><tr><th>Pip</th><th>Age</th><th>Meaning</th></tr></thead>
           <tbody>
-            <tr><td><span class="help-pip green"></span></td><td>&lt;20 min</td><td>Healthy — spare phone is publishing on schedule</td></tr>
+            <tr><td><span class="help-pip green"></span></td><td>&lt;20 min</td><td>Healthy — publishing server is on schedule</td></tr>
             <tr><td><span class="help-pip yellow"></span></td><td>20–40 min</td><td>Probably fine — one tick may have slipped; watch it</td></tr>
-            <tr><td><span class="help-pip red"></span></td><td>&gt;40 min or missing</td><td>Automation stopped — phone likely asleep. Pulses to draw attention.</td></tr>
+            <tr><td><span class="help-pip red"></span></td><td>&gt;40 min or missing</td><td>Automation stopped — server likely idle. Pulses to draw attention.</td></tr>
           </tbody>
         </table>
 
@@ -2940,13 +2940,13 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <tbody>
             <tr>
               <td>2m</td><td><span class="help-pip green"></span> 7m</td>
-              <td>Everything working. Browser polling, phone publishing.</td>
+              <td>Everything working. Browser polling, server publishing.</td>
               <td>—</td>
             </tr>
             <tr>
               <td>2m</td><td><span class="help-pip red"></span> 3h</td>
-              <td>Browser keeps pulling but it's just re-reading stale data. Spare phone is asleep or the Shortcut stopped.</td>
-              <td>Unlock the spare phone, open Shortcuts app. Verify Low Power Mode is off and phone is plugged in.</td>
+              <td>Browser keeps pulling but it's just re-reading stale data. Publishing server is idle or the automation stopped.</td>
+              <td>Verify the publishing server is awake and the publish automation is still running.</td>
             </tr>
             <tr>
               <td>30m+</td><td><span class="help-pip green"></span> 5m</td>
@@ -2962,16 +2962,16 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         </table>
 
         <h3>Why not combine them?</h3>
-        <p>Before the Published pip was added, you could look at the TV and see <i>"Fetched 2m ago"</i> and assume everything was fresh — even if the spare phone had been dead for hours. Splitting the two timestamps makes that failure mode obvious: a green Fetched paired with a red Published pip means "the TV is alive but the data isn't."</p>
+        <p>Before the Published pip was added, you could look at the TV and see <i>"Fetched 2m ago"</i> and assume everything was fresh — even if the publishing server had been offline for hours. Splitting the two timestamps makes that failure mode obvious: a green Fetched paired with a red Published pip means "the TV is alive but the data isn't."</p>
 
         <h3>Data Flow</h3>
         <p>Three independent legs, each with their own cadence:</p>
         <ol>
-          <li><b>Spare iPhone → GitHub</b> — every ~15 min (your Shortcut automation). Publishes fresh <code>data.json</code>.</li>
+          <li><b>Publishing server → GitHub</b> — every ~15 min. Fetches the latest forecasts + METAR, decodes them, and publishes a fresh <code>data.json</code>.</li>
           <li><b>TV browser → GitHub (data)</b> — every 5 min. Pulls <code>data.json</code> + live METAR, re-renders in place (no page reload).</li>
           <li><b>TV browser → GitHub (code)</b> — every 5 min. ETag check on <code>index.html</code>. Reloads the page only when a new dashboard version has been deployed.</li>
         </ol>
-        <p>Worst-case propagation from an iOS publish to the TV: ~5 minutes. Worst-case from a code push to the TV: ~7 minutes.</p>
+        <p>Worst-case propagation from a server publish to the TV: ~5 minutes. Worst-case from a code push to the TV: ~7 minutes.</p>
       </section>
 
       <section id="help-period">
@@ -5513,7 +5513,7 @@ function updateFetchedLabel() {
   updatePublishHeartbeat();
 }
 
-/* Publish heartbeat — confirms the iOS spare-phone automation is still
+/* Publish heartbeat — confirms the publishing server's automation is still
    firing. Green pip when DATA.exportedAt is <20 min old, yellow 20–40
    min, red >40 min or missing. Pulses red when unhealthy so a stalled
    phone is hard to miss on the TV. */
