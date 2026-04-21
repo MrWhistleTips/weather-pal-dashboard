@@ -783,6 +783,25 @@ body.tv .solar-strip-value { font-size: 14px; }
 .metar-strip.cat-mvfr { border-color: rgba(74,144,226,0.4); }
 .metar-strip.cat-ifr  { border-color: rgba(214,69,69,0.4); }
 .metar-strip.cat-lifr { border-color: rgba(179,71,217,0.4); }
+/* Fallback-mode badge shown on the METAR strip when the live METAR has
+   gone stale and we're displaying synthesized conditions from the current
+   GOLDFISH area forecast segment. Cyan so it's visually distinct from the
+   amber "OLD DATA" badge. */
+.metar-strip-fallback-inline {
+  display: inline-block;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: #000;
+  background: #74b9d1;
+  padding: 1px 7px;
+  border-radius: 2px;
+  margin-left: 6px;
+  letter-spacing: 0.8px;
+  vertical-align: 1px;
+}
+body.tv .metar-strip-fallback-inline { font-size: 12px; padding: 2px 9px; }
+
 .metar-strip-old-inline {
   display: inline-block;
   font-family: 'Rajdhani', sans-serif;
@@ -3001,7 +3020,8 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Raw METAR</b> text — the full observation as delivered by aviationweather.gov. Colored by FAA flight category (<span class="help-cat vfr">VFR</span> <span class="help-cat mvfr">MVFR</span> <span class="help-cat ifr">IFR</span> <span class="help-cat lifr">LIFR</span>).</li>
           <li><b>Decoded cells</b> — Wind, Visibility, Ceiling, Temp, Dew Point, Altimeter.</li>
         </ol>
-        <p>Inline <span class="help-badge yellow">OLD DATA</span> badge next to the raw text when the observation is more than <b>80 minutes</b> old. In that case Cairns status becomes <span class="help-badge yellow">UNKNOWN</span> and Alternate Planning badges switch to yellow.</p>
+        <p>Inline <span class="help-badge yellow">OLD DATA</span> badge next to the raw text when the observation is more than <b>80 minutes</b> old.</p>
+        <p>When the live METAR is stale or missing (e.g. aviationweather.gov is having issues for this station), the dashboard automatically falls back to <b>synthesized conditions from the current GOLDFISH area-forecast segment</b> and shows a cyan <span class="help-badge blue">USING FORECAST</span> badge in place of OLD DATA. In fallback mode the Cairns training panel and IFR training strip both read against the forecast rather than going UNKNOWN — the raw text line is prefixed <code>FCST</code> so it's obviously not an observation. The dashboard auto-switches back to the live METAR as soon as a fresh one is published.</p>
       </section>
 
       <section id="help-flw">
@@ -4112,6 +4132,86 @@ function parseSegmentWind(text) {
   return { spd: parseInt(m[2]), gust: m[4] ? parseInt(m[4]) : 0 };
 }
 
+/// Build a synthetic METAR-shaped object from the active GOLDFISH forecast
+/// segment. Used as a fallback when the live METAR is stale/missing (e.g.
+/// aviationweather.gov is down for the station). The returned object
+/// conforms to the fields downstream renderers read from a real METAR so
+/// the rest of the dashboard can consume it transparently, plus flags:
+///   _isForecastFallback: true   — drives the USING FORECAST badge
+///   _sourceSegment:      string — the raw segment text (for tooltips)
+/// Returns null when the forecast has no GOLDFISH area or no current
+/// segment data to synthesize from.
+function buildForecastMetarFallback(forecast) {
+  if (!forecast || !forecast.mef || !forecast.mef.areaForecasts) return null;
+  const goldfish = forecast.mef.areaForecasts.find(a =>
+    (a.name || '').toUpperCase() === 'GOLDFISH');
+  if (!goldfish) return null;
+
+  const text = goldfish.amendmentText || goldfish.forecast || '';
+  const segs = splitSegments(text);
+  if (segs.length === 0) return null;
+  const mainSegs = segs.filter(s => !s.isTemporary);
+  if (mainSegs.length === 0) return null;
+  const ci = currentSegmentIndex(mainSegs);
+  const seg = mainSegs[Math.max(0, Math.min(ci, mainSegs.length - 1))];
+  const segText = seg.text || '';
+
+  const wind = parseSegmentWind(segText);
+  // Also pick up wind direction (parseSegmentWind only returns spd/gust)
+  const windMatch = segText.match(/(\d{3}|VRB)(\d{2,3})(G(\d{2,3}))?KT/);
+  const wdir = windMatch ? (windMatch[1] === 'VRB' ? 'VRB' : parseInt(windMatch[1])) : null;
+
+  const ceilFt = parseCeiling(segText);          // nil = CLR / no BKN/OVC
+  const visSM  = parseVisibility(segText);
+
+  // Reconstruct a cloud array from BKN/OVC/SCT/FEW layers so
+  // metarCeiling() and existing renderers still work.
+  const clouds = [];
+  const cloudRe = /(FEW|SCT|BKN|OVC)(\d{3})/g;
+  let cm;
+  while ((cm = cloudRe.exec(segText)) !== null) {
+    clouds.push({ cover: cm[1], base: parseInt(cm[2]) * 100 });
+  }
+
+  const station = (DATA && DATA.metar && DATA.metar.icaoId) || METAR_STATION;
+  const cat = flightCategory(ceilFt, visSM).toUpperCase();
+
+  // Timestamp = now, so isMetarStale() returns false on the fallback.
+  const now = new Date();
+  const reportTime = now.toISOString();
+
+  // Pseudo-raw string so the strip still has something to display. Format
+  // mirrors a real METAR at a glance but the "FCST" prefix flags its
+  // origin for anyone inspecting the text.
+  const ddhhmmZ = String(now.getUTCDate()).padStart(2,'0')
+                + String(now.getUTCHours()).padStart(2,'0')
+                + String(now.getUTCMinutes()).padStart(2,'0') + 'Z';
+  const windStr = (wdir === 'VRB' ? 'VRB' : (wdir != null ? String(wdir).padStart(3,'0') : '---'))
+                + (wind.spd ? String(wind.spd).padStart(2,'0') : '00')
+                + (wind.gust ? 'G' + String(wind.gust).padStart(2,'0') : '') + 'KT';
+  const visStr = visSM != null ? `${visSM}SM` : '';
+  const skyStr = clouds.length
+    ? clouds.map(c => c.cover + String(Math.round(c.base/100)).padStart(3,'0')).join(' ')
+    : 'CLR';
+  const rawOb = `FCST ${station} ${ddhhmmZ} ${windStr} ${visStr} ${skyStr} RMK FROM GOLDFISH FCST`.replace(/\s+/g,' ').trim();
+
+  return {
+    icaoId: station,
+    reportTime,
+    rawOb,
+    wdir,
+    wspd: wind.spd || 0,
+    wgst: wind.gust || null,
+    visib: visSM != null ? String(visSM) : null,
+    clouds,
+    fltCat: cat,
+    // Keep these nil so renderers show em-dash rather than inventing data
+    temp: null, dewp: null, altim: null,
+    _isForecastFallback: true,
+    _sourceSegment: segText
+  };
+}
+
 /// Solo evaluation per UH-72 Common Core FTG Weather Requirements:
 ///   (1) ≥1200ft ceiling AND ≥3 SM visibility, currently AND throughout period
 ///   (2) terminate immediately if forecast/observed drops below 1200/3
@@ -4717,6 +4817,7 @@ function renderMETAR(metar) {
   }
 
   const stale = isMetarStale(metar);
+  const isFallback = metar._isForecastFallback === true;
   const cat = (metar.fltCat || '').toLowerCase();
   // Apply categorical color class so raw + values inherit the right color
   strip.className = 'metar-strip' + (cat ? ` cat-${cat}` : '');
@@ -4745,7 +4846,7 @@ function renderMETAR(metar) {
   if (metar.altim) altimStr = (metar.altim / 33.8639).toFixed(2) + '"';
 
   strip.innerHTML = `
-    ${metar.rawOb ? `<div class="metar-strip-raw">${metar.rawOb}${stale ? ' <span class="metar-strip-old-inline">OLD DATA</span>' : ''}</div>` : ''}
+    ${metar.rawOb ? `<div class="metar-strip-raw">${metar.rawOb}${isFallback ? ' <span class="metar-strip-fallback-inline" title="Live METAR is stale — showing current GOLDFISH area-forecast conditions">USING FORECAST</span>' : (stale ? ' <span class="metar-strip-old-inline">OLD DATA</span>' : '')}</div>` : ''}
     <div class="metar-strip-data">
       <div class="metar-strip-cell"><span class="metar-strip-label">Wind</span><span class="metar-strip-value">${windStr}</span></div>
       <div class="metar-strip-cell"><span class="metar-strip-label">Vis</span><span class="metar-strip-value">${metar.visib || '—'} SM</span></div>
@@ -5441,7 +5542,16 @@ function activeForecast() {
 
 function renderAll() {
   const forecast = activeForecast();
-  const metar = DATA && DATA.metar;
+  const liveMetar = DATA && DATA.metar;
+  // When the live METAR is stale or missing, synthesize one from the
+  // current GOLDFISH forecast segment so the dashboard stays useful
+  // instead of graying out into UNKNOWN. Carries the _isForecastFallback
+  // flag so renderers can surface a "USING FORECAST" badge.
+  let metar = liveMetar;
+  if ((!liveMetar || isMetarStale(liveMetar))) {
+    const fallback = buildForecastMetarFallback(forecast);
+    if (fallback) metar = fallback;
+  }
   renderTraining(metar, forecast);
   renderMETAR(metar);
   renderAdvisories(forecast);
