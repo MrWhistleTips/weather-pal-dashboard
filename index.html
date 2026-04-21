@@ -2456,6 +2456,27 @@ body.tv .flw-strip-level { font-size: 12px; }
 .hazard-value.active { color: var(--amber); font-weight: 600; }
 
 /* DEMO BANNER & ALERTS */
+/* Always-on pilot-reference disclaimer — light gold, top of the page.
+   Persistent safety notice so anyone reading the dashboard knows the
+   displayed data isn't authoritative for go/no-go decisions. */
+.disclaimer-banner {
+  background: linear-gradient(180deg, #e6cf78 0%, #d9bd5a 100%);
+  color: #2a2108;
+  text-align: center;
+  padding: 5px 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  border-bottom: 1px solid rgba(0,0,0,0.25);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+  line-height: 1.3;
+}
+body.tv .disclaimer-banner { font-size: 16px; letter-spacing: 2px; padding: 8px 14px; }
+@media (max-width: 768px) {
+  .disclaimer-banner { font-size: 9px; letter-spacing: 0.8px; padding: 4px 8px; }
+}
+
 .demo-banner {
   background: var(--warning);
   color: #000;
@@ -2829,6 +2850,11 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 </style>
 </head>
 <body>
+
+<!-- Persistent disclaimer — always visible at the very top of the page -->
+<div class="disclaimer-banner">
+  FOR PILOT REFERENCE ONLY — IT IS THE PILOT'S RESPONSIBILITY TO CHECK OFFICIAL SOURCES IN DETERMINING GO/NO-GO STATUS FOR TRAINING
+</div>
 
 <div id="demo-banner" class="demo-banner">
   🧪 DEMO MODE — <span id="demo-scenario">Sample Data</span>
