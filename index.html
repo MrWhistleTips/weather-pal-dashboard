@@ -377,6 +377,21 @@ body.tv .nav-amd-badge { font-size: 14px; padding: 6px 12px; letter-spacing: 2.2
 .help-badge.teal   { color: #5fb3b3;        border-color: rgba(95,179,179,0.5); background: rgba(95,179,179,0.15); }
 .help-badge.orange { color: #e88a3e;        border-color: rgba(232,138,62,0.5); background: rgba(232,138,62,0.15); }
 
+/* Inline colored pip for use in help modal examples */
+.help-pip {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin: 0 2px;
+  vertical-align: -1px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
+.help-pip.green  { background: var(--go);      box-shadow: 0 0 5px rgba(93,199,107,0.7); }
+.help-pip.yellow { background: var(--warning); box-shadow: 0 0 5px rgba(230,165,58,0.7); }
+.help-pip.red    { background: var(--nogo);    box-shadow: 0 0 5px rgba(214,69,69,0.7); }
+.help-pip.blue   { background: var(--mvfr);    box-shadow: 0 0 5px rgba(74,144,226,0.7); }
+
 .help-cat {
   display: inline-block;
   padding: 1px 5px;
@@ -2858,6 +2873,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <nav class="help-toc">
         <a href="#help-top-bar">Top Bar · Navbar</a>
+        <a href="#help-pipeline">Data Pipeline — Fetched vs Published</a>
         <a href="#help-period">Period Selector · AM / PM / N1</a>
         <a href="#help-solar">Solar / Lunar Strip</a>
         <a href="#help-metar">METAR Strip</a>
@@ -2895,6 +2911,67 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>↻ Refresh</b> — forces an immediate re-fetch. Auto-refresh runs every 5 minutes anyway.</li>
           <li><b>📡 Source</b> — opens the army.mil weather page in a new tab.</li>
         </ul>
+      </section>
+
+      <section id="help-pipeline">
+        <h2>Data Pipeline — Fetched vs Published</h2>
+        <p>Two timestamps in the navbar track two different things. Both matter for knowing whether the dashboard is showing real-time data or silently serving stale content.</p>
+
+        <h3>Fetched Xm ago</h3>
+        <p><b>"When did <em>this browser</em> last pull from the server?"</b> Client-side clock. Resets to 0s every time the dashboard's 5-minute data-refresh cycle runs. If the browser is alive, this ticks like a clock — even if the data itself hasn't changed in hours.</p>
+        <p>A ⚠ symbol appended here means the last live METAR fetch failed; hover for details. Otherwise it's just a freshness indicator for the browser.</p>
+
+        <h3>Published Xm ago</h3>
+        <p><b>"When did the <em>iOS app</em> last push new data to GitHub?"</b> Server-side source of truth. Reads from <code>DATA.exportedAt</code>, which is stamped on the JSON at the moment the Publish Shortcut ran on the spare phone. This is the <em>real</em> "is our data fresh?" signal — if the spare phone's automation stops firing, this climbs even while Fetched keeps ticking at 0s.</p>
+
+        <h3>Heartbeat Pip Colors</h3>
+        <table class="help-table">
+          <thead><tr><th>Pip</th><th>Age</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><span class="help-pip green"></span></td><td>&lt;20 min</td><td>Healthy — spare phone is publishing on schedule</td></tr>
+            <tr><td><span class="help-pip yellow"></span></td><td>20–40 min</td><td>Probably fine — one tick may have slipped; watch it</td></tr>
+            <tr><td><span class="help-pip red"></span></td><td>&gt;40 min or missing</td><td>Automation stopped — phone likely asleep. Pulses to draw attention.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Troubleshooting</h3>
+        <table class="help-table">
+          <thead><tr><th>Fetched</th><th>Published</th><th>What it means</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>2m</td><td><span class="help-pip green"></span> 7m</td>
+              <td>Everything working. Browser polling, phone publishing.</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>2m</td><td><span class="help-pip red"></span> 3h</td>
+              <td>Browser keeps pulling but it's just re-reading stale data. Spare phone is asleep or the Shortcut stopped.</td>
+              <td>Unlock the spare phone, open Shortcuts app. Verify Low Power Mode is off and phone is plugged in.</td>
+            </tr>
+            <tr>
+              <td>30m+</td><td><span class="help-pip green"></span> 5m</td>
+              <td>Publish is fine but the TV's browser stopped polling — possibly frozen or network dropped.</td>
+              <td>Reload the TV browser (Cmd/Ctrl+R) or wait for the nightly 03:00 auto-reload.</td>
+            </tr>
+            <tr>
+              <td>⚠</td><td>any</td>
+              <td>Live METAR fetch is failing — aviationweather.gov or the CORS proxy returned an error.</td>
+              <td>Usually transient — resolves within a few minutes as the API recovers. Hover the ⚠ for the exact error.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Why not combine them?</h3>
+        <p>Before the Published pip was added, you could look at the TV and see <i>"Fetched 2m ago"</i> and assume everything was fresh — even if the spare phone had been dead for hours. Splitting the two timestamps makes that failure mode obvious: a green Fetched paired with a red Published pip means "the TV is alive but the data isn't."</p>
+
+        <h3>Data Flow</h3>
+        <p>Three independent legs, each with their own cadence:</p>
+        <ol>
+          <li><b>Spare iPhone → GitHub</b> — every ~15 min (your Shortcut automation). Publishes fresh <code>data.json</code>.</li>
+          <li><b>TV browser → GitHub (data)</b> — every 5 min. Pulls <code>data.json</code> + live METAR, re-renders in place (no page reload).</li>
+          <li><b>TV browser → GitHub (code)</b> — every 5 min. ETag check on <code>index.html</code>. Reloads the page only when a new dashboard version has been deployed.</li>
+        </ol>
+        <p>Worst-case propagation from an iOS publish to the TV: ~5 minutes. Worst-case from a code push to the TV: ~7 minutes.</p>
       </section>
 
       <section id="help-period">
