@@ -2413,6 +2413,33 @@ body.demo .container::before {
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3);
 }
 
+/* OLD WEATHER indicator — yellow border + banner when the currently
+   displayed forecast was issued on a previous calendar day. Mirrors
+   the demo-mode look so operators can't miss it. If both demo and
+   old-weather are somehow active, demo-mode's border takes priority. */
+.old-weather-banner {
+  background: var(--warning);
+  color: #000;
+  text-align: center;
+  padding: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  display: none;
+}
+body.old-weather:not(.demo) .old-weather-banner { display: block; }
+body.old-weather:not(.demo) .container::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  border: 3px solid var(--warning);
+  pointer-events: none;
+  z-index: 999;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3);
+}
+body.tv .old-weather-banner { font-size: 18px; padding: 10px; letter-spacing: 4px; }
+
 /* Demo dropdown menu in navbar */
 .demo-menu {
   position: relative;
@@ -2578,6 +2605,11 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
 <div id="demo-banner" class="demo-banner">
   🧪 DEMO MODE — <span id="demo-scenario">Sample Data</span>
+</div>
+
+<!-- Shown when the active forecast was issued on a previous calendar day -->
+<div id="old-weather-banner" class="old-weather-banner">
+  ⚠️ OLD WEATHER — <span id="old-weather-detail">Forecast is from a previous day</span>
 </div>
 
 <nav class="navbar">
@@ -2806,6 +2838,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <a href="#help-colors">Color &amp; Status Legend</a>
         <a href="#help-emoji">Weather Emoji Guide</a>
         <a href="#help-refresh">Data Refresh &amp; Auto-Update</a>
+        <a href="#help-old-weather">Old Weather Warning</a>
         <a href="#help-demo">Demo Mode</a>
         <a href="#help-tv">TV Kiosk Mode</a>
       </nav>
@@ -3077,6 +3110,17 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Daily reload</b> — full page reload at <b>03:00 local</b> to prevent memory bloat on always-on TV displays.</li>
           <li><b>Manual ↻ Refresh</b> — forces immediate re-fetch of <code>data.json</code> + METAR.</li>
         </ul>
+      </section>
+
+      <section id="help-old-weather">
+        <h2>Old Weather Warning</h2>
+        <p>If the currently displayed forecast was issued on a previous calendar day (operator's local time), the dashboard enters an <b>OLD WEATHER</b> mode:</p>
+        <ul>
+          <li>Yellow 3-pixel border around the entire viewport (same style as Demo mode)</li>
+          <li>Yellow banner up top reading <b>⚠️ OLD WEATHER — Forecast from [date] · X days ago · Refresh data when available</b></li>
+        </ul>
+        <p>Driven by the forecast's <code>fetchedAt</code> timestamp (per-period) with the top-level <code>exportedAt</code> as a fallback. Demo mode overrides this — if you enable Demo, the demo yellow border takes priority and the old-weather banner hides.</p>
+        <p>Clears automatically as soon as a fresh <code>data.json</code> with today's timestamp arrives.</p>
       </section>
 
       <section id="help-demo">
@@ -4998,6 +5042,49 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeHelp();
 });
 
+/* ─────────────────────────────────────────────────────────────
+   OLD WEATHER warning — triggered when the currently displayed
+   forecast was exported on a previous calendar day (operator's
+   local time). Used for detecting "the TV is showing yesterday's
+   briefing" drift that can happen if the iOS app didn't publish.
+   ──────────────────────────────────────────────────────────── */
+function renderOldWeatherWarning(forecast) {
+  const banner = document.getElementById('old-weather-banner');
+  const detail = document.getElementById('old-weather-detail');
+  // Prefer the per-forecast fetchedAt; fall back to the top-level
+  // exportedAt; neither present → can't judge, skip.
+  const ts = (forecast && forecast.fetchedAt) || (DATA && DATA.exportedAt);
+  if (!ts) {
+    document.body.classList.remove('old-weather');
+    return;
+  }
+  const ref = new Date(ts);
+  if (isNaN(ref)) {
+    document.body.classList.remove('old-weather');
+    return;
+  }
+  const now = new Date();
+  const same = ref.getFullYear() === now.getFullYear()
+            && ref.getMonth() === now.getMonth()
+            && ref.getDate() === now.getDate();
+  if (same) {
+    document.body.classList.remove('old-weather');
+    return;
+  }
+  // Old — compute a friendly "X days ago" + issue date
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startOfRef = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate()).getTime();
+  const daysOld = Math.round((startOfToday - startOfRef) / msPerDay);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const issueStr = `${months[ref.getMonth()]} ${ref.getDate()}`;
+  const daysStr = daysOld === 1 ? '1 day ago' : `${daysOld} days ago`;
+  if (detail) {
+    detail.textContent = `Forecast from ${issueStr} · ${daysStr} · Refresh data when available`;
+  }
+  document.body.classList.add('old-weather');
+}
+
 function toggleSevenDay() {
   const toggle = document.getElementById('sevenday-toggle');
   const detail = document.getElementById('sevenday-detail');
@@ -5224,6 +5311,7 @@ function renderAll() {
   renderHazards(forecast);
   renderSolar(forecast);
   renderSevenDay();
+  renderOldWeatherWarning(forecast);
 
   const alertEl = document.getElementById('data-alert');
   if (!forecast) {
