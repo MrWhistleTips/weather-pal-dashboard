@@ -2689,12 +2689,20 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   .container { padding: 4px 6px; }
 
   /* NAVBAR — stack the datum chips onto their own row rather than hiding
-     them. Brand left, actions right, chip row wraps below. */
+     them. Brand left, actions right, chip row wraps below. Sticky to the
+     top on mobile so brand + heartbeat + datums stay visible while the
+     rest of the dashboard scrolls underneath. */
   .navbar {
     flex-wrap: wrap;
     padding: 8px 10px;
     gap: 8px;
     row-gap: 6px;
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    background: var(--bg-1, #0e1310);
+    border-bottom: 1px solid rgba(93,112,70,0.35);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
   }
   .brand-logo { width: 32px; height: 32px; border-radius: 8px; }
   .brand-name { font-size: 13px; letter-spacing: 1px; gap: 6px; }
