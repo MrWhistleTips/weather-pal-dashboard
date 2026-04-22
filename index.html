@@ -5859,41 +5859,53 @@ function waasClassifyRGB(r, g, b) {
   return { key: 'unknown', label: 'Unknown', color: 'rgba(255,255,255,0.4)' };
 }
 
-/// Fetch the FAA snapshot via allorigins.win/raw — corsproxy.io stopped
-/// proxying the FAA endpoint and started returning their landing page
-/// HTML instead of the PNG. allorigins/raw cleanly forwards the binary.
-/// Returns { dataUrl, snapshotTime } or null on failure.
+/// Fetch the FAA snapshot through CORS proxies. Tries multiple proxies
+/// in order so a single proxy outage / browser-block (e.g. Safari ITP
+/// or an ad blocker on a particular machine) doesn't kill the widget.
+/// Returns { dataUrl, snapshotTime } or null when ALL proxies fail.
+const WAAS_PROXIES = [
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+];
+let WAAS_LAST_ERROR = null;        // last error string (for the UI)
+
 async function fetchWAAS() {
   const target = `${WAAS_IMAGE_URL}?cb=${Date.now()}`;
-  const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-      console.warn('[WAAS] HTTP ' + res.status);
-      return null;
+  WAAS_LAST_ERROR = null;
+  for (let i = 0; i < WAAS_PROXIES.length; i++) {
+    const url = WAAS_PROXIES[i](target);
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) {
+        console.warn(`[WAAS] proxy ${i+1}/${WAAS_PROXIES.length} HTTP ${res.status}`);
+        WAAS_LAST_ERROR = `Proxy ${i+1}: HTTP ${res.status}`;
+        continue;
+      }
+      const blob = await res.blob();
+      // Sanity: real PNGs are >50KB and have an image content-type
+      if ((!blob.type.startsWith('image/') && !blob.type.startsWith('application/octet-stream')) || blob.size < 10000) {
+        console.warn(`[WAAS] proxy ${i+1} returned non-image content (${blob.type}, ${blob.size}B)`);
+        WAAS_LAST_ERROR = `Proxy ${i+1}: non-image response`;
+        continue;
+      }
+      const snapshotTime = new Date();
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      console.log(`[WAAS] fetched ${blob.size}B image via proxy ${i+1}`);
+      WAAS_LAST_ERROR = null;
+      return { dataUrl, snapshotTime };
+    } catch (e) {
+      console.warn(`[WAAS] proxy ${i+1} failed:`, e);
+      WAAS_LAST_ERROR = `Proxy ${i+1}: ${e.message || e}`;
     }
-    const blob = await res.blob();
-    // Sanity check — make sure we got an image and not a proxy error page
-    if (!blob.type.startsWith('image/') && blob.size < 10000) {
-      console.warn('[WAAS] proxy returned non-image content (' + blob.type + ', ' + blob.size + 'B)');
-      return null;
-    }
-    // allorigins/raw doesn't forward Last-Modified — use fetch time as
-    // an approximation. The FAA updates server-side every 3 min so this
-    // is within ~3 min of the actual snapshot time.
-    const snapshotTime = new Date();
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-    console.log('[WAAS] fetched ' + blob.size + 'B image');
-    return { dataUrl, snapshotTime };
-  } catch (e) {
-    console.warn('[WAAS] fetch failed:', e);
-    return null;
   }
+  console.warn('[WAAS] all proxies failed');
+  return null;
 }
 
 /// Load a data URL into an Image, draw it onto a canvas, and sample
@@ -5944,10 +5956,10 @@ function renderWAAS() {
   const detail = document.getElementById('waas-detail');
   if (!toggle || !statusEl || !detail) return;
 
-  // Always show the toggle once we either have a cached state or are
-  // actively loading the first fetch. Hidden only when no cache + no
-  // load in progress (e.g. fetch failed and there's no prior state).
-  if (!WAAS_SNAPSHOT && !WAAS_LOADING) {
+  // Always show the toggle once we either have a cached state, are
+  // actively loading, OR have hit a fetch error (so the user can see
+  // the failure rather than the widget silently disappearing).
+  if (!WAAS_SNAPSHOT && !WAAS_LOADING && !WAAS_LAST_ERROR) {
     toggle.style.display = 'none';
     detail.style.display = 'none';
     return;
@@ -5960,6 +5972,16 @@ function renderWAAS() {
       <span class="sevenday-toggle-day" title="Fetching FAA WAAS snapshot…">
         <span class="sevenday-toggle-dot" style="background:rgba(255,255,255,0.3); animation: glowOpacityPulse 1.2s ease-in-out infinite;"></span>
         <span style="color:rgba(255,255,255,0.55); font-style:italic;">Loading…</span>
+      </span>`;
+    return;
+  }
+
+  // All-proxies-failed state: no cache, not loading, but error set
+  if (!WAAS_SNAPSHOT && WAAS_LAST_ERROR) {
+    statusEl.innerHTML = `
+      <span class="sevenday-toggle-day" title="WAAS fetch failed — ${escapeAttr(WAAS_LAST_ERROR)}">
+        <span class="sevenday-toggle-dot" style="background: var(--nogo); box-shadow: 0 0 5px rgba(214,69,69,0.7);"></span>
+        <span style="color: var(--nogo);">WAAS unavailable</span>
       </span>`;
     return;
   }
