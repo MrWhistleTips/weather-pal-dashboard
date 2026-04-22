@@ -3164,6 +3164,8 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <a href="#help-old-weather">Old Weather Warning</a>
         <a href="#help-demo">Demo Mode</a>
         <a href="#help-tv">TV Kiosk Mode</a>
+        <a href="#help-mobile">Mobile / Phone View</a>
+        <a href="#help-disclaimer">Pilot Reference Disclaimer</a>
       </nav>
 
       <section id="help-top-bar">
@@ -3420,16 +3422,19 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <section id="help-waas">
         <h2>WAAS / GPS Coverage</h2>
-        <p>Compact widget centered in the IFR Operations banner. Shows the live FAA Vertical Protection Level snapshot from <code>nstb.tc.faa.gov</code> with a colored pip indicating coverage at Cairns AAF:</p>
+        <p>Compact widget centered in the IFR Operations banner. Shows the live FAA Vertical Protection Level snapshot from <code>nstb.tc.faa.gov</code> with a colored pip indicating coverage at Cairns AAF, the local time of the last successful fetch, and a soft <b>blue glow</b> around the entire widget when coverage is at the LPV200 best-case state:</p>
         <ul>
-          <li><span class="help-pip green"></span> <b>KOZR Full LPV200</b> — deep-blue zone, best WAAS service. LPV200 (200-ft DH) approaches available.</li>
+          <li><span class="help-pip green"></span> <b>KOZR Full LPV200</b> — deep-blue zone, best WAAS service. LPV200 (200-ft DH) approaches available. Banner glows soft blue.</li>
           <li><span class="help-pip blue"></span> <b>LPV</b> — slightly elevated VPL but still within RNP service.</li>
           <li><span class="help-pip green" style="background: #83b94e; box-shadow: 0 0 5px rgba(131,185,78,0.7);"></span> <b>LNAV/VNAV</b> — too high for full LPV but baro-VNAV approaches still flyable.</li>
           <li><span class="help-pip yellow"></span> <b>Marginal</b> — verify alternate procedures.</li>
           <li><span class="help-pip red"></span> <b>Degraded</b> — outside published service contour. Plan non-GPS approach.</li>
+          <li><span class="help-pip red"></span> <b>WAAS unavailable</b> — all CORS proxies failed. Hover for the last error string. Widget retries on the next 3-min cycle.</li>
         </ul>
-        <p>Click the widget to expand a detail panel showing the full FAA snapshot image, classification analysis, sampled RGB values, and snapshot timestamp. Image auto-refreshes every 3 minutes (matches FAA's server-side update cadence).</p>
-        <p>How it works: the FAA renders a color-coded VPL contour map every 3 min. We pull it via corsproxy.io (FAA doesn't send CORS headers), draw it onto a canvas, and sample a 17×17 pixel region around Cairns's coordinates (31.27°N, 85.72°W). White state-border pixels are dropped before averaging. The averaged RGB is mapped to one of the categories above. Calibrated against NYC/LA/Miami/Seattle (all return deep blue) and Pacific/N. Atlantic control points (return deep red).</p>
+        <p>Click the widget to expand a detail panel showing the full FAA snapshot image, classification analysis, sampled RGB values, and the fetch timestamp.</p>
+        <p><b>Snapshot time</b> shown in the banner is the local time of the last successful proxy fetch (24-hour <code>HH:MM</code>L). FAA updates the source image every 3 minutes server-side; we re-fetch on the same cadence.</p>
+        <p><b>Persistent across refreshes</b> — the last successful coverage classification is cached in <code>localStorage</code>, so reloading the page shows the previous status instantly while the fresh fetch runs in the background. Only the lightweight classification (category + RGB + timestamp) is cached, not the image itself.</p>
+        <p><b>How it works:</b> the FAA renders a color-coded VPL contour map every 3 min. We pull it through one of three CORS proxies (allorigins.win → corsproxy.io → codetabs, in order — first one to return a valid PNG wins). The image is drawn onto an HTML5 canvas and a 17×17 pixel region is sampled around Cairns's coordinates (31.27°N, 85.72°W). White state-border pixels are dropped before averaging the RGB. The averaged color is classified into one of the categories above. Calibrated against NYC/LA/Miami/Seattle (all return deep blue) and Pacific/N. Atlantic control points (return deep red).</p>
       </section>
 
       <section id="help-alternate">
@@ -3573,6 +3578,27 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>Cursor auto-hides after 3 seconds of inactivity</li>
         </ul>
         <p>Designed for distance viewing on a 4K TV in the briefing room.</p>
+      </section>
+
+      <section id="help-mobile">
+        <h2>Mobile / Phone View</h2>
+        <p>The dashboard is fully responsive. Two breakpoints kick in below the desktop layout:</p>
+        <ul>
+          <li><b>≤ 768px (tablet / phone landscape):</b> Navbar wraps — brand left, action buttons right, datum chips (Forecast Date, Zulu, Local, Fetched, Published heartbeat) drop to their own row underneath. Section banners wrap so the 7-Day Outlook + TAF + WAAS widgets stack onto a second banner row at full width. Training panels switch to a 2-column grid; alternates also 2-column. METAR decoded cells wrap. Flight Level Winds becomes horizontally scrollable. Map iframes shrink to 260px tall.</li>
+          <li><b>≤ 500px (phone portrait):</b> All multi-column grids collapse to 1 column. Everything single-stack and readable on a phone screen.</li>
+        </ul>
+        <p><b>Sticky navbar on mobile</b> — once you scroll, the navbar pins itself to the top of the viewport so the brand, all timestamps, and the heartbeat pip stay visible. Background extends through the iPhone notch / status-bar safe area so nothing transparent shows behind the iOS clock.</p>
+        <p>The TV/desktop layout above ~1100px is completely unchanged — every mobile rule lives inside <code>@media</code> queries.</p>
+      </section>
+
+      <section id="help-disclaimer">
+        <h2>Pilot Reference Disclaimer</h2>
+        <p>The muted gold strip at the very top of the page reads:</p>
+        <blockquote style="margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--tan); background: rgba(192,168,120,0.08); font-style: italic;">
+          FOR PILOT REFERENCE ONLY — IT IS THE PILOT'S RESPONSIBILITY TO CHECK OFFICIAL SOURCES IN DETERMINING GO/NO-GO STATUS FOR TRAINING
+        </blockquote>
+        <p>Always visible regardless of demo / old-weather / amendment state. Reduced visual weight (low-saturation antique gold, smaller font, slim padding) so it acknowledges itself without dominating the live data below. Scales up on TV mode, down on mobile, stays one line where possible.</p>
+        <p>This dashboard scrapes and parses public weather products from <a href="https://www.army.mil/rucker" target="_blank">army.mil/rucker</a> + live METAR/TAF from <a href="https://aviationweather.gov" target="_blank">aviationweather.gov</a> + the FAA WAAS snapshot from <a href="https://www.nstb.tc.faa.gov" target="_blank">nstb.tc.faa.gov</a>. While every effort is made to render the data accurately, parsing errors, source outages, and processing delays are possible. Always cross-check against the original PDFs and live forecaster briefings before launch.</p>
       </section>
 
       <p class="help-footer">Dashboard built by <b>Scott Nissen</b> · reach out for feature requests or bug reports.</p>
