@@ -2946,7 +2946,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <div class="demo-menu-list" id="demo-menu-list"></div>
     </div>
     <button class="nav-btn help-btn" onclick="openHelp()">❔ Help</button>
-    <button class="nav-btn" onclick="refresh()">↻ Refresh</button>
     <a class="nav-btn" href="https://www.army.mil/rucker#org-weather" target="_blank">📡 Source</a>
   </div>
 </nav>
@@ -3177,7 +3176,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Published Xm ago</b> — heartbeat indicator confirming the publishing server is still pushing fresh data. Colored pip: <b>green</b> when the server last exported data &lt;20 min ago, <b>yellow</b> 20–40 min, <b>red (pulsing)</b> &gt;40 min or no data yet. If this goes red, the server probably went idle — check the publishing automation.</li>
           <li><b>🧪 Demo</b> — 13 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
           <li><b>❔ Help</b> — opens this document.</li>
-          <li><b>↻ Refresh</b> — forces an immediate re-fetch. Auto-refresh runs every 5 minutes anyway.</li>
           <li><b>📡 Source</b> — opens the army.mil weather page in a new tab.</li>
         </ul>
       </section>
@@ -3532,7 +3530,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Period auto-snap</b> re-evaluates every <b>1 minute</b> — AM→PM→N1 transitions happen without refresh.</li>
           <li><b>Dashboard auto-reload</b> — every 5 minutes the page checks GitHub Pages for a new <code>index.html</code> (via ETag). When a new version is detected it silently reloads so the TV picks up pushed changes without human intervention.</li>
           <li><b>Daily reload</b> — full page reload at <b>03:00 local</b> to prevent memory bloat on always-on TV displays.</li>
-          <li><b>Manual ↻ Refresh</b> — forces immediate re-fetch of <code>data.json</code> + METAR.</li>
         </ul>
       </section>
 
