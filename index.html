@@ -106,11 +106,18 @@ body::before {
   z-index: 100;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  display: flex;
+  /* 3-column grid pins .nav-center to true page-center regardless of
+     how wide the brand (left) or actions (right) chunks become. The
+     two outer columns claim equal 1fr space which keeps the center
+     visually centered when the callsign / extra brand text grows. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
 }
+.navbar > .brand { justify-self: start; }
+.navbar > .nav-center { justify-self: center; }
+.navbar > .nav-actions { justify-self: end; }
 
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand-logo {
