@@ -5892,10 +5892,10 @@ function waasLatLonToPixel(lat, lon) {
 /// Classify averaged RGB into a WAAS coverage category.
 /// Matches the iOS WAASCoverage thresholds.
 function waasClassifyRGB(r, g, b) {
-  // Full LPV200 dot is rendered in the FAA's own deep-blue VPL color
-  // (mirrors the "deep blue zone" on the source map) so the badge
-  // visually matches what the pilot sees on the snapshot itself.
-  if (b > 100 && r < 60 && g < 60) return { key: 'lpv200', label: 'Full LPV200', color: '#2754d6' };
+  // Full LPV200: text reads green (good = OK to fly), dot is rendered in
+  // the FAA's own deep-blue VPL color so the indicator visually mirrors
+  // the "deep blue zone" on the source snapshot.
+  if (b > 100 && r < 60 && g < 60) return { key: 'lpv200', label: 'Full LPV200', color: '#5fba4f', dotColor: '#2754d6' };
   if (b > 100 && g > 100 && r < 80) return { key: 'lpv', label: 'LPV', color: '#33a6a6' };
   if (g > 100 && r < 100 && b < 80) return { key: 'lnav-vnav', label: 'LNAV/VNAV', color: '#83b94e' };
   if (r > 150 && g > 100 && b < 80) return { key: 'marginal', label: 'Marginal', color: '#e6a53a' };
@@ -6041,9 +6041,13 @@ function renderWAAS() {
   // reassurance that GPS approaches are at full precision.
   toggle.classList.toggle('waas-lpv200', cov && cov.key === 'lpv200');
   if (cov) {
+    // Dot uses dotColor when present (LPV200 = deep blue dot), text uses
+    // color (LPV200 = green) so the badge stays "good = green" in text
+    // while the dot mirrors the FAA snapshot color it represents.
+    const dotCol = cov.dotColor || cov.color;
     statusEl.innerHTML = `
       <span class="sevenday-toggle-day" title="KOZR: ${cov.label} (RGB ${cov.rgb.r},${cov.rgb.g},${cov.rgb.b}) — snapshot fetched at ${localTime}">
-        <span class="sevenday-toggle-dot" style="background:${cov.color}; box-shadow: 0 0 6px ${cov.color};"></span>
+        <span class="sevenday-toggle-dot" style="background:${dotCol}; box-shadow: 0 0 6px ${dotCol};"></span>
         <span style="color:${cov.color};">KOZR ${cov.label}</span>
       </span>
       ${localTime ? `<span class="sevenday-toggle-day" style="margin-left:10px; opacity:0.7;" title="Local time of last snapshot fetch"><span style="font-family:'JetBrains Mono',monospace; font-size:11px;">${localTime}</span></span>` : ''}`;
