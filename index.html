@@ -1051,6 +1051,21 @@ body.tv .section-header-detail { font-size: 13px; }
   background: rgba(230,165,58,0.15);
   border-color: rgba(230,165,58,0.6);
 }
+/* Blue glow when WAAS reports Cairns is in the LPV200 zone — gives a
+   passive at-a-glance reassurance that GPS approaches are at full
+   precision. Subtle pulse so it reads "alive" without distracting
+   from the live ops data. */
+.sevenday-toggle.waas-lpv200 {
+  border-color: rgba(74,144,226,0.6);
+  box-shadow: 0 0 12px rgba(74,144,226,0.45),
+              inset 0 0 8px rgba(74,144,226,0.15);
+  background: rgba(74,144,226,0.10);
+}
+.sevenday-toggle.waas-lpv200[aria-expanded="true"] {
+  border-color: rgba(74,144,226,0.85);
+  box-shadow: 0 0 18px rgba(74,144,226,0.6),
+              inset 0 0 10px rgba(74,144,226,0.2);
+}
 .sevenday-toggle-label {
   font-family: 'Rajdhani', sans-serif;
   font-size: 15px;
@@ -5993,6 +6008,9 @@ function renderWAAS() {
   const localTime = snap && snap.snapshotTime
     ? snap.snapshotTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) + 'L'
     : '';
+  // Soft blue glow when KOZR is in the LPV200 zone — passive at-a-glance
+  // reassurance that GPS approaches are at full precision.
+  toggle.classList.toggle('waas-lpv200', cov && cov.key === 'lpv200');
   if (cov) {
     statusEl.innerHTML = `
       <span class="sevenday-toggle-day" title="KOZR: ${cov.label} (RGB ${cov.rgb.r},${cov.rgb.g},${cov.rgb.b}) — snapshot fetched at ${localTime}">
