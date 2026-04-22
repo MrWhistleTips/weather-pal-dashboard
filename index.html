@@ -843,6 +843,43 @@ body.tv .metar-strip-label { font-size: 11px; }
 body.tv .metar-strip-raw { font-size: 13px; }
 body.tv .metar-strip-old-inline { font-size: 11px; padding: 2px 8px; }
 
+/* HAZARDS pill floating on the left side of the METAR strip.
+   Only shown when the active forecast has at least one non-NONE
+   flight hazard. Click scrolls the page to the Flight Hazards
+   card and auto-expands it. */
+.metar-hazards-pill {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #000;
+  background: var(--warning);
+  padding: 4px 10px;
+  border-radius: 3px;
+  white-space: nowrap;
+  cursor: pointer;
+  z-index: 2;
+  user-select: none;
+}
+.metar-hazards-pill:hover { filter: brightness(1.1); }
+.metar-hazards-pill::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 12px rgba(230,165,58,0.6);
+  opacity: 0;
+  pointer-events: none;
+  animation: glowOpacityPulse 2s ease-in-out infinite;
+  will-change: opacity;
+}
+body.tv .metar-hazards-pill { font-size: 13px; padding: 5px 13px; left: 14px; }
+
 /* TRAINING STATUS — console panel lights */
 .training-grid {
   display: grid;
@@ -5139,13 +5176,41 @@ function renderMEFAmendmentBadge(forecast) {
   document.querySelectorAll('.section-header .mef-amd-badge').forEach(el => el.remove());
 }
 
+/// True when the active forecast has at least one non-NONE flight
+/// hazard (turbulence / icing / thunderstorms / LLWS). Used to decide
+/// whether to show the HAZARDS pill on the METAR strip.
+function forecastHasHazards(forecast) {
+  const h = forecast && forecast.mef && forecast.mef.flightHazards;
+  if (!h) return false;
+  const vals = [h.turbulence, h.icing, h.thunderstorms, h.llws];
+  return vals.some(v => v && !/^NONE$/i.test(String(v).trim()));
+}
+
+/// Scroll to the Flight Hazards card and expand it if collapsed.
+/// Hooked to the HAZARDS pill on the METAR strip.
+function jumpToHazards() {
+  const card = document.querySelector('[data-collapse-key="hazards"]');
+  if (!card) return;
+  if (card.classList.contains('collapsed')) {
+    const header = card.querySelector('.card-header');
+    if (header) toggleCollapse(header);
+  }
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 function renderMETAR(metar) {
   const strip = document.getElementById('metar-strip');
   if (!strip) return;
 
+  const forecast = activeForecast();
+  const hazardPill = forecastHasHazards(forecast)
+    ? `<span class="metar-hazards-pill" onclick="jumpToHazards()" title="Flight hazards present — click to view">⚠️ Hazards</span>`
+    : '';
+
   if (!metar) {
     strip.className = 'metar-strip';
     strip.innerHTML = `
+      ${hazardPill}
       <div class="metar-strip-raw">No METAR available for ${METAR_STATION}</div>
     `;
     return;
@@ -5181,6 +5246,7 @@ function renderMETAR(metar) {
   if (metar.altim) altimStr = (metar.altim / 33.8639).toFixed(2) + '"';
 
   strip.innerHTML = `
+    ${hazardPill}
     ${metar.rawOb ? `<div class="metar-strip-raw">${metar.rawOb}${isFallback ? ' <span class="metar-strip-fallback-inline" title="Live METAR is stale — showing current GOLDFISH area-forecast conditions">USING FORECAST · METAR IS STALE</span>' : (stale ? ' <span class="metar-strip-old-inline">OLD DATA</span>' : '')}</div>` : ''}
     <div class="metar-strip-data">
       <div class="metar-strip-cell"><span class="metar-strip-label">Wind</span><span class="metar-strip-value">${windStr}</span></div>
