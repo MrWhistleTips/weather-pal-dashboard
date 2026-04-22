@@ -5918,14 +5918,20 @@ function renderWAAS() {
   }
   toggle.style.display = 'inline-flex';
 
-  // Banner header — show colored dot + KOZR status text
+  // Banner header — colored dot + KOZR status text + snapshot local time.
+  // Time stays current via the same 60-sec render tick used by other widgets.
   const cov = WAAS_COVERAGE;
+  const snap = WAAS_SNAPSHOT;
+  const localTime = snap && snap.snapshotTime
+    ? snap.snapshotTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) + 'L'
+    : '';
   if (cov) {
     statusEl.innerHTML = `
-      <span class="sevenday-toggle-day" title="KOZR: ${cov.label} (RGB ${cov.rgb.r},${cov.rgb.g},${cov.rgb.b})">
+      <span class="sevenday-toggle-day" title="KOZR: ${cov.label} (RGB ${cov.rgb.r},${cov.rgb.g},${cov.rgb.b}) — snapshot fetched at ${localTime}">
         <span class="sevenday-toggle-dot" style="background:${cov.color}; box-shadow: 0 0 6px ${cov.color};"></span>
         <span style="color:${cov.color};">KOZR ${cov.label}</span>
-      </span>`;
+      </span>
+      ${localTime ? `<span class="sevenday-toggle-day" style="margin-left:10px; opacity:0.7;" title="Local time of last snapshot fetch"><span style="font-family:'JetBrains Mono',monospace; font-size:11px;">${localTime}</span></span>` : ''}`;
   } else {
     statusEl.innerHTML = `<span class="sevenday-toggle-day"><span style="color:rgba(255,255,255,0.5);">Sampling…</span></span>`;
   }
