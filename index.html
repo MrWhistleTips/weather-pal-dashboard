@@ -2281,6 +2281,22 @@ body.tv .advisory-expires { font-size: 12px; }
 }
 body.tv .area-status { font-size: 13px; padding: 3px 9px; }
 
+/* TS Coverage label under the area name — shown only when the MEF
+   reports a non-NONE thunderstorm coverage (ISOLATED, FEW, SCATTERED,
+   NUMEROUS) for that zone. Matches the iOS AreaForecastsCard styling:
+   small, orange, subdued so it complements rather than dominates the
+   area header. */
+.area-ts-coverage {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  color: var(--warning);
+  margin-top: 1px;
+}
+.area-ts-coverage-label { color: var(--text-dim); font-weight: 500; margin-right: 3px; }
+body.tv .area-ts-coverage { font-size: 13px; }
+
 /* Area advisory line — appears between header and forecast text */
 .area-advisory {
   display: flex;
@@ -5469,10 +5485,21 @@ function renderAreas(forecast) {
       `;
     }
 
+    // TS Coverage — only render when the MEF reports a non-NONE
+    // thunderstorm coverage for this zone. NONE is the default/quiet
+    // state so we hide it to keep the TV display uncluttered.
+    const tsCov = (a.tsCoverage || '').trim();
+    const tsCovHTML = (tsCov && !/^NONE$/i.test(tsCov))
+      ? `<div class="area-ts-coverage"><span class="area-ts-coverage-label">TS Coverage:</span>${tsCov}</div>`
+      : '';
+
     return `
       <div class="area-card">
         <div class="area-header">
-          <div class="area-name">${a.name}</div>
+          <div>
+            <div class="area-name">${a.name}</div>
+            ${tsCovHTML}
+          </div>
           <div style="display:flex; gap:4px; align-items:center;">
             ${amdHTML}
             <span class="area-status ${info.status}">${info.icon} ${info.label}</span>
