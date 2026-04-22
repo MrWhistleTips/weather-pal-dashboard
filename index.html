@@ -148,6 +148,16 @@ body::before {
   text-transform: none;
 }
 body.tv .brand-byline { font-size: 13px; }
+.brand-callsign {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 1.2px;
+  font-style: italic;
+  margin-top: 2px;
+}
+body.tv .brand-callsign { font-size: 13px; letter-spacing: 1.5px; }
 .brand-sub {
   font-size: 9px;
   color: var(--tan);
@@ -2737,6 +2747,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   .brand-logo { width: 32px; height: 32px; border-radius: 8px; }
   .brand-name { font-size: 13px; letter-spacing: 1px; gap: 6px; }
   .brand-byline { font-size: 9px; letter-spacing: 0.4px; }
+  .brand-callsign { font-size: 9px; letter-spacing: 0.8px; }
   .brand-sub { font-size: 8px; letter-spacing: 1.2px; }
   .nav-center {
     order: 3;
@@ -2908,6 +2919,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div class="brand-logo"><img src="weather-pal-icon.png" alt="Weather Pal" /></div>
     <div class="brand-title">
       <div class="brand-name">My Weather Pal<span class="brand-byline">Created by Scott Nissen</span></div>
+      <div class="brand-callsign">"NICAD 99"</div>
       <div class="brand-sub">Fort Rucker · USAACE</div>
     </div>
   </div>
