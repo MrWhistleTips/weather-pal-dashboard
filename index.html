@@ -3424,7 +3424,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <h2>WAAS / GPS Coverage</h2>
         <p>Compact widget centered in the IFR Operations banner. Shows the live FAA Vertical Protection Level snapshot from <code>nstb.tc.faa.gov</code> with a colored pip indicating coverage at Cairns AAF, the local time of the last successful fetch, and a soft <b>blue glow</b> around the entire widget when coverage is at the LPV200 best-case state:</p>
         <ul>
-          <li><span class="help-pip green"></span> <b>KOZR Full LPV200</b> — deep-blue zone, best WAAS service. LPV200 (200-ft DH) approaches available. Banner glows soft blue.</li>
+          <li><span class="help-pip" style="background: #2754d6; box-shadow: 0 0 5px rgba(39,84,214,0.8);"></span> <b>KOZR Full LPV200</b> — deep-blue zone, best WAAS service. LPV200 (200-ft DH) approaches available. Banner glows soft blue.</li>
           <li><span class="help-pip blue"></span> <b>LPV</b> — slightly elevated VPL but still within RNP service.</li>
           <li><span class="help-pip green" style="background: #83b94e; box-shadow: 0 0 5px rgba(131,185,78,0.7);"></span> <b>LNAV/VNAV</b> — too high for full LPV but baro-VNAV approaches still flyable.</li>
           <li><span class="help-pip yellow"></span> <b>Marginal</b> — verify alternate procedures.</li>
@@ -5892,7 +5892,10 @@ function waasLatLonToPixel(lat, lon) {
 /// Classify averaged RGB into a WAAS coverage category.
 /// Matches the iOS WAASCoverage thresholds.
 function waasClassifyRGB(r, g, b) {
-  if (b > 100 && r < 60 && g < 60) return { key: 'lpv200', label: 'Full LPV200', color: '#5fba4f' };
+  // Full LPV200 dot is rendered in the FAA's own deep-blue VPL color
+  // (mirrors the "deep blue zone" on the source map) so the badge
+  // visually matches what the pilot sees on the snapshot itself.
+  if (b > 100 && r < 60 && g < 60) return { key: 'lpv200', label: 'Full LPV200', color: '#2754d6' };
   if (b > 100 && g > 100 && r < 80) return { key: 'lpv', label: 'LPV', color: '#33a6a6' };
   if (g > 100 && r < 100 && b < 80) return { key: 'lnav-vnav', label: 'LNAV/VNAV', color: '#83b94e' };
   if (r > 150 && g > 100 && b < 80) return { key: 'marginal', label: 'Marginal', color: '#e6a53a' };
