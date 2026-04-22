@@ -5805,6 +5805,37 @@ const WAAS_CAIRNS = { lat: 31.27, lon: -85.72 };
 let WAAS_SNAPSHOT = null;        // { dataUrl, snapshotTime }
 let WAAS_COVERAGE = null;        // { category, label, color, rgb, samples }
 let WAAS_REFRESH_TIMER = null;
+let WAAS_LOADING = false;        // true while fetchWAAS() in flight
+
+// Restore last successful WAAS coverage from localStorage on script load
+// so the widget shows the previous classification instantly on a page
+// refresh, instead of staying blank for 1-5 seconds while the new fetch
+// completes. Image dataUrl is NOT cached (too big for localStorage) —
+// just the lightweight coverage state.
+(function restoreCachedWAAS() {
+  try {
+    const raw = localStorage.getItem('waasState');
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.coverage) return;
+    WAAS_COVERAGE = parsed.coverage;
+    if (parsed.snapshotTime) {
+      // Snapshot time is shown but flagged as cached until we refresh.
+      WAAS_SNAPSHOT = { dataUrl: null, snapshotTime: new Date(parsed.snapshotTime), cached: true };
+    }
+  } catch (_) {}
+})();
+
+function persistWAASState() {
+  try {
+    if (WAAS_COVERAGE && WAAS_SNAPSHOT) {
+      localStorage.setItem('waasState', JSON.stringify({
+        coverage: WAAS_COVERAGE,
+        snapshotTime: WAAS_SNAPSHOT.snapshotTime ? WAAS_SNAPSHOT.snapshotTime.toISOString() : null
+      }));
+    }
+  } catch (_) {}
+}
 
 /// Map a lat/lon to a pixel coordinate inside the FAA image plot area.
 /// Calibrated against NYC / LA / Miami / Seattle (deep blue interior)
@@ -5913,12 +5944,25 @@ function renderWAAS() {
   const detail = document.getElementById('waas-detail');
   if (!toggle || !statusEl || !detail) return;
 
-  if (!WAAS_SNAPSHOT) {
+  // Always show the toggle once we either have a cached state or are
+  // actively loading the first fetch. Hidden only when no cache + no
+  // load in progress (e.g. fetch failed and there's no prior state).
+  if (!WAAS_SNAPSHOT && !WAAS_LOADING) {
     toggle.style.display = 'none';
     detail.style.display = 'none';
     return;
   }
   toggle.style.display = 'inline-flex';
+
+  // Cold-start placeholder: no cache, fetch in progress
+  if (!WAAS_SNAPSHOT && WAAS_LOADING) {
+    statusEl.innerHTML = `
+      <span class="sevenday-toggle-day" title="Fetching FAA WAAS snapshot…">
+        <span class="sevenday-toggle-dot" style="background:rgba(255,255,255,0.3); animation: glowOpacityPulse 1.2s ease-in-out infinite;"></span>
+        <span style="color:rgba(255,255,255,0.55); font-style:italic;">Loading…</span>
+      </span>`;
+    return;
+  }
 
   // Banner header — colored dot + KOZR status text + snapshot local time.
   // Time stays current via the same 60-sec render tick used by other widgets.
@@ -5996,11 +6040,18 @@ function rgbToCssTriplet(color) {
 }
 
 async function refreshWAAS() {
-  const snap = await fetchWAAS();
-  if (!snap) return;
-  WAAS_SNAPSHOT = snap;
-  WAAS_COVERAGE = await sampleWAASCoverage(snap.dataUrl);
-  renderWAAS();
+  WAAS_LOADING = true;
+  renderWAAS();          // show "Loading…" placeholder if no cached state
+  try {
+    const snap = await fetchWAAS();
+    if (!snap) return;
+    WAAS_SNAPSHOT = snap;
+    WAAS_COVERAGE = await sampleWAASCoverage(snap.dataUrl);
+    persistWAASState();  // cache for next page load
+  } finally {
+    WAAS_LOADING = false;
+    renderWAAS();
+  }
 }
 
 function toggleWAAS() {
