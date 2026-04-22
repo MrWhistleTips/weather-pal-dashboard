@@ -3012,8 +3012,18 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div class="section-header ifr-section-header">
     <span class="section-header-icon">🎯</span>
     <span class="section-header-title">IFR Operations</span>
+    <span class="section-header-spacer"></span>
+    <!-- WAAS / GPS coverage widget — same visual pattern as the 7-Day toggle in the VFR banner -->
+    <button type="button" id="waas-toggle" class="sevenday-toggle" onclick="toggleWAAS()" aria-expanded="false" title="FAA WAAS Vertical Protection Level — coverage at Cairns AAF" style="display:none;">
+      <span class="sevenday-toggle-label">WAAS</span>
+      <span class="sevenday-toggle-days" id="waas-toggle-status"></span>
+      <span class="sevenday-toggle-chevron">▾</span>
+    </button>
+    <span class="section-header-spacer"></span>
     <span class="section-header-detail">KOZR ≥200ft / ¼ SM</span>
   </div>
+  <!-- WAAS expanded detail panel (collapsed by default) -->
+  <div id="waas-detail" class="sevenday-detail" style="display:none;"></div>
 
   <div class="card" style="margin-bottom: 4px;">
     <div id="ifr-training" class="ifr-training">
@@ -3127,6 +3137,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <a href="#help-areas">Area Forecasts</a>
         <a href="#help-ifr">IFR Operations</a>
         <a href="#help-ifr-strip">IFR Training Strip</a>
+        <a href="#help-waas">WAAS / GPS Coverage</a>
         <a href="#help-alternate">Alternate Planning</a>
         <a href="#help-aerodromes">Aerodrome Forecasts</a>
         <a href="#help-hazards">Flight Hazards</a>
@@ -3388,6 +3399,20 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>Colored left bar matches status</li>
           <li>When an advisory affects IFR ops (WIND/GUST/CEIL/VIS/FOG/SHRA/TS/ICING/FRZG/LLWS), the strip gets a pulsing amber border and a circular ⚠️ pip in the corner</li>
         </ul>
+      </section>
+
+      <section id="help-waas">
+        <h2>WAAS / GPS Coverage</h2>
+        <p>Compact widget centered in the IFR Operations banner. Shows the live FAA Vertical Protection Level snapshot from <code>nstb.tc.faa.gov</code> with a colored pip indicating coverage at Cairns AAF:</p>
+        <ul>
+          <li><span class="help-pip green"></span> <b>KOZR Full LPV200</b> — deep-blue zone, best WAAS service. LPV200 (200-ft DH) approaches available.</li>
+          <li><span class="help-pip blue"></span> <b>LPV</b> — slightly elevated VPL but still within RNP service.</li>
+          <li><span class="help-pip green" style="background: #83b94e; box-shadow: 0 0 5px rgba(131,185,78,0.7);"></span> <b>LNAV/VNAV</b> — too high for full LPV but baro-VNAV approaches still flyable.</li>
+          <li><span class="help-pip yellow"></span> <b>Marginal</b> — verify alternate procedures.</li>
+          <li><span class="help-pip red"></span> <b>Degraded</b> — outside published service contour. Plan non-GPS approach.</li>
+        </ul>
+        <p>Click the widget to expand a detail panel showing the full FAA snapshot image, classification analysis, sampled RGB values, and snapshot timestamp. Image auto-refreshes every 3 minutes (matches FAA's server-side update cadence).</p>
+        <p>How it works: the FAA renders a color-coded VPL contour map every 3 min. We pull it via corsproxy.io (FAA doesn't send CORS headers), draw it onto a canvas, and sample a 17×17 pixel region around Cairns's coordinates (31.27°N, 85.72°W). White state-border pixels are dropped before averaging. The averaged RGB is mapped to one of the categories above. Calibrated against NYC/LA/Miami/Seattle (all return deep blue) and Pacific/N. Atlantic control points (return deep red).</p>
       </section>
 
       <section id="help-alternate">
@@ -5764,6 +5789,228 @@ function buildTAFDetailHTML(taf) {
   `;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   FAA WAAS / GPS COVERAGE WIDGET — IFR banner center
+   Mirrors the iOS WAAS card. Fetches the FAA WJH Tech Center
+   real-time VPL snapshot, samples the pixel at Cairns AAF, and
+   classifies coverage. The image is fetched via corsproxy.io so
+   the resulting canvas isn't tainted (the FAA server doesn't
+   send Access-Control-Allow-Origin headers).
+   ──────────────────────────────────────────────────────────── */
+const WAAS_IMAGE_URL = 'https://www.nstb.tc.faa.gov/incoming/vplbig.png';
+const WAAS_REFRESH_MS = 3 * 60 * 1000;  // matches FAA server cadence
+const WAAS_CAIRNS = { lat: 31.27, lon: -85.72 };
+let WAAS_SNAPSHOT = null;        // { dataUrl, snapshotTime }
+let WAAS_COVERAGE = null;        // { category, label, color, rgb, samples }
+let WAAS_REFRESH_TIMER = null;
+
+/// Map a lat/lon to a pixel coordinate inside the FAA image plot area.
+/// Calibrated against NYC / LA / Miami / Seattle (deep blue interior)
+/// and Pacific / N.Atlantic control points (deep red).
+function waasLatLonToPixel(lat, lon) {
+  const PLOT_LEFT = 80, PLOT_RIGHT = 1180, PLOT_TOP = 50, PLOT_BOTTOM = 1045;
+  const LON_SPAN = 140, LAT_SPAN = 80;
+  const px = PLOT_LEFT + (lon - (-180)) * (PLOT_RIGHT - PLOT_LEFT) / LON_SPAN;
+  const py = PLOT_BOTTOM - lat * (PLOT_BOTTOM - PLOT_TOP) / LAT_SPAN;
+  return { x: Math.round(px), y: Math.round(py) };
+}
+
+/// Classify averaged RGB into a WAAS coverage category.
+/// Matches the iOS WAASCoverage thresholds.
+function waasClassifyRGB(r, g, b) {
+  if (b > 100 && r < 60 && g < 60) return { key: 'lpv200', label: 'Full LPV200', color: '#5fba4f' };
+  if (b > 100 && g > 100 && r < 80) return { key: 'lpv', label: 'LPV', color: '#33a6a6' };
+  if (g > 100 && r < 100 && b < 80) return { key: 'lnav-vnav', label: 'LNAV/VNAV', color: '#83b94e' };
+  if (r > 150 && g > 100 && b < 80) return { key: 'marginal', label: 'Marginal', color: '#e6a53a' };
+  if (r > 100 && g < 80 && b < 80) return { key: 'degraded', label: 'Degraded', color: '#d64545' };
+  return { key: 'unknown', label: 'Unknown', color: 'rgba(255,255,255,0.4)' };
+}
+
+/// Fetch the FAA snapshot through corsproxy so the canvas can be
+/// sampled. Returns { dataUrl, snapshotTime } or null on failure.
+async function fetchWAAS() {
+  const target = `${WAAS_IMAGE_URL}?cb=${Date.now()}`;
+  const url = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) {
+      console.warn('[WAAS] HTTP ' + res.status);
+      return null;
+    }
+    const blob = await res.blob();
+    // Read Last-Modified from the proxied response if available
+    const lastMod = res.headers.get('last-modified');
+    const snapshotTime = lastMod ? new Date(lastMod) : null;
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    return { dataUrl, snapshotTime };
+  } catch (e) {
+    console.warn('[WAAS] fetch failed:', e);
+    return null;
+  }
+}
+
+/// Load a data URL into an Image, draw it onto a canvas, and sample
+/// a 17x17 pixel region around the calculated KOZR coordinate.
+/// Drops near-white pixels (state borders) before averaging.
+async function sampleWAASCoverage(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const { x: cx, y: cy } = waasLatLonToPixel(WAAS_CAIRNS.lat, WAAS_CAIRNS.lon);
+      const radius = 8;
+      const x0 = Math.max(0, cx - radius);
+      const y0 = Math.max(0, cy - radius);
+      const w = Math.min(canvas.width, cx + radius + 1) - x0;
+      const h = Math.min(canvas.height, cy + radius + 1) - y0;
+      let pixels;
+      try {
+        pixels = ctx.getImageData(x0, y0, w, h).data;
+      } catch (e) {
+        console.warn('[WAAS] canvas sample failed (CORS?):', e);
+        resolve(null);
+        return;
+      }
+      let rT = 0, gT = 0, bT = 0, n = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
+        if (r > 200 && g > 200 && b > 200) continue;  // skip white state borders
+        rT += r; gT += g; bT += b; n++;
+      }
+      if (n === 0) { resolve(null); return; }
+      const avg = { r: Math.round(rT/n), g: Math.round(gT/n), b: Math.round(bT/n) };
+      const cat = waasClassifyRGB(avg.r, avg.g, avg.b);
+      resolve({ ...cat, rgb: avg, samples: n });
+    };
+    img.onerror = () => { resolve(null); };
+    img.src = dataUrl;
+  });
+}
+
+function renderWAAS() {
+  const toggle = document.getElementById('waas-toggle');
+  const statusEl = document.getElementById('waas-toggle-status');
+  const detail = document.getElementById('waas-detail');
+  if (!toggle || !statusEl || !detail) return;
+
+  if (!WAAS_SNAPSHOT) {
+    toggle.style.display = 'none';
+    detail.style.display = 'none';
+    return;
+  }
+  toggle.style.display = 'inline-flex';
+
+  // Banner header — show colored dot + KOZR status text
+  const cov = WAAS_COVERAGE;
+  if (cov) {
+    statusEl.innerHTML = `
+      <span class="sevenday-toggle-day" title="KOZR: ${cov.label} (RGB ${cov.rgb.r},${cov.rgb.g},${cov.rgb.b})">
+        <span class="sevenday-toggle-dot" style="background:${cov.color}; box-shadow: 0 0 6px ${cov.color};"></span>
+        <span style="color:${cov.color};">KOZR ${cov.label}</span>
+      </span>`;
+  } else {
+    statusEl.innerHTML = `<span class="sevenday-toggle-day"><span style="color:rgba(255,255,255,0.5);">Sampling…</span></span>`;
+  }
+
+  detail.innerHTML = buildWAASDetailHTML();
+}
+
+function buildWAASDetailHTML() {
+  const cov = WAAS_COVERAGE;
+  const snap = WAAS_SNAPSHOT;
+  if (!snap) return '';
+
+  const snapLabel = snap.snapshotTime
+    ? `FAA snapshot: ${snap.snapshotTime.toUTCString().replace(/^[A-Za-z]+, /, '').replace(' GMT', 'Z')}`
+    : 'FAA snapshot · time unknown';
+
+  const analysisBlock = cov ? `
+    <div style="display:flex; gap:10px; align-items:flex-start; padding:10px; background:rgba(${rgbToCssTriplet(cov.color)},0.10); border-left:3px solid ${cov.color}; border-radius:4px; margin-bottom:10px;">
+      <div style="flex:1;">
+        <div style="font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:${cov.color};">Cairns AAF — ${escapeHtml(cov.label)}</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:rgba(255,255,255,0.75); margin-top:4px; line-height:1.4;">${escapeHtml(waasDescription(cov.key))}</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.45); margin-top:4px;">Sampled RGB(${cov.rgb.r}, ${cov.rgb.g}, ${cov.rgb.b}) · ${cov.samples} pixels</div>
+      </div>
+    </div>
+  ` : '';
+
+  return `
+    ${analysisBlock}
+    <a href="${escapeAttr(WAAS_IMAGE_URL)}" target="_blank" style="display:block;">
+      <img src="${escapeAttr(snap.dataUrl)}" style="max-width:100%; border-radius:4px; display:block;" alt="FAA WAAS VPL snapshot" />
+    </a>
+    <div style="display:flex; gap:10px; margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.55);">
+      <span>${escapeHtml(snapLabel)}</span>
+      <span style="margin-left:auto;">Auto-refresh every 3 min · Source: FAA WJH Tech Center</span>
+    </div>
+  `;
+}
+
+function waasDescription(key) {
+  switch (key) {
+    case 'lpv200':    return 'Deep blue zone — best WAAS service. LPV200 (200-ft DH) approaches available.';
+    case 'lpv':       return 'LPV approaches available. Slightly elevated VPL but still within RNP service.';
+    case 'lnav-vnav': return 'LNAV/VNAV only — VPL too high for full LPV but baro-VNAV approaches still flyable.';
+    case 'marginal':  return 'Marginal WAAS. Verify alternate procedures before relying on GPS-only approach.';
+    case 'degraded':  return 'WAAS degraded — outside published service contour. Plan for non-GPS approach.';
+    default:          return 'Could not classify coverage from snapshot pixel.';
+  }
+}
+
+/// Tiny helper to convert a hex/named color to "r,g,b" triplet for use
+/// in rgba() backgrounds. Falls back to white when input is non-hex.
+function rgbToCssTriplet(color) {
+  if (color && color[0] === '#' && color.length === 7) {
+    const r = parseInt(color.slice(1,3), 16);
+    const g = parseInt(color.slice(3,5), 16);
+    const b = parseInt(color.slice(5,7), 16);
+    return `${r},${g},${b}`;
+  }
+  return '255,255,255';
+}
+
+async function refreshWAAS() {
+  const snap = await fetchWAAS();
+  if (!snap) return;
+  WAAS_SNAPSHOT = snap;
+  WAAS_COVERAGE = await sampleWAASCoverage(snap.dataUrl);
+  renderWAAS();
+}
+
+function toggleWAAS() {
+  const toggle = document.getElementById('waas-toggle');
+  const detail = document.getElementById('waas-detail');
+  if (!toggle || !detail) return;
+  const open = toggle.getAttribute('aria-expanded') === 'true';
+  toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+  detail.style.display = open ? 'none' : 'block';
+  localStorage.setItem('waasOpen', open ? '0' : '1');
+}
+
+// Restore expanded state on load
+(function restoreWAASState() {
+  const shouldOpen = localStorage.getItem('waasOpen') === '1';
+  if (shouldOpen) {
+    window.addEventListener('load', () => {
+      const toggle = document.getElementById('waas-toggle');
+      const detail = document.getElementById('waas-detail');
+      if (toggle && detail) {
+        toggle.setAttribute('aria-expanded', 'true');
+        detail.style.display = 'block';
+      }
+    });
+  }
+})();
+
 function toggleTAF() {
   const toggle = document.getElementById('taf-toggle');
   const detail = document.getElementById('taf-detail');
@@ -6287,6 +6534,11 @@ setInterval(updateFetchedLabel, 30 * 1000);
 // after an hour rollover. TAF_OBSERVATION itself is still only re-fetched
 // on the data cycle; this just reprojects which 6 hours are "next."
 setInterval(() => { renderTAF(); }, 60 * 1000);
+// FAA WAAS / GPS coverage snapshot — initial load + 3-min refresh
+// (matches the FAA's server-side update cadence). Independent of the
+// data.json fetch since this image is from a separate FAA endpoint.
+refreshWAAS();
+setInterval(refreshWAAS, WAAS_REFRESH_MS);
 loadData();
 setInterval(loadData, DATA_REFRESH_MS);
 </script>
