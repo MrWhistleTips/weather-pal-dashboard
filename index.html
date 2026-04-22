@@ -5826,11 +5826,13 @@ function waasClassifyRGB(r, g, b) {
   return { key: 'unknown', label: 'Unknown', color: 'rgba(255,255,255,0.4)' };
 }
 
-/// Fetch the FAA snapshot through corsproxy so the canvas can be
-/// sampled. Returns { dataUrl, snapshotTime } or null on failure.
+/// Fetch the FAA snapshot via allorigins.win/raw — corsproxy.io stopped
+/// proxying the FAA endpoint and started returning their landing page
+/// HTML instead of the PNG. allorigins/raw cleanly forwards the binary.
+/// Returns { dataUrl, snapshotTime } or null on failure.
 async function fetchWAAS() {
   const target = `${WAAS_IMAGE_URL}?cb=${Date.now()}`;
-  const url = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+  const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
@@ -5838,15 +5840,22 @@ async function fetchWAAS() {
       return null;
     }
     const blob = await res.blob();
-    // Read Last-Modified from the proxied response if available
-    const lastMod = res.headers.get('last-modified');
-    const snapshotTime = lastMod ? new Date(lastMod) : null;
+    // Sanity check — make sure we got an image and not a proxy error page
+    if (!blob.type.startsWith('image/') && blob.size < 10000) {
+      console.warn('[WAAS] proxy returned non-image content (' + blob.type + ', ' + blob.size + 'B)');
+      return null;
+    }
+    // allorigins/raw doesn't forward Last-Modified — use fetch time as
+    // an approximation. The FAA updates server-side every 3 min so this
+    // is within ~3 min of the actual snapshot time.
+    const snapshotTime = new Date();
     const dataUrl = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
+    console.log('[WAAS] fetched ' + blob.size + 'B image');
     return { dataUrl, snapshotTime };
   } catch (e) {
     console.warn('[WAAS] fetch failed:', e);
@@ -5930,8 +5939,8 @@ function buildWAASDetailHTML() {
   if (!snap) return '';
 
   const snapLabel = snap.snapshotTime
-    ? `FAA snapshot: ${snap.snapshotTime.toUTCString().replace(/^[A-Za-z]+, /, '').replace(' GMT', 'Z')}`
-    : 'FAA snapshot · time unknown';
+    ? `Fetched: ${snap.snapshotTime.toUTCString().replace(/^[A-Za-z]+, /, '').replace(' GMT', 'Z')}`
+    : 'Fetched · time unknown';
 
   const analysisBlock = cov ? `
     <div style="display:flex; gap:10px; align-items:flex-start; padding:10px; background:rgba(${rgbToCssTriplet(cov.color)},0.10); border-left:3px solid ${cov.color}; border-radius:4px; margin-bottom:10px;">
