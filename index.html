@@ -5192,14 +5192,43 @@ function renderMEFAmendmentBadge(forecast) {
   document.querySelectorAll('.section-header .mef-amd-badge').forEach(el => el.remove());
 }
 
-/// True when the active forecast has at least one non-NONE flight
-/// hazard (turbulence / icing / thunderstorms / LLWS). Used to decide
-/// whether to show the HAZARDS pill on the METAR strip.
-function forecastHasHazards(forecast) {
+/// Return the list of active flight-hazard types on the current
+/// forecast. Each entry carries both a full name (used when only one
+/// hazard is active, for readability) and a short abbreviation (used
+/// when multiple are active, to keep the METAR-strip pill compact).
+/// Checked against the MEF FlightHazards block, where non-active
+/// rows read "NONE".
+function activeHazardTypes(forecast) {
   const h = forecast && forecast.mef && forecast.mef.flightHazards;
-  if (!h) return false;
-  const vals = [h.turbulence, h.icing, h.thunderstorms, h.llws];
-  return vals.some(v => v && !/^NONE$/i.test(String(v).trim()));
+  if (!h) return [];
+  const defs = [
+    { key: 'turbulence',    full: 'TURBULENCE',    short: 'TURB' },
+    { key: 'icing',         full: 'ICING',         short: 'ICE'  },
+    { key: 'thunderstorms', full: 'THUNDERSTORMS', short: 'TS'   },
+    { key: 'llws',          full: 'LLWS',          short: 'LLWS' },
+  ];
+  return defs.filter(d => {
+    const v = h[d.key];
+    return v && !/^NONE$/i.test(String(v).trim());
+  });
+}
+
+/// True when the active forecast has at least one non-NONE flight
+/// hazard. Used to decide whether to show the HAZARDS pill on the
+/// METAR strip.
+function forecastHasHazards(forecast) {
+  return activeHazardTypes(forecast).length > 0;
+}
+
+/// Build the HAZARDS pill label for the METAR strip. Shows the full
+/// hazard name when only one is active ("⚠️ HAZARDS - THUNDERSTORMS")
+/// and abbreviations joined with " + " when multiple are active
+/// ("⚠️ HAZARDS - TS + ICE"). Returns null when there are no hazards.
+function hazardPillLabel(forecast) {
+  const active = activeHazardTypes(forecast);
+  if (active.length === 0) return null;
+  if (active.length === 1) return `⚠️ HAZARDS - ${active[0].full}`;
+  return `⚠️ HAZARDS - ${active.map(a => a.short).join(' + ')}`;
 }
 
 /// Scroll to the Flight Hazards card and expand it if collapsed.
@@ -5219,8 +5248,9 @@ function renderMETAR(metar) {
   if (!strip) return;
 
   const forecast = activeForecast();
-  const hazardPill = forecastHasHazards(forecast)
-    ? `<span class="metar-hazards-pill" onclick="jumpToHazards()" title="Flight hazards present — click to view">⚠️ Hazards</span>`
+  const hazardLabel = hazardPillLabel(forecast);
+  const hazardPill = hazardLabel
+    ? `<span class="metar-hazards-pill" onclick="jumpToHazards()" title="Flight hazards present — click to view">${hazardLabel}</span>`
     : '';
 
   if (!metar) {
