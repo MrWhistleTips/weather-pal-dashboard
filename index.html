@@ -3605,13 +3605,13 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <section id="help-old-weather">
         <h2>Old Weather Warning</h2>
-        <p>If the currently displayed forecast was issued on a previous calendar day (operator's local time), the dashboard enters an <b>OLD WEATHER</b> mode:</p>
+        <p>If the currently displayed forecast was <b>issued on a previous calendar day</b> (operator's local time) — i.e., today's AM/PM/N1 brief hasn't been published yet and you're still looking at yesterday's — the dashboard enters an <b>OLD WEATHER</b> mode:</p>
         <ul>
           <li>Yellow 3-pixel border around the entire viewport (same style as Demo mode)</li>
-          <li>Yellow banner up top reading <b>⚠️ OLD WEATHER — Forecast from [date] · X days ago · Refresh data when available</b></li>
+          <li>Yellow banner up top reading <b>⚠️ OLD WEATHER — [PERIOD] brief from [date] · X days ago · Today's brief not yet issued</b></li>
         </ul>
-        <p>Driven by the forecast's <code>fetchedAt</code> timestamp (per-period) with the top-level <code>exportedAt</code> as a fallback. Demo mode overrides this — if you enable Demo, the demo yellow border takes priority and the old-weather banner hides.</p>
-        <p>Clears automatically as soon as a fresh <code>data.json</code> with today's timestamp arrives.</p>
+        <p>Primary signal is the <code>mef.date</code> stamped on the brief itself. Fallback is the <code>fetchedAt</code> / <code>exportedAt</code> timestamp, which catches the rare case where the iOS publisher itself stopped pushing. Demo mode overrides this — if you enable Demo, the demo yellow border takes priority and the old-weather banner hides.</p>
+        <p>Clears automatically the moment today's brief is parsed and pushed.</p>
       </section>
 
       <section id="help-demo">
@@ -5748,21 +5748,47 @@ function renderForecastDate(forecast) {
    local time). Used for detecting "the TV is showing yesterday's
    briefing" drift that can happen if the iOS app didn't publish.
    ──────────────────────────────────────────────────────────── */
+/// Parse the MEF "DD-MMM-YY" date stamp (e.g., "22-Apr-26") into a
+/// local-midnight Date. Returns null if the format doesn't match.
+/// Used as the primary staleness signal — far more reliable than
+/// fetchedAt/exportedAt which always reflect "iOS published now"
+/// even when the army.mil source still has yesterday's brief.
+function parseMefDate(s) {
+  if (!s) return null;
+  const m = String(s).trim().match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
+  if (!m) return null;
+  const day = parseInt(m[1], 10);
+  const monthIdx = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+    .indexOf(m[2].toUpperCase());
+  if (monthIdx < 0) return null;
+  let year = parseInt(m[3], 10);
+  if (year < 100) year += 2000;
+  return new Date(year, monthIdx, day);
+}
+
 function renderOldWeatherWarning(forecast) {
   const banner = document.getElementById('old-weather-banner');
   const detail = document.getElementById('old-weather-detail');
-  // Prefer the per-forecast fetchedAt; fall back to the top-level
-  // exportedAt; neither present → can't judge, skip.
-  const ts = (forecast && forecast.fetchedAt) || (DATA && DATA.exportedAt);
-  if (!ts) {
+
+  // Primary signal: mef.date — the issue date stamped on the brief.
+  // We're showing yesterday's brief when this isn't today.
+  // Fallback signal: fetchedAt / exportedAt — only catches the case
+  // where iOS itself stopped publishing (rare, but worth flagging).
+  const mefDate = forecast && forecast.mef && parseMefDate(forecast.mef.date);
+  const fallbackTs = (forecast && forecast.fetchedAt) || (DATA && DATA.exportedAt);
+  const fallbackDate = fallbackTs ? new Date(fallbackTs) : null;
+
+  // Choose the older of the two signals — if either says "old", warn.
+  let ref = null;
+  if (mefDate && !isNaN(mefDate)) ref = mefDate;
+  if (fallbackDate && !isNaN(fallbackDate)) {
+    if (!ref || fallbackDate < ref) ref = fallbackDate;
+  }
+  if (!ref) {
     document.body.classList.remove('old-weather');
     return;
   }
-  const ref = new Date(ts);
-  if (isNaN(ref)) {
-    document.body.classList.remove('old-weather');
-    return;
-  }
+
   const now = new Date();
   const same = ref.getFullYear() === now.getFullYear()
             && ref.getMonth() === now.getMonth()
@@ -5771,7 +5797,7 @@ function renderOldWeatherWarning(forecast) {
     document.body.classList.remove('old-weather');
     return;
   }
-  // Old — compute a friendly "X days ago" + issue date
+
   const msPerDay = 24 * 60 * 60 * 1000;
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const startOfRef = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate()).getTime();
@@ -5779,8 +5805,12 @@ function renderOldWeatherWarning(forecast) {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const issueStr = `${months[ref.getMonth()]} ${ref.getDate()}`;
   const daysStr = daysOld === 1 ? '1 day ago' : `${daysOld} days ago`;
+  // When mef.date is the older signal we're sure this is "yesterday's
+  // brief because today's hasn't been issued"; tweak the wording to
+  // match. Otherwise fall back to the generic phrasing.
+  const periodLabel = (forecast && forecast.type) ? `${forecast.type} brief ` : 'Brief ';
   if (detail) {
-    detail.textContent = `Forecast from ${issueStr} · ${daysStr} · Refresh data when available`;
+    detail.textContent = `${periodLabel}from ${issueStr} · ${daysStr} · Today's brief not yet issued`;
   }
   document.body.classList.add('old-weather');
 }
