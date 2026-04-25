@@ -5823,52 +5823,114 @@ function parseMefDate(s) {
   return new Date(year, monthIdx, day);
 }
 
+/// Compute the Zulu end of the forecast's validPeriod and compare to
+/// "now". Catches the N1 stale-data case that the mef.date check
+/// misses: N1 issued Friday at 17:15 L covers 0030Z-0730Z Saturday,
+/// so its mef.date stamp is "25-Apr-26" (Saturday's Zulu date) even
+/// though the brief was authored Friday afternoon. By Saturday
+/// afternoon local, the entire valid period has passed but mef.date
+/// still equals today's local date.
+///
+/// Returns true when the validPeriod end is in the past (Zulu) — the
+/// forecast is operationally expired regardless of the date stamp.
+function isForecastValidPeriodExpired(forecast) {
+  if (!forecast || !forecast.mef) return false;
+  const mefDate = parseMefDate(forecast.mef.date);
+  if (!mefDate) return false;
+  const vp = forecast.mef.validPeriod;
+  if (!vp) return false;
+
+  // validPeriod looks like "AM 1130Z-1800Z", "PM 1800Z-0030Z",
+  // "N1 0030Z-0730Z". Pull the end time (4 digits Z).
+  const m = vp.match(/(\d{4})Z?\s*-\s*(\d{4})Z/);
+  if (!m) return false;
+  const startMin = parseInt(m[1].slice(0,2), 10) * 60 + parseInt(m[1].slice(2,4), 10);
+  const endMin   = parseInt(m[2].slice(0,2), 10) * 60 + parseInt(m[2].slice(2,4), 10);
+
+  // Build the validPeriod end as a UTC Date pinned to mef.date. If
+  // the period crosses midnight (PM: 1800Z-0030Z, end < start), the
+  // end is the next Zulu day. N1 is 0030Z-0730Z — same Zulu day, no
+  // wrap. AM is 1130Z-1800Z — same Zulu day.
+  const endsNextDay = endMin <= startMin;
+  const endDate = new Date(Date.UTC(
+    mefDate.getFullYear(), mefDate.getMonth(), mefDate.getDate(),
+    Math.floor(endMin / 60), endMin % 60, 0
+  ));
+  if (endsNextDay) endDate.setUTCDate(endDate.getUTCDate() + 1);
+
+  return new Date() > endDate;
+}
+
 function renderOldWeatherWarning(forecast) {
   const banner = document.getElementById('old-weather-banner');
   const detail = document.getElementById('old-weather-detail');
 
-  // Primary signal: mef.date — the issue date stamped on the brief.
-  // We're showing yesterday's brief when this isn't today.
+  // Two independent staleness signals — either one fires the OLD
+  // WEATHER overlay:
+  //   1. mef.date is on a previous local-calendar day → "they
+  //      haven't published today's brief yet"
+  //   2. The validPeriod's Zulu end time has passed → "the brief's
+  //      operational window is over". This catches the N1 quirk
+  //      where Friday's evening N1 stamps as Saturday's Zulu date,
+  //      so signal 1 doesn't catch it on Saturday afternoon.
   // Fallback signal: fetchedAt / exportedAt — only catches the case
   // where iOS itself stopped publishing (rare, but worth flagging).
   const mefDate = forecast && forecast.mef && parseMefDate(forecast.mef.date);
   const fallbackTs = (forecast && forecast.fetchedAt) || (DATA && DATA.exportedAt);
   const fallbackDate = fallbackTs ? new Date(fallbackTs) : null;
 
-  // Choose the older of the two signals — if either says "old", warn.
+  // Choose the older of mef.date / fallback for the date-based check.
   let ref = null;
   if (mefDate && !isNaN(mefDate)) ref = mefDate;
   if (fallbackDate && !isNaN(fallbackDate)) {
     if (!ref || fallbackDate < ref) ref = fallbackDate;
   }
-  if (!ref) {
+  const periodExpired = isForecastValidPeriodExpired(forecast);
+
+  // If neither signal exists or fires, clear the warning.
+  if (!ref && !periodExpired) {
     document.body.classList.remove('old-weather');
     return;
   }
 
   const now = new Date();
-  const same = ref.getFullYear() === now.getFullYear()
-            && ref.getMonth() === now.getMonth()
-            && ref.getDate() === now.getDate();
-  if (same) {
+  const dateIsOld = ref && !(
+    ref.getFullYear() === now.getFullYear()
+    && ref.getMonth()    === now.getMonth()
+    && ref.getDate()     === now.getDate()
+  );
+
+  // Both signals quiet → not stale
+  if (!dateIsOld && !periodExpired) {
     document.body.classList.remove('old-weather');
     return;
   }
 
-  const msPerDay = 24 * 60 * 60 * 1000;
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const startOfRef = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate()).getTime();
-  const daysOld = Math.round((startOfToday - startOfRef) / msPerDay);
+  // Build the banner detail text. Priority: explain the period-expired
+  // case explicitly when that's the trigger (the date stamp wouldn't
+  // match common sense otherwise — "Apr 25 brief shown on Apr 25 but
+  // it's still stale" — so we say so).
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const issueStr = `${months[ref.getMonth()]} ${ref.getDate()}`;
-  const daysStr = daysOld === 1 ? '1 day ago' : `${daysOld} days ago`;
-  // When mef.date is the older signal we're sure this is "yesterday's
-  // brief because today's hasn't been issued"; tweak the wording to
-  // match. Otherwise fall back to the generic phrasing.
-  const periodLabel = (forecast && forecast.type) ? `${forecast.type} brief ` : 'Brief ';
-  if (detail) {
-    detail.textContent = `${periodLabel}from ${issueStr} · ${daysStr} · Today's brief not yet issued`;
+  const periodLabel = (forecast && forecast.type) ? `${forecast.type} brief` : 'Brief';
+
+  let detailText;
+  if (dateIsOld && ref) {
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfRef   = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate()).getTime();
+    const daysOld = Math.round((startOfToday - startOfRef) / msPerDay);
+    const issueStr = `${months[ref.getMonth()]} ${ref.getDate()}`;
+    const daysStr = daysOld === 1 ? '1 day ago' : `${daysOld} days ago`;
+    detailText = `${periodLabel} from ${issueStr} · ${daysStr} · Today's brief not yet issued`;
+  } else if (periodExpired) {
+    // mef.date matches today but the valid period has ended (the
+    // N1-on-Saturday case). Tell the operator explicitly.
+    detailText = `${periodLabel} valid period has expired — refreshed brief not yet issued`;
+  } else {
+    detailText = `${periodLabel} is stale — refreshed brief not yet issued`;
   }
+
+  if (detail) detail.textContent = detailText;
   document.body.classList.add('old-weather');
 }
 
