@@ -2617,6 +2617,56 @@ body.old-weather:not(.demo) .container::before {
 }
 body.tv .old-weather-banner { font-size: 18px; padding: 10px; letter-spacing: 4px; }
 
+/* OLD WEATHER section overlays — placed on the cards that consume
+   the (potentially stale) forecast data: the four stagefield
+   training panels, the six area-forecast cards, and the aerodrome
+   forecast cards. Cairns / METAR strip / IFR Training / Alternate
+   Planning aren't covered because they read live METAR which stays
+   current. The card stays readable through a low-alpha amber
+   diagonal-stripe wash so an operator can still glance through if
+   they need to, but the bold ⚠️ OLD WEATHER label makes the
+   staleness unmissable. */
+body.old-weather:not(.demo) .training-panel.stagefield,
+body.old-weather:not(.demo) .area-card,
+body.old-weather:not(.demo) .aero-card {
+  position: relative;
+}
+body.old-weather:not(.demo) .training-panel.stagefield::after,
+body.old-weather:not(.demo) .area-card::after,
+body.old-weather:not(.demo) .aero-card::after {
+  content: "⚠️ OLD WEATHER";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 2.5px;
+  color: var(--warning);
+  text-shadow: 0 0 8px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.85);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(230, 165, 58, 0.18) 0,
+    rgba(230, 165, 58, 0.18) 14px,
+    rgba(230, 165, 58, 0.32) 14px,
+    rgba(230, 165, 58, 0.32) 28px
+  );
+  border: 2px solid var(--warning);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 5;
+  text-align: center;
+  padding: 4px;
+}
+body.tv.old-weather:not(.demo) .training-panel.stagefield::after,
+body.tv.old-weather:not(.demo) .area-card::after,
+body.tv.old-weather:not(.demo) .aero-card::after {
+  font-size: 22px;
+  letter-spacing: 4px;
+}
+
 /* Demo dropdown menu in navbar */
 .demo-menu {
   position: relative;
@@ -5143,8 +5193,12 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
   const fallbackHTML = isFallback
     ? `<div class="metar-strip-fallback-inline" style="margin: 2px 0;" title="Live METAR stale — using GOLDFISH forecast">USING FORECAST · METAR IS STALE</div>`
     : '';
+  // Stagefield panels (Allen/Toth/Highbluff/Lucas) are forecast-driven,
+  // so they get the OLD WEATHER overlay when the displayed brief is
+  // from a previous day. Cairns is METAR-driven and stays clear.
+  const stagefieldClass = (name && name.toUpperCase() !== 'CAIRNS') ? ' stagefield' : '';
   return `
-    <div class="training-panel ${status}">
+    <div class="training-panel ${status}${stagefieldClass}">
       ${pipHTML}
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-status">${label}</div>
