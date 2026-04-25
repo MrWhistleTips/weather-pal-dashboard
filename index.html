@@ -2619,21 +2619,23 @@ body.tv .old-weather-banner { font-size: 18px; padding: 10px; letter-spacing: 4p
 
 /* OLD WEATHER section overlays — placed on the cards that consume
    the (potentially stale) forecast data: the four stagefield
-   training panels, the six area-forecast cards, and the aerodrome
-   forecast cards. Cairns / METAR strip / IFR Training / Alternate
-   Planning aren't covered because they read live METAR which stays
-   current. The card stays readable through a low-alpha amber
-   diagonal-stripe wash so an operator can still glance through if
-   they need to, but the bold ⚠️ OLD WEATHER label makes the
-   staleness unmissable. */
+   training panels, the six area-forecast cards, the aerodrome
+   forecast cards, and the Flight Level Winds strip. Cairns / METAR
+   strip / IFR Training / Alternate Planning aren't covered because
+   they read live METAR which stays current. The card stays
+   readable through a low-alpha amber diagonal-stripe wash so an
+   operator can still glance through if they need to, but the bold
+   ⚠️ OLD WEATHER label makes the staleness unmissable. */
 body.old-weather:not(.demo) .training-panel.stagefield,
 body.old-weather:not(.demo) .area-card,
-body.old-weather:not(.demo) .aero-card {
+body.old-weather:not(.demo) .aero-card,
+body.old-weather:not(.demo) .flw-strip {
   position: relative;
 }
 body.old-weather:not(.demo) .training-panel.stagefield::after,
 body.old-weather:not(.demo) .area-card::after,
-body.old-weather:not(.demo) .aero-card::after {
+body.old-weather:not(.demo) .aero-card::after,
+body.old-weather:not(.demo) .flw-strip::after {
   content: "⚠️ OLD WEATHER";
   position: absolute;
   inset: 0;
@@ -2662,7 +2664,8 @@ body.old-weather:not(.demo) .aero-card::after {
 }
 body.tv.old-weather:not(.demo) .training-panel.stagefield::after,
 body.tv.old-weather:not(.demo) .area-card::after,
-body.tv.old-weather:not(.demo) .aero-card::after {
+body.tv.old-weather:not(.demo) .aero-card::after,
+body.tv.old-weather:not(.demo) .flw-strip::after {
   font-size: 22px;
   letter-spacing: 4px;
 }
