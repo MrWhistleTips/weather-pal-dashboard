@@ -5010,8 +5010,12 @@ function isMetarStale(metar) {
 
 function metarCeiling(metar) {
   if (!metar || !metar.clouds || metar.clouds.length === 0) return null;
+  // Ceiling per FAA: lowest BKN, OVC, OR VV (vertical visibility,
+  // reported when the sky is obscured by fog/precip and an
+  // instrument cloud base can't be measured — VV's height is
+  // treated as a ceiling for IFR/training minimums).
   const ceils = metar.clouds
-    .filter(c => c.cover === 'BKN' || c.cover === 'OVC')
+    .filter(c => c.cover === 'BKN' || c.cover === 'OVC' || c.cover === 'VV')
     .map(c => c.base || 0);
   if (ceils.length === 0) return null;
   return Math.min(...ceils);
