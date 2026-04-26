@@ -256,6 +256,54 @@ body.tv .nav-amd-badge { font-size: 14px; padding: 6px 12px; letter-spacing: 2.2
 .nav-btn:hover { background: var(--od); border-color: var(--tan); color: var(--text); }
 .nav-btn.help-btn { color: #84c1e3; border-color: rgba(132,193,227,0.4); }
 .nav-btn.help-btn:hover { background: rgba(132,193,227,0.15); border-color: #84c1e3; color: #cfe9f7; }
+.nav-btn.publog-btn { color: var(--tan); border-color: rgba(192,168,120,0.45); }
+.nav-btn.publog-btn:hover { background: rgba(192,168,120,0.18); border-color: var(--tan); color: #f0e3c2; }
+
+/* ── Publish Log modal — entries + stats ─────────────────────── */
+.publog-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.publog-stat {
+  background: var(--bg-1);
+  border: 1px solid rgba(192,168,120,0.25);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+.publog-stat-label {
+  font-family: 'Rajdhani', sans-serif; font-size: 10px; letter-spacing: 1.5px;
+  color: var(--text-dim); text-transform: uppercase; margin-bottom: 2px;
+}
+.publog-stat-value {
+  font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px;
+  color: var(--text);
+}
+.publog-stat-value.ok { color: #5fba4f; }
+.publog-stat-value.err { color: #d64545; }
+
+.publog-entry {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 10px;
+  padding: 6px 10px;
+  border-left: 2px solid transparent;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  align-items: baseline;
+}
+.publog-entry.ok { border-left-color: #5fba4f; }
+.publog-entry.err {
+  border-left-color: #d64545;
+  background: rgba(214,69,69,0.08);
+}
+.publog-entry.ok:nth-child(odd) { background: rgba(95,186,79,0.04); }
+.publog-entry .ts { color: var(--text-dim); white-space: nowrap; }
+.publog-entry .icon { white-space: nowrap; }
+.publog-entry .msg { color: var(--text); word-break: break-word; }
+.publog-entry .ms { color: var(--text-dim); white-space: nowrap; font-size: 10px; }
+
+.publog-empty {
+  color: var(--text-dim); font-style: italic;
+  padding: 18px; text-align: center;
+}
 
 /* ─────────────────────────────────────────────────────────────
    HELP MODAL
@@ -3068,6 +3116,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <button class="demo-menu-btn" onclick="toggleDemoMenu()">🧪 Demo</button>
       <div class="demo-menu-list" id="demo-menu-list"></div>
     </div>
+    <button class="nav-btn publog-btn" onclick="openPublishLog()" title="View recent publish history from the Mac mini">📋 Publish Log</button>
     <button class="nav-btn help-btn" onclick="openHelp()">❔ Help</button>
     <a class="nav-btn" href="https://www.army.mil/rucker#org-weather" target="_blank">📡 Source</a>
   </div>
@@ -3244,6 +3293,27 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
   </div>
 
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     Publish Log modal — opened from the PUBLISH LOG button.
+     Reads the publishLog array embedded in data.json by the Mac
+     mini's weather-pal-publisher CLI on every push. Updates with
+     the rest of the dashboard's 5-min auto-refresh cycle.
+     ═══════════════════════════════════════════════════════════ -->
+<div id="publog-modal" class="help-modal" style="display:none;" onclick="onPublogBackdrop(event)">
+  <div class="help-dialog" role="dialog" aria-labelledby="publog-title" onclick="event.stopPropagation()">
+    <button class="help-close" onclick="closePublishLog()" aria-label="Close log">✕</button>
+    <div class="help-body">
+      <h1 id="publog-title">📋 Publish Log</h1>
+      <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 12px;">
+        Live publish history from the Mac mini. Embedded in <code>data.json</code> on every push.
+        Updates with the dashboard's auto-refresh (every 5 min).
+      </p>
+      <div id="publog-stats" style="margin-bottom: 16px;"></div>
+      <div id="publog-entries"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -5776,8 +5846,115 @@ function onHelpBackdrop(event) {
 }
 // Close on Esc
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeHelp();
+  if (e.key === 'Escape') { closeHelp(); closePublishLog(); }
 });
+
+/* ─────────────────────────────────────────────────────────────
+   Publish Log modal — opened from the 📋 PUBLISH LOG button.
+   Reads `data.publishLog` (array of entries the Mac mini's CLI
+   embeds in data.json on every push). Re-renders on every modal
+   open, so users always see the latest state without needing to
+   force a reload — the dashboard's own 5-min auto-refresh keeps
+   DATA itself fresh.
+   ──────────────────────────────────────────────────────────── */
+function openPublishLog() {
+  const modal = document.getElementById('publog-modal');
+  if (!modal) return;
+  renderPublishLog();
+  modal.style.display = 'flex';
+  const dlg = modal.querySelector('.help-dialog');
+  if (dlg) dlg.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+function closePublishLog() {
+  const modal = document.getElementById('publog-modal');
+  if (!modal) return;
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+function onPublogBackdrop(event) {
+  closePublishLog();
+}
+
+function renderPublishLog() {
+  const entriesEl = document.getElementById('publog-entries');
+  const statsEl = document.getElementById('publog-stats');
+  if (!entriesEl || !statsEl) return;
+
+  const log = (DATA && Array.isArray(DATA.publishLog)) ? DATA.publishLog : [];
+  if (log.length === 0) {
+    entriesEl.innerHTML = '<div class="publog-empty">No publish history available yet — waiting for the next push from the Mac mini.</div>';
+    statsEl.innerHTML = '';
+    return;
+  }
+
+  // Stats
+  const total = log.length;
+  const successes = log.filter(e => e.ok).length;
+  const failures = total - successes;
+  const successRate = total > 0 ? Math.round((successes / total) * 100) : 0;
+  const durations = log.filter(e => e.durationMs).map(e => e.durationMs);
+  const avgMs = durations.length ? Math.round(durations.reduce((a,b) => a+b, 0) / durations.length) : null;
+  // Streak — consecutive successes from the end
+  let streak = 0;
+  for (let i = log.length - 1; i >= 0; i--) {
+    if (log[i].ok) streak++; else break;
+  }
+  const last = log[log.length - 1];
+  const lastTs = last && last.timestamp ? last.timestamp : '';
+  // Compute "minutes ago" from the last entry's timestamp
+  let lastAgo = '—';
+  if (lastTs) {
+    const m = lastTs.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})([+-]\d{2}):(\d{2})$/);
+    if (m) {
+      const iso = `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}${m[7]}:${m[8]}`;
+      const t = new Date(iso);
+      const diffMin = Math.round((Date.now() - t.getTime()) / 60000);
+      lastAgo = diffMin < 1 ? 'just now' : (diffMin < 60 ? `${diffMin}m ago` : `${Math.floor(diffMin/60)}h ${diffMin%60}m ago`);
+    }
+  }
+
+  statsEl.className = 'publog-stats';
+  statsEl.innerHTML = `
+    <div class="publog-stat">
+      <div class="publog-stat-label">Last Run</div>
+      <div class="publog-stat-value ${last.ok ? 'ok' : 'err'}">${last.ok ? '✅' : '❌'} ${lastAgo}</div>
+    </div>
+    <div class="publog-stat">
+      <div class="publog-stat-label">Total Shown</div>
+      <div class="publog-stat-value">${total}</div>
+    </div>
+    <div class="publog-stat">
+      <div class="publog-stat-label">Success Rate</div>
+      <div class="publog-stat-value ${successRate >= 95 ? 'ok' : 'err'}">${successRate}%</div>
+    </div>
+    <div class="publog-stat">
+      <div class="publog-stat-label">Streak</div>
+      <div class="publog-stat-value ${streak >= 5 ? 'ok' : ''}">${streak} ✅</div>
+    </div>
+    <div class="publog-stat">
+      <div class="publog-stat-label">Failures</div>
+      <div class="publog-stat-value ${failures === 0 ? 'ok' : 'err'}">${failures}</div>
+    </div>
+    ${avgMs !== null ? `<div class="publog-stat"><div class="publog-stat-label">Avg Duration</div><div class="publog-stat-value">${avgMs}ms</div></div>` : ''}
+  `;
+
+  // Entries — newest first
+  entriesEl.innerHTML = log.slice().reverse().map(e => {
+    const cls = e.ok ? 'ok' : 'err';
+    const icon = e.ok ? '✅' : '❌';
+    const ms = e.durationMs ? `<span class="ms">${e.durationMs}ms</span>` : '';
+    const msg = (e.message || '').replace(/</g, '&lt;');
+    return `
+      <div class="publog-entry ${cls}">
+        <span class="ts">${e.timestamp}</span>
+        <span class="icon">${icon}</span>
+        <span class="msg">${msg}</span>
+        ${ms}
+      </div>
+    `;
+  }).join('');
+}
 
 /* Render the forecast date next to the Zulu time in the navbar.
    Uses mef.date (e.g. "20-Apr-26") when it's a full string, falls
