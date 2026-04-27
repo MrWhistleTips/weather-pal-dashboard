@@ -4818,91 +4818,16 @@ function findWindAdvisoryDuringPeriod(advisories, forecast) {
   return null;
 }
 
-let lastMetarReportTime = null;
-let lastMetarFetchError = null;
-
-/// Build a CORS-proxy URL for a target that doesn't return CORS
-/// headers (aviationweather.gov, nstb.tc.faa.gov). corsproxy.io
-/// killed its free tier in mid-2026 ("Server-side requests are
-/// not allowed on your plan"), so we use the community-maintained
-/// allorigins.hexlet.app fork — a working revival of the original
-/// allorigins.win that died around the same time. Returns the
-/// fully-qualified URL ready for fetch().
-function corsProxyURL(target) {
-  return `https://allorigins.hexlet.app/raw?url=${encodeURIComponent(target)}`;
-}
-
-async function fetchMETAR() {
-  // aviationweather.gov does NOT return CORS headers for browser
-  // origins, so direct fetch is blocked. Route through corsProxyURL().
-  const cb = Date.now();
-  const target = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json&hours=2&_=${cb}`;
-  const url = corsProxyURL(target);
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-      lastMetarFetchError = `HTTP ${res.status}`;
-      console.warn(`[METAR] HTTP ${res.status} ${res.statusText}`);
-      return null;
-    }
-    const arr = await res.json();
-    if (!arr || arr.length === 0) {
-      lastMetarFetchError = 'No observations returned';
-      console.warn('[METAR] API returned empty array');
-      return null;
-    }
-    // Explicitly sort observations by reportTime DESC and pick the newest.
-    // Defends against any API ordering changes and ensures SPECI obs win
-    // over older regular METAR obs.
-    const sorted = [...arr].sort((a, b) => {
-      const ta = new Date(a.reportTime).getTime() || 0;
-      const tb = new Date(b.reportTime).getTime() || 0;
-      return tb - ta;  // newest first
-    });
-    const latest = sorted[0];
-    lastMetarReportTime = latest.reportTime;
-    lastMetarFetchError = null;
-    console.log(`[METAR] ${new Date().toISOString()} → picked ${latest.icaoId} ${latest.reportTime} from ${arr.length} obs:`);
-    sorted.slice(0, 5).forEach(o => console.log(`         ${o.reportTime}  ${(o.rawOb || '').substring(0, 60)}`));
-    return latest;
-  } catch (e) {
-    lastMetarFetchError = e.message || String(e);
-    console.warn('[METAR] Fetch failed:', e);
-    return null;
-  }
-}
-
-// Batch fetch METARs for the 5 alternate planning airfields in a single
-// API call (comma-separated IDs). Populates ALTERNATE_METARS keyed by ICAO.
-async function fetchAlternateMetars() {
-  const ids = ALTERNATES.map(a => a.id).join(',');
-  const cb = Date.now();
-  const target = `https://aviationweather.gov/api/data/metar?ids=${ids}&format=json&hours=2&_=${cb}`;
-  const url = corsProxyURL(target);
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-      console.warn(`[ALT METAR] HTTP ${res.status}`);
-      return;
-    }
-    const arr = await res.json();
-    if (!Array.isArray(arr)) return;
-    // For each station keep the newest observation
-    const byId = {};
-    for (const ob of arr) {
-      const id = ob.icaoId;
-      if (!id) continue;
-      const t = new Date(ob.reportTime).getTime() || 0;
-      if (!byId[id] || t > (new Date(byId[id].reportTime).getTime() || 0)) {
-        byId[id] = ob;
-      }
-    }
-    ALTERNATE_METARS = byId;
-    console.log(`[ALT METAR] Fetched ${Object.keys(byId).length} stations: ${Object.keys(byId).join(', ')}`);
-  } catch (e) {
-    console.warn('[ALT METAR] Fetch failed:', e);
-  }
-}
+// All previous browser-side fetches (fetchMETAR, fetchAlternateMetars,
+// fetchTAF, fetchWAAS, sampleWAASCoverage, corsProxyURL, WAAS_PROXIES)
+// were retired with the move to a Mac-mini-only data path. The
+// publisher fetches everything server-side every 5 minutes and
+// embeds it in data.json + waas.png. The dashboard now reads:
+//   DATA.metar              — live KOZR METAR
+//   DATA.alternateMetars    — KCEW/KOZR/KDHN/KTOI/KMGM batch
+//   DATA.taf                — KOZR TAF
+//   DATA.waas + waas.png    — FAA snapshot + classification
+// No more CORS proxy dependency anywhere.
 
 // Parse METAR visibility (API `visib` field) into a numeric SM value.
 // Handles plain numbers, "10+", fractions ("1/4"), and mixed ("1 1/2").
@@ -6136,31 +6061,10 @@ function toggleSevenDay() {
 /* ─────────────────────────────────────────────────────────────
    KOZR TAF STRIP — center of VFR banner, next to 7-Day Outlook
    ──────────────────────────────────────────────────────────── */
+// TAF_OBSERVATION is hydrated from DATA.taf in loadData(); the
+// previous fetchTAF() that hit aviationweather.gov via a CORS proxy
+// is gone (publisher pre-fetches it server-side now).
 let TAF_OBSERVATION = null;
-let lastTAFFetchError = null;
-
-async function fetchTAF() {
-  const cb = Date.now();
-  const target = `https://aviationweather.gov/api/data/taf?ids=${METAR_STATION}&format=json&_=${cb}`;
-  const url = corsProxyURL(target);
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-      lastTAFFetchError = `HTTP ${res.status}`;
-      return null;
-    }
-    const arr = await res.json();
-    if (!Array.isArray(arr) || arr.length === 0) {
-      lastTAFFetchError = 'No TAF returned';
-      return null;
-    }
-    lastTAFFetchError = null;
-    return arr[0];
-  } catch (e) {
-    lastTAFFetchError = e.message || String(e);
-    return null;
-  }
-}
 
 /// Pick the predominant (non-TEMPO / non-PROB) forecast group in effect at
 /// the given JS timestamp (seconds since epoch). The aviationweather.gov
@@ -6353,18 +6257,11 @@ function persistWAASState() {
 }
 
 /// Map a lat/lon to a pixel coordinate inside the FAA image plot area.
-/// Calibrated against NYC / LA / Miami / Seattle (deep blue interior)
-/// and Pacific / N.Atlantic control points (deep red).
-function waasLatLonToPixel(lat, lon) {
-  const PLOT_LEFT = 80, PLOT_RIGHT = 1180, PLOT_TOP = 50, PLOT_BOTTOM = 1045;
-  const LON_SPAN = 140, LAT_SPAN = 80;
-  const px = PLOT_LEFT + (lon - (-180)) * (PLOT_RIGHT - PLOT_LEFT) / LON_SPAN;
-  const py = PLOT_BOTTOM - lat * (PLOT_BOTTOM - PLOT_TOP) / LAT_SPAN;
-  return { x: Math.round(px), y: Math.round(py) };
-}
-
 /// Classify averaged RGB into a WAAS coverage category.
-/// Matches the iOS WAASCoverage thresholds.
+/// Matches the iOS WAASCoverage / WeatherPalCore.WAASService thresholds.
+/// Still used in `refreshWAAS()` to translate the server-side RGB
+/// sample (DATA.waas.avgR/avgG/avgB) into the rendering object
+/// renderWAAS() expects.
 function waasClassifyRGB(r, g, b) {
   // Full LPV200: text reads green (good = OK to fly), dot is rendered in
   // the FAA's own deep-blue VPL color so the indicator visually mirrors
@@ -6377,109 +6274,17 @@ function waasClassifyRGB(r, g, b) {
   return { key: 'unknown', label: 'Unknown', color: 'rgba(255,255,255,0.4)' };
 }
 
-/// Fetch the FAA snapshot through CORS proxies. Tries multiple proxies
-/// in order so a single proxy outage / browser-block (e.g. Safari ITP
-/// or an ad blocker on a particular machine) doesn't kill the widget.
-/// Returns { dataUrl, snapshotTime } or null when ALL proxies fail.
-///
-/// Proxy history (mid-2026 update):
-///   - corsproxy.io  → killed free tier, now paid only (HTTP 403)
-///   - allorigins.win → service down (Cloudflare 522)
-///   - codetabs       → started returning HTML 'Access Denied' for
-///                      requests to nstb.tc.faa.gov
-///   - allorigins.hexlet.app → community fork of allorigins.win,
-///                              actively maintained, returns the PNG
-const WAAS_PROXIES = [
-  url => `https://allorigins.hexlet.app/raw?url=${encodeURIComponent(url)}`,
-  // Fallbacks — kept in case any of these come back online later.
-  // All three were verified broken at the time of this update;
-  // they're harmless to leave because we just iterate until one
-  // returns a real PNG and break.
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
-];
-let WAAS_LAST_ERROR = null;        // last error string (for the UI)
+// `WAAS_LAST_ERROR` retained because renderWAAS() still references it
+// for a defensive "fetch failed" branch. With all WAAS data flowing
+// through the publisher (server-side fetch, no proxy), this should
+// always stay null in production.
+let WAAS_LAST_ERROR = null;
 
-async function fetchWAAS() {
-  const target = `${WAAS_IMAGE_URL}?cb=${Date.now()}`;
-  WAAS_LAST_ERROR = null;
-  for (let i = 0; i < WAAS_PROXIES.length; i++) {
-    const url = WAAS_PROXIES[i](target);
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) {
-        console.warn(`[WAAS] proxy ${i+1}/${WAAS_PROXIES.length} HTTP ${res.status}`);
-        WAAS_LAST_ERROR = `Proxy ${i+1}: HTTP ${res.status}`;
-        continue;
-      }
-      const blob = await res.blob();
-      // Sanity: real PNGs are >50KB and have an image content-type
-      if ((!blob.type.startsWith('image/') && !blob.type.startsWith('application/octet-stream')) || blob.size < 10000) {
-        console.warn(`[WAAS] proxy ${i+1} returned non-image content (${blob.type}, ${blob.size}B)`);
-        WAAS_LAST_ERROR = `Proxy ${i+1}: non-image response`;
-        continue;
-      }
-      const snapshotTime = new Date();
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-      console.log(`[WAAS] fetched ${blob.size}B image via proxy ${i+1}`);
-      WAAS_LAST_ERROR = null;
-      return { dataUrl, snapshotTime };
-    } catch (e) {
-      console.warn(`[WAAS] proxy ${i+1} failed:`, e);
-      WAAS_LAST_ERROR = `Proxy ${i+1}: ${e.message || e}`;
-    }
-  }
-  console.warn('[WAAS] all proxies failed');
-  return null;
-}
-
-/// Load a data URL into an Image, draw it onto a canvas, and sample
-/// a 17x17 pixel region around the calculated KOZR coordinate.
-/// Drops near-white pixels (state borders) before averaging.
-async function sampleWAASCoverage(dataUrl) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      const { x: cx, y: cy } = waasLatLonToPixel(WAAS_CAIRNS.lat, WAAS_CAIRNS.lon);
-      const radius = 8;
-      const x0 = Math.max(0, cx - radius);
-      const y0 = Math.max(0, cy - radius);
-      const w = Math.min(canvas.width, cx + radius + 1) - x0;
-      const h = Math.min(canvas.height, cy + radius + 1) - y0;
-      let pixels;
-      try {
-        pixels = ctx.getImageData(x0, y0, w, h).data;
-      } catch (e) {
-        console.warn('[WAAS] canvas sample failed (CORS?):', e);
-        resolve(null);
-        return;
-      }
-      let rT = 0, gT = 0, bT = 0, n = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
-        if (r > 200 && g > 200 && b > 200) continue;  // skip white state borders
-        rT += r; gT += g; bT += b; n++;
-      }
-      if (n === 0) { resolve(null); return; }
-      const avg = { r: Math.round(rT/n), g: Math.round(gT/n), b: Math.round(bT/n) };
-      const cat = waasClassifyRGB(avg.r, avg.g, avg.b);
-      resolve({ ...cat, rgb: avg, samples: n });
-    };
-    img.onerror = () => { resolve(null); };
-    img.src = dataUrl;
-  });
-}
+// Previously: fetchWAAS() (3-proxy fallback chain), sampleWAASCoverage()
+// (canvas pixel sampling), waasLatLonToPixel() (image-coordinate math).
+// All gone — the Mac mini publisher does the FAA fetch + Cairns sample
+// server-side and ships the result in DATA.waas + waas.png on every
+// 5-min push. refreshWAAS() below just hydrates from DATA.
 
 function renderWAAS() {
   const toggle = document.getElementById('waas-toggle');
@@ -6600,18 +6405,32 @@ function rgbToCssTriplet(color) {
 }
 
 async function refreshWAAS() {
-  WAAS_LOADING = true;
-  renderWAAS();          // show "Loading…" placeholder if no cached state
-  try {
-    const snap = await fetchWAAS();
-    if (!snap) return;
-    WAAS_SNAPSHOT = snap;
-    WAAS_COVERAGE = await sampleWAASCoverage(snap.dataUrl);
-    persistWAASState();  // cache for next page load
-  } finally {
-    WAAS_LOADING = false;
-    renderWAAS();
+  // New architecture: the Mac mini publisher fetches the FAA snapshot
+  // server-side every 5 min, classifies it, and pushes:
+  //   - waas.png   → dashboard repo root (this same GitHub Pages
+  //                  domain, so same-origin — no CORS at all)
+  //   - DATA.waas + DATA.waasFetchedAt → embedded in data.json
+  // Render reads the classification straight from DATA.
+  WAAS_LOADING = false;
+  if (DATA && DATA.waas) {
+    // waasClassifyRGB returns { key, label, color, dotColor? } —
+    // matches the shape renderWAAS() expects. We re-classify from
+    // the server's RGB sample rather than trusting the server's
+    // category string verbatim, so the visual styling stays
+    // single-sourced in the JS color thresholds.
+    const cls = waasClassifyRGB(DATA.waas.avgR, DATA.waas.avgG, DATA.waas.avgB);
+    WAAS_COVERAGE = {
+      ...cls,
+      rgb: { r: DATA.waas.avgR, g: DATA.waas.avgG, b: DATA.waas.avgB },
+      samples: DATA.waas.sampleCount,
+    };
+    WAAS_SNAPSHOT = {
+      dataUrl: 'waas.png?' + Date.now(),  // same-origin, cache-bust
+      snapshotTime: DATA.waasFetchedAt ? new Date(DATA.waasFetchedAt) : new Date(),
+    };
+    persistWAASState();
   }
+  renderWAAS();
 }
 
 function toggleWAAS() {
@@ -6928,37 +6747,31 @@ async function loadData() {
     updateFetchedLabel();
     return;
   }
+  // Single source of truth: data.json carries METAR, TAF, alternate
+  // METARs, and the WAAS classification — all fetched server-side by
+  // the Mac mini's weather-pal-publisher CLI on its 5-min tick. The
+  // dashboard does NO live aviationweather.gov / FAA fetches anymore;
+  // those required CORS proxies that kept dying. waas.png is loaded
+  // same-origin from this same GitHub Pages domain.
   try {
     const res = await fetch('data.json?' + Date.now(), { cache: 'no-store' });
     if (res.ok) DATA = await res.json();
   } catch (e) {
     DATA = DATA || { forecasts: [], metar: null };
   }
-  // Fetch primary KOZR METAR + alternate-planning METARs + KOZR TAF
-  // all in parallel — each fetch is independent, no cross-dependency.
-  const [liveMetar, , taf] = await Promise.all([
-    fetchMETAR(),
-    fetchAlternateMetars(),
-    fetchTAF(),
-  ]);
-  if (taf) TAF_OBSERVATION = taf;
-  if (liveMetar) {
-    if (!DATA) DATA = { forecasts: [], metar: null };
-    // Compare timestamps: only keep the newer observation between the
-    // currently-displayed METAR and the live one. Live should normally win
-    // but this guards against transient API issues returning older obs.
-    const currentT = DATA.metar && DATA.metar.reportTime
-      ? (new Date(DATA.metar.reportTime).getTime() || 0) : 0;
-    const liveT = new Date(liveMetar.reportTime).getTime() || 0;
-    if (liveT >= currentT) {
-      DATA.metar = liveMetar;
-      console.log(`[METAR] Updated DATA.metar to ${liveMetar.reportTime}`);
-    } else {
-      console.log(`[METAR] Live METAR (${liveMetar.reportTime}) is older than current (${DATA.metar.reportTime}) — keeping current`);
-    }
-  }
+
+  // Hydrate the in-memory live-data globals from data.json so existing
+  // render functions (renderAlternates, renderTAF, renderWAAS) keep
+  // working unchanged.
+  ALTERNATE_METARS = (DATA && DATA.alternateMetars) ? { ...DATA.alternateMetars } : {};
+  TAF_OBSERVATION  = (DATA && DATA.taf) || null;
+
   lastFetchedAt = new Date();
   renderAll();
+  // WAAS state now also flows through data.json (DATA.waas + waas.png
+  // pushed same-origin by the publisher). refreshWAAS() reads from
+  // DATA + sets the same-origin image URL.
+  refreshWAAS();
   updateFetchedLabel();
 }
 
@@ -7162,11 +6975,10 @@ setInterval(updateFetchedLabel, 30 * 1000);
 // after an hour rollover. TAF_OBSERVATION itself is still only re-fetched
 // on the data cycle; this just reprojects which 6 hours are "next."
 setInterval(() => { renderTAF(); }, 60 * 1000);
-// FAA WAAS / GPS coverage snapshot — initial load + 3-min refresh
-// (matches the FAA's server-side update cadence). Independent of the
-// data.json fetch since this image is from a separate FAA endpoint.
-refreshWAAS();
-setInterval(refreshWAAS, WAAS_REFRESH_MS);
+// FAA WAAS / GPS coverage now flows through data.json + waas.png
+// (pushed same-origin by the Mac mini publisher's 5-min tick).
+// loadData() calls refreshWAAS() at the end of each cycle, so we
+// don't need a separate WAAS timer.
 loadData();
 setInterval(loadData, DATA_REFRESH_MS);
 </script>
