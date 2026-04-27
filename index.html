@@ -3818,6 +3818,14 @@ let ALTERNATE_METARS = {};
 const TV_MODE = /[?&]tv=(1|true)/i.test(location.search);
 let DATA = null;
 let lastFetchedAt = null;
+// Browser-side METAR fetching was retired — DATA.metar comes from data.json
+// (server-side fetch by the Mac mini publisher). These two were left referenced
+// inside updateFetchedLabel() and were throwing ReferenceError on every
+// 30-second tick, freezing both the Fetched and Published chips at "—".
+// lastMetarReportTime is hydrated from DATA.metar.reportTime in loadData();
+// lastMetarFetchError stays null (no browser fetch can fail anymore).
+let lastMetarFetchError = null;
+let lastMetarReportTime = null;
 let demoScenario = localStorage.getItem('demoScenario') || null;
 
 /* ============================================================
@@ -6766,6 +6774,7 @@ async function loadData() {
   ALTERNATE_METARS = (DATA && DATA.alternateMetars) ? { ...DATA.alternateMetars } : {};
   TAF_OBSERVATION  = (DATA && DATA.taf) || null;
 
+  lastMetarReportTime = (DATA && DATA.metar && DATA.metar.reportTime) || null;
   lastFetchedAt = new Date();
   renderAll();
   // WAAS state now also flows through data.json (DATA.waas + waas.png
