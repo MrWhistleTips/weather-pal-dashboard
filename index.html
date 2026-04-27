@@ -4821,14 +4821,23 @@ function findWindAdvisoryDuringPeriod(advisories, forecast) {
 let lastMetarReportTime = null;
 let lastMetarFetchError = null;
 
+/// Build a CORS-proxy URL for a target that doesn't return CORS
+/// headers (aviationweather.gov, nstb.tc.faa.gov). corsproxy.io
+/// killed its free tier in mid-2026 ("Server-side requests are
+/// not allowed on your plan"), so we use the community-maintained
+/// allorigins.hexlet.app fork — a working revival of the original
+/// allorigins.win that died around the same time. Returns the
+/// fully-qualified URL ready for fetch().
+function corsProxyURL(target) {
+  return `https://allorigins.hexlet.app/raw?url=${encodeURIComponent(target)}`;
+}
+
 async function fetchMETAR() {
-  // aviationweather.gov does NOT return CORS headers for browser origins like
-  // mrwhistletips.github.io, so direct fetch is blocked. Route through a
-  // public CORS proxy that adds the right headers. corsproxy.io is free,
-  // reliable, and adds no signup requirement.
+  // aviationweather.gov does NOT return CORS headers for browser
+  // origins, so direct fetch is blocked. Route through corsProxyURL().
   const cb = Date.now();
   const target = `https://aviationweather.gov/api/data/metar?ids=${METAR_STATION}&format=json&hours=2&_=${cb}`;
-  const url = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+  const url = corsProxyURL(target);
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
@@ -4869,7 +4878,7 @@ async function fetchAlternateMetars() {
   const ids = ALTERNATES.map(a => a.id).join(',');
   const cb = Date.now();
   const target = `https://aviationweather.gov/api/data/metar?ids=${ids}&format=json&hours=2&_=${cb}`;
-  const url = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+  const url = corsProxyURL(target);
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
@@ -6133,7 +6142,7 @@ let lastTAFFetchError = null;
 async function fetchTAF() {
   const cb = Date.now();
   const target = `https://aviationweather.gov/api/data/taf?ids=${METAR_STATION}&format=json&_=${cb}`;
-  const url = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+  const url = corsProxyURL(target);
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
@@ -6372,7 +6381,20 @@ function waasClassifyRGB(r, g, b) {
 /// in order so a single proxy outage / browser-block (e.g. Safari ITP
 /// or an ad blocker on a particular machine) doesn't kill the widget.
 /// Returns { dataUrl, snapshotTime } or null when ALL proxies fail.
+///
+/// Proxy history (mid-2026 update):
+///   - corsproxy.io  → killed free tier, now paid only (HTTP 403)
+///   - allorigins.win → service down (Cloudflare 522)
+///   - codetabs       → started returning HTML 'Access Denied' for
+///                      requests to nstb.tc.faa.gov
+///   - allorigins.hexlet.app → community fork of allorigins.win,
+///                              actively maintained, returns the PNG
 const WAAS_PROXIES = [
+  url => `https://allorigins.hexlet.app/raw?url=${encodeURIComponent(url)}`,
+  // Fallbacks — kept in case any of these come back online later.
+  // All three were verified broken at the time of this update;
+  // they're harmless to leave because we just iterate until one
+  // returns a real PNG and break.
   url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   url => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
