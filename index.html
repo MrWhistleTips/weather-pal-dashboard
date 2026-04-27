@@ -3912,6 +3912,13 @@ const DEMO_SCENARIOS = {
     areaText: '20008KT 7SM SCT050 BKN120',
     advisory: 'pending',
   },
+  'multi-advisories': {
+    name: '⚠️ Multiple Advisories Active',
+    desc: 'Four active advisories (AWA / TWA / WATCH / WARNING) plus an upcoming AWA — exercises full stack',
+    metarOpts: ({ flt: 'IFR', wdir: 230, wspd: 18, wgst: 30, visib: '2', clouds: [{cover:'BKN',base:800}], wxString: 'TSRA BR' }),
+    areaText: '23018G30KT 2SM TSRA BR BKN008 OVC020\nAFT 1700Z: 24015G25KT 4SM -RA BKN012 OVC025',
+    advisory: 'multi',
+  },
   'improving': {
     name: '⏱️ Improving — Trainable in 2h',
     desc: 'Currently NO-GO; conditions improve in ~2 hours (timer demo)',
@@ -4191,6 +4198,52 @@ function buildDemoData(key) {
       validTo: `${toHH}${toMM}Z`,
       criteria: 'CIG/VIS BLW 1000/3 IN GOLDFISH'
     }];
+  } else if (s.advisory === 'multi') {
+    // Four active advisories of every type + one upcoming. Exercises:
+    //   - active stack in the top advisories card (AWA yellow, TWA red, WATCH yellow, WARNING red)
+    //   - per-area pills (criteria mentions GOLDFISH, BEARCAT, VANGUARD C, ALL)
+    //   - IFR strip amber flash (wind / ceil / TS criteria)
+    //   - per-stagefield ⚠️ pip on every panel (advisory affects each area)
+    //   - upcoming banner (only the soonest upcoming renders, by design)
+    const z = (offsetMin) => {
+      const d = new Date(Date.now() + offsetMin * 60 * 1000);
+      return String(d.getUTCHours()).padStart(2,'0') +
+             String(d.getUTCMinutes()).padStart(2,'0') + 'Z';
+    };
+    advisories = [
+      {
+        // Active now → +4h. Yellow badge, drives wind WWA gate (kills solo)
+        type: 'AWA', number: '04-031',
+        validFrom: z(-15), validTo: z(240),
+        criteria: 'SFC WIND GUSTS 25-35 KT IN GOLDFISH AND BEARCAT'
+      },
+      {
+        // Active now → +3h. Red badge (terminal advisory within 15NM of KOZR)
+        type: 'TWA', number: '04-014',
+        validFrom: z(-30), validTo: z(180),
+        criteria: 'CIG/VIS BLW 700/2 AT KOZR'
+      },
+      {
+        // Active now → +2h. Yellow WATCH (severe weather watch)
+        type: 'WATCH', number: '04-007',
+        validFrom: z(-10), validTo: z(120),
+        criteria: 'TS WITHIN 25NM OF CAIRNS — POSSIBLE HAIL/STRONG WINDS'
+      },
+      {
+        // Active now → +90m. Red WARNING (imminent severe weather)
+        type: 'WARNING', number: '04-003',
+        validFrom: z(-5), validTo: z(90),
+        criteria: 'TORNADO WARNING — VANGUARD C — TAKE SHELTER'
+      },
+      {
+        // Upcoming in ~90m. Demonstrates the upcoming banner shows the
+        // SOONEST queued advisory (per renderAdvisories — only upcoming[0]
+        // renders, even if more are queued).
+        type: 'AWA', number: '04-035',
+        validFrom: z(90), validTo: z(360),
+        criteria: 'CIG/VIS BLW 1000/3 ALL AREAS'
+      },
+    ];
   }
 
   const flw = [
