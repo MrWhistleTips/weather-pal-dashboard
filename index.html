@@ -3435,8 +3435,8 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <p>Three buttons below the navbar pick which forecast to display. The active period is auto-selected by local time and re-checks every minute:</p>
         <ul>
           <li><b>04:00 – 10:49 local</b> → <b>AM</b> forecast</li>
-          <li><b>10:50 – 16:59 local</b> → <b>PM</b> forecast</li>
-          <li><b>17:00 – 03:59 local</b> → <b>N1</b> (Night) forecast</li>
+          <li><b>10:50 – 17:14 local</b> → <b>PM</b> forecast</li>
+          <li><b>17:15 – 03:59 local</b> → <b>N1</b> (Night) forecast</li>
         </ul>
         <p>You can tap any period to override; the selection sticks until the next auto-snap.</p>
       </section>
@@ -4345,14 +4345,14 @@ document.addEventListener('click', (e) => {
 
 /// Auto-select the active forecast period based on local time:
 ///   AM:  04:00 - 10:49
-///   PM:  10:50 - 16:59
-///   N1:  17:00 - 03:59 (overnight)
+///   PM:  10:50 - 17:14
+///   N1:  17:15 - 03:59 (overnight)
 function autoPeriod() {
   const d = new Date();
   const mins = d.getHours() * 60 + d.getMinutes();
   if (mins >= 240 && mins < 650) return "AM";    // 04:00 - 10:49
-  if (mins >= 650 && mins < 1020) return "PM";   // 10:50 - 16:59
-  return "N1";                                   // 17:00 - 03:59
+  if (mins >= 650 && mins < 1035) return "PM";   // 10:50 - 17:14
+  return "N1";                                   // 17:15 - 03:59
 }
 
 let selectedPeriod = autoPeriod();
