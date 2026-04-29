@@ -185,8 +185,10 @@ body.tv .brand-callsign { font-size: 13px; letter-spacing: 1.5px; }
 }
 
 /* Publish heartbeat pip — next to the "Published Xm ago" timestamp.
-   Green <20 min, yellow 20–40 min, red >40 min or no timestamp.
-   Confirms the iOS publish-dashboard automation is still firing. */
+   Publisher runs every 5 min, so thresholds are: green <10 min (healthy,
+   allows one slow tick), yellow 10–20 min (2–3 cycles missed — watch it),
+   red >20 min (4+ cycles missed — automation has stopped) or no timestamp.
+   Confirms the publishing server is still pushing fresh data. */
 .publish-heartbeat-pip {
   display: inline-block;
   width: 7px;
@@ -3362,7 +3364,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Weather Pal logo</b> — app icon + title. When an amendment is active the navbar tints a soft gold and pulsing <span class="help-badge amber">⚠️ AMENDMENT</span> badges flank the time display.</li>
           <li><b>Zulu / Local time</b> — kept current with a 30-second tick. Matches UTC and the system clock of the display.</li>
           <li><b>Fetched Xm ago</b> — time since the last successful fetch of <code>data.json</code> + live METAR. A ⚠ symbol means the most recent METAR fetch failed (hover for details).</li>
-          <li><b>Published Xm ago</b> — heartbeat indicator confirming the publishing server is still pushing fresh data. Colored pip: <b>green</b> when the server last exported data &lt;20 min ago, <b>yellow</b> 20–40 min, <b>red (pulsing)</b> &gt;40 min or no data yet. If this goes red, the server probably went idle — check the publishing automation.</li>
+          <li><b>Published Xm ago</b> — heartbeat indicator confirming the publishing server is still pushing fresh data. Publisher runs every 5 min, so thresholds are: <b>green</b> &lt;10 min, <b>yellow</b> 10–20 min, <b>red (pulsing)</b> &gt;20 min or no data yet. If this goes red, the server probably went idle — check the publishing automation.</li>
           <li><b>🧪 Demo</b> — 15 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
           <li><b>❔ Help</b> — opens this document.</li>
           <li><b>📡 Source</b> — opens the army.mil weather page in a new tab.</li>
@@ -3384,9 +3386,9 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <table class="help-table">
           <thead><tr><th>Pip</th><th>Age</th><th>Meaning</th></tr></thead>
           <tbody>
-            <tr><td><span class="help-pip green"></span></td><td>&lt;20 min</td><td>Healthy — publishing server is on schedule</td></tr>
-            <tr><td><span class="help-pip yellow"></span></td><td>20–40 min</td><td>Probably fine — one tick may have slipped; watch it</td></tr>
-            <tr><td><span class="help-pip red"></span></td><td>&gt;40 min or missing</td><td>Automation stopped — server likely idle. Pulses to draw attention.</td></tr>
+            <tr><td><span class="help-pip green"></span></td><td>&lt;10 min</td><td>Healthy — publisher runs every 5 min, allows one slow tick</td></tr>
+            <tr><td><span class="help-pip yellow"></span></td><td>10–20 min</td><td>2–3 cycles missed — watch it</td></tr>
+            <tr><td><span class="help-pip red"></span></td><td>&gt;20 min or missing</td><td>4+ cycles missed — automation stopped. Pulses to draw attention.</td></tr>
           </tbody>
         </table>
 
@@ -6898,9 +6900,10 @@ function updateFetchedLabel() {
 }
 
 /* Publish heartbeat — confirms the publishing server's automation is still
-   firing. Green pip when DATA.exportedAt is <20 min old, yellow 20–40
-   min, red >40 min or missing. Pulses red when unhealthy so a stalled
-   phone is hard to miss on the TV. */
+   firing. Publisher runs every 5 min: green pip when DATA.exportedAt is
+   <10 min old (healthy + buffer for one slow tick), yellow 10–20 min
+   (2–3 cycles missed), red >20 min or missing (4+ cycles missed). Pulses
+   red when unhealthy so a stalled server is hard to miss on the TV. */
 function updatePublishHeartbeat() {
   const pip = document.getElementById('publish-heartbeat-pip');
   const text = document.getElementById('publish-heartbeat-text');
@@ -6925,8 +6928,8 @@ function updatePublishHeartbeat() {
   else label = Math.floor(secs / 3600) + 'h ago';
   text.textContent = label;
   let cls = 'ok';
-  if (secs >= 2400) cls = 'bad';        // >40 min
-  else if (secs >= 1200) cls = 'warn';  // 20–40 min
+  if (secs >= 1200) cls = 'bad';        // >20 min (4+ cycles of the 5-min publisher missed)
+  else if (secs >= 600) cls = 'warn';   // 10–20 min (2–3 cycles missed)
   pip.className = 'publish-heartbeat-pip ' + cls;
   pip.title = `Last iOS publish: ${exported.toISOString()} (${label})`;
 }

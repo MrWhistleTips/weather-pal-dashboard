@@ -494,7 +494,7 @@ reference, not a substitute for official forecaster briefings.</em></p>
 <p>The dashboard always tells you how fresh each piece of data is. You'll see:</p>
 <ul>
   <li><strong>Fetched X min ago</strong> — when this browser last pulled <code>data.json</code></li>
-  <li><strong>Published X min ago</strong> — when the publishing server last pushed new data (with a colored heartbeat dot: <span class="dot go"></span> green &lt;20 min, <span class="dot amber"></span> yellow 20–40 min, <span class="dot red"></span> red &gt;40 min)</li>
+  <li><strong>Published X min ago</strong> — when the publishing server last pushed new data (publisher runs every 5 min). Colored heartbeat dot: <span class="dot go"></span> green &lt;10 min, <span class="dot amber"></span> yellow 10–20 min, <span class="dot red"></span> red &gt;20 min</li>
   <li><strong>OLD WEATHER banner</strong> — appears if the displayed forecast is from a previous calendar day or its valid period has expired</li>
   <li><strong>USING FORECAST · METAR IS STALE badge</strong> — if the live METAR is &gt;80 min old, the dashboard synthesizes conditions from the GOLDFISH area forecast and flags the substitution prominently</li>
 </ul>
@@ -722,9 +722,9 @@ parsed from the DD 175-1's terminal-forecast section. Each card:</p>
 
 <h2>Heartbeat pip (navbar Published chip)</h2>
 <table>
-  <tr><td><span class="dot go"></span> Green</td><td>Published &lt; 20 min ago — server healthy</td></tr>
-  <tr><td><span class="dot amber"></span> Yellow</td><td>20–40 min — warning</td></tr>
-  <tr><td><span class="dot red"></span> Red (pulsing)</td><td>&gt; 40 min or no data — publishing automation has stopped</td></tr>
+  <tr><td><span class="dot go"></span> Green</td><td>Published &lt; 10 min ago — healthy (publisher runs every 5 min, buffer for one slow tick)</td></tr>
+  <tr><td><span class="dot amber"></span> Yellow</td><td>10–20 min — 2–3 cycles missed; watch it</td></tr>
+  <tr><td><span class="dot red"></span> Red (pulsing)</td><td>&gt; 20 min or no data — 4+ cycles missed; automation has stopped</td></tr>
 </table>
 </div>
 
