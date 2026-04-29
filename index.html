@@ -6793,6 +6793,52 @@ function tafMainGroupAt(taf, tsSec) {
   }) || null;
 }
 
+/// Severity rank for picking the worst category at a given hour.
+/// (Higher = worse / more operationally restrictive.)
+const TAF_CAT_RANK = { vfr: 0, mvfr: 1, ifr: 2, lifr: 3, '': -1 };
+
+/// Find the worst-case flight category at a given timestamp by
+/// considering BOTH the main forecast group AND any active TEMPO /
+/// PROB overlays. Matches how aviationweather.gov displays TAFs:
+/// the per-hour color reflects the worst expected conditions, not
+/// just the predominant ones — so a TEMPO TSRA with 2 SM visibility
+/// shows up as IFR even when the main BECMG has 6+ SM and only mid-
+/// level clouds.
+///
+/// Returns { category, mainGroup, tempoGroup }:
+///   category   — 'vfr' | 'mvfr' | 'ifr' | 'lifr' | ''
+///   mainGroup  — the active main group (BECMG/FM/initial)
+///   tempoGroup — the TEMPO/PROB group whose category is driving the
+///                worst-case answer, or null when the main group wins
+function tafWorstCategoryAt(taf, tsSec) {
+  if (!taf || !Array.isArray(taf.fcsts)) {
+    return { category: '', mainGroup: null, tempoGroup: null };
+  }
+  let mainGroup = null;
+  let mainCat = '';
+  let worstTempo = null;
+  let worstTempoCat = '';
+  for (const g of taf.fcsts) {
+    if (tsSec < g.timeFrom || tsSec >= g.timeTo) continue;
+    const isTempo = (g.fcstChange === 'TEMPO' || g.probability != null);
+    const cat = tafGroupCategory(g);
+    if (isTempo) {
+      if (TAF_CAT_RANK[cat] > TAF_CAT_RANK[worstTempoCat]) {
+        worstTempoCat = cat;
+        worstTempo = g;
+      }
+    } else {
+      mainGroup = g;
+      mainCat = cat;
+    }
+  }
+  // Pick the worst of (main, worstTempo)
+  if (TAF_CAT_RANK[worstTempoCat] > TAF_CAT_RANK[mainCat]) {
+    return { category: worstTempoCat, mainGroup, tempoGroup: worstTempo };
+  }
+  return { category: mainCat, mainGroup, tempoGroup: null };
+}
+
 /// Derive flight category from a TAF fcsts group. Returns 'vfr'|'mvfr'|
 /// 'ifr'|'lifr' or '' when the group lacks enough data.
 function tafGroupCategory(group) {
@@ -6839,10 +6885,14 @@ function tafBannerSlots(taf) {
   for (let i = 0; i < 6; i++) {
     const t = new Date(base.getTime() + i * 3600 * 1000);
     const tsSec = Math.floor(t.getTime() / 1000);
-    const group = tafMainGroupAt(taf, tsSec);
+    // Worst-case category at this hour — includes TEMPO/PROB overlays
+    // so users see periods where conditions COULD drop to IFR/LIFR
+    // (matches aviationweather.gov's display convention).
+    const { category, tempoGroup } = tafWorstCategoryAt(taf, tsSec);
     out.push({
       hour: String(t.getUTCHours()).padStart(2, '0') + 'Z',
-      category: tafGroupCategory(group),
+      category,
+      tempo: !!tempoGroup,        // small marker on the cell when TEMPO/PROB is driving the color
     });
   }
   return out;
@@ -6936,17 +6986,17 @@ function buildTAFDetailHTML(taf) {
   for (let i = 0; i < 12; i++) {
     const t = new Date(base.getTime() + i * 3600 * 1000);
     const tsSec = Math.floor(t.getTime() / 1000);
-    const group = tafMainGroupAt(taf, tsSec);
-    const cat = tafGroupCategory(group);
+    // Worst-case at this hour, considering TEMPO/PROB overlays
+    const { category, tempoGroup } = tafWorstCategoryAt(taf, tsSec);
     const hour = String(t.getUTCHours()).padStart(2, '0') + 'Z';
-    rows.push({ hour, cat, group });
+    rows.push({ hour, cat: category, tempo: !!tempoGroup });
   }
 
   const cells = rows.map(r => `
-    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;" title="${r.tempo ? 'TEMPO/PROB overlay drives this hour\'s category' : ''}">
       <span style="font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; color:rgba(255,255,255,0.85);">${escapeHtml(r.hour)}</span>
       <span class="sevenday-toggle-dot" style="width:14px; height:14px; ${tafDotInlineStyle(r.cat)}"></span>
-      <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.55); letter-spacing:0.3px;">${r.cat ? r.cat.toUpperCase() : '—'}</span>
+      <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.55); letter-spacing:0.3px;">${r.cat ? r.cat.toUpperCase() : '—'}${r.tempo ? '*' : ''}</span>
     </div>
   `).join('');
 
@@ -6957,6 +7007,9 @@ function buildTAFDetailHTML(taf) {
     </div>
     <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
       ${cells}
+    </div>
+    <div style="font-family:'Rajdhani',sans-serif; font-size:9px; letter-spacing:0.4px; color:rgba(255,255,255,0.45); margin-top:6px; text-align:center;">
+      Per-hour color is the <strong>worst</strong> of the main group + any active TEMPO/PROB overlay. <strong>*</strong> = TEMPO/PROB driving the color.
     </div>
     ${rawBlock}
   `;
