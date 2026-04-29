@@ -737,7 +737,7 @@ parsed from the DD 175-1's terminal-forecast section. Each card:</p>
 <table class="zebra">
   <thead><tr><th>Tier</th><th>Trigger</th><th>Visual</th></tr></thead>
   <tbody>
-    <tr><td><span class="badge ifr">CRITICAL</span></td><td>Flashes within <strong>5 NM</strong></td><td>Pulsing red border, "OPERATIONS HALTED" — matches the Cairns 5-NM operational rule</td></tr>
+    <tr><td><span class="badge ifr">CRITICAL</span></td><td>Flashes within <strong>5 NM</strong></td><td>Pulsing red border, "OPERATIONS POSSIBLY AFFECTED, CHECK OFFICIAL WEATHER" — surfaces the Cairns 5-NM operational rule but defers the actual halt call to the duty forecaster's authoritative source</td></tr>
     <tr><td><span class="badge amber">VICINITY</span></td><td>Flashes within <strong>10 NM</strong> (but none within 5)</td><td>Static amber glow, "in vicinity"</td></tr>
     <tr><td><span class="badge unk">DISTANT</span></td><td>Flashes within <strong>25–50 NM</strong> only</td><td>Subtle yellow strip, "distant lightning detected"</td></tr>
     <tr><td><em>(hidden)</em></td><td>No activity within 50 NM in last 10 min</td><td>Banner not rendered</td></tr>
@@ -952,7 +952,7 @@ operationally trustworthy.</p>
     <tr>
       <td><span class="badge ifr">CRITICAL</span></td>
       <td>Within 5 NM</td>
-      <td>"⚡ Lightning within 5 NM — Operations Halted"</td>
+      <td>"⚡ Lightning within 5 NM — Operations Possibly Affected, Check Official Weather"</td>
       <td>Pulsing red border, full-width</td>
     </tr>
     <tr>
@@ -972,10 +972,13 @@ operationally trustworthy.</p>
 
 <div class="callout danger">
   <div class="callout-title">5-mile rule</div>
-  Cairns's operational policy halts <em>all</em> flight operations when lightning
-  is detected within 5 NM of the field. The CRITICAL tier exists specifically to
-  surface that condition the moment GOES-19 detects a strike inside that radius.
-  When this banner is red, ops should be stopped — no exceptions.
+  Cairns's operational policy may halt flight operations when lightning is detected
+  within 5 NM of the field. The CRITICAL tier exists specifically to surface that
+  condition the moment GOES-19 detects a strike inside that radius — but the actual
+  halt call belongs to the duty forecaster reading the KOZR ASOS automated lightning
+  detector, which is the authoritative source. When this banner is red, <strong>check
+  the official weather and verify with the forecaster</strong>; the dashboard's job
+  is awareness, not enforcement.
 </div>
 
 <h2>What each banner shows</h2>
@@ -1228,7 +1231,7 @@ viewing on a 4K TV.</p>
 <h2>Lightning banner tiers</h2>
 <table class="zebra">
   <tr><th>Tier</th><th>Trigger radius</th><th>Action</th></tr>
-  <tr><td><span class="badge ifr">CRITICAL</span></td><td>Within 5 NM</td><td><strong>HALT operations</strong> (Cairns 5-NM rule)</td></tr>
+  <tr><td><span class="badge ifr">CRITICAL</span></td><td>Within 5 NM</td><td><strong>Check official weather</strong> — the Cairns 5-NM rule may halt ops; verify with the duty forecaster</td></tr>
   <tr><td><span class="badge amber">VICINITY</span></td><td>5–10 NM</td><td>Watch carefully; deteriorating</td></tr>
   <tr><td><span class="badge unk">DISTANT</span></td><td>25–50 NM</td><td>Storm cells in area; not yet inbound</td></tr>
 </table>
