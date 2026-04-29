@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Weather Pal — Capabilities Brief</title>
+<style>
+/* ==========================================================
+   PRINT-OPTIMIZED CAPABILITIES BRIEF
+   Open in Safari/Chrome → Cmd+P → Save as PDF
+   ========================================================== */
+
+@page {
+  size: letter;
+  margin: 0.75in 0.75in 0.85in 0.75in;
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 9pt;
+    color: #666;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #1a1a1a;
+  margin: 0;
+  padding: 0;
+  background: white;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+.page { padding: 0.5in 0; }
+.page-break { page-break-before: always; }
+.no-break { page-break-inside: avoid; }
+section { margin-bottom: 22pt; }
+section + section { page-break-inside: avoid; }
+
+/* ── Cover ──────────────────────────────────────────────────── */
+.cover {
+  text-align: center;
+  padding: 2in 0 1.2in;
+  page-break-after: always;
+}
+.cover .pretitle {
+  font-size: 10pt;
+  letter-spacing: 4pt;
+  color: #c0a878;
+  text-transform: uppercase;
+  margin-bottom: 18pt;
+}
+.cover h1 {
+  font-size: 36pt;
+  font-weight: 700;
+  margin: 0 0 8pt 0;
+  color: #3d4d33;
+  letter-spacing: 1pt;
+}
+.cover .subtitle {
+  font-size: 13pt;
+  color: #666;
+  margin-bottom: 60pt;
+  font-style: italic;
+}
+.cover .seal {
+  display: inline-block;
+  border: 2pt solid #3d4d33;
+  padding: 18pt 30pt;
+  margin: 24pt 0;
+}
+.cover .seal-title {
+  font-size: 11pt;
+  letter-spacing: 3pt;
+  text-transform: uppercase;
+  color: #3d4d33;
+  font-weight: 700;
+}
+.cover .seal-sub {
+  font-size: 10pt;
+  color: #666;
+  margin-top: 4pt;
+  font-style: italic;
+}
+.cover .meta {
+  margin-top: 80pt;
+  font-size: 10pt;
+  color: #555;
+  line-height: 1.7;
+}
+.cover .meta .label {
+  display: inline-block;
+  width: 110pt;
+  text-align: right;
+  margin-right: 12pt;
+  color: #888;
+  letter-spacing: 1pt;
+  font-size: 9pt;
+  text-transform: uppercase;
+}
+
+/* ── Headings ──────────────────────────────────────────────── */
+h1, h2, h3, h4 {
+  color: #3d4d33;
+  font-weight: 700;
+  page-break-after: avoid;
+}
+h1 {
+  font-size: 22pt;
+  margin: 0 0 4pt 0;
+  letter-spacing: 0.5pt;
+}
+h1 + .lead {
+  font-size: 11pt;
+  color: #666;
+  margin-bottom: 18pt;
+  font-style: italic;
+}
+h2 {
+  font-size: 15pt;
+  margin: 24pt 0 8pt 0;
+  padding-bottom: 4pt;
+  border-bottom: 1.5pt solid #c0a878;
+  letter-spacing: 0.3pt;
+}
+h3 {
+  font-size: 12pt;
+  margin: 14pt 0 4pt 0;
+  color: #4a5d3e;
+}
+h4 {
+  font-size: 11pt;
+  margin: 10pt 0 2pt 0;
+  color: #555;
+}
+
+p { margin: 0 0 8pt 0; }
+ul, ol { margin: 4pt 0 10pt 0; padding-left: 18pt; }
+li { margin: 2pt 0; }
+
+/* ── Inline elements ──────────────────────────────────────── */
+code, kbd {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9.5pt;
+  background: #f3f1ec;
+  padding: 1pt 4pt;
+  border-radius: 2pt;
+  color: #4a5d3e;
+}
+strong { color: #2a2a2a; }
+em { color: #555; }
+
+/* ── Tables ───────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+  margin: 8pt 0 14pt 0;
+  page-break-inside: avoid;
+}
+th {
+  background: #3d4d33;
+  color: white;
+  text-align: left;
+  padding: 6pt 8pt;
+  font-weight: 600;
+  font-size: 9.5pt;
+  letter-spacing: 0.5pt;
+  text-transform: uppercase;
+}
+td {
+  padding: 6pt 8pt;
+  border-bottom: 0.5pt solid #ddd;
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+table.zebra tr:nth-child(even) td { background: #faf9f5; }
+
+/* ── Callouts ─────────────────────────────────────────────── */
+.callout {
+  border-left: 3pt solid #c0a878;
+  background: #faf8f1;
+  padding: 8pt 12pt;
+  margin: 10pt 0;
+  font-size: 10.5pt;
+  page-break-inside: avoid;
+}
+.callout.warn {
+  border-left-color: #c87a2a;
+  background: #faf3e8;
+}
+.callout.danger {
+  border-left-color: #c83232;
+  background: #faecec;
+}
+.callout-title {
+  font-weight: 700;
+  color: #4a5d3e;
+  margin-bottom: 3pt;
+  font-size: 10pt;
+  letter-spacing: 0.3pt;
+  text-transform: uppercase;
+}
+.callout.warn .callout-title { color: #a05c10; }
+.callout.danger .callout-title { color: #a02020; }
+
+/* ── Color/symbol legend dots ─────────────────────────────── */
+.dot {
+  display: inline-block;
+  width: 11pt;
+  height: 11pt;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 4pt;
+  border: 0.5pt solid rgba(0,0,0,0.15);
+}
+.dot.vfr   { background: #5fba4f; }
+.dot.mvfr  { background: #4a90e2; }
+.dot.ifr   { background: #d64545; }
+.dot.lifr  { background: #b347d9; }
+.dot.go    { background: #5fba4f; }
+.dot.nogo  { background: #d64545; }
+.dot.unk   { background: #d6b034; }
+.dot.solo  { background: #20a8a8; }
+.dot.solonogo { background: #e88a3e; }
+.dot.amber { background: #d6a934; }
+.dot.red   { background: #d64545; }
+
+.badge {
+  display: inline-block;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 8.5pt;
+  font-weight: 700;
+  padding: 1pt 6pt;
+  border-radius: 3pt;
+  letter-spacing: 0.5pt;
+  text-transform: uppercase;
+  vertical-align: baseline;
+  margin: 0 1pt;
+}
+.badge.go     { background: #d8f0d3; color: #2e7a25; }
+.badge.nogo   { background: #fadcdc; color: #a02020; }
+.badge.unk    { background: #faedb3; color: #836a10; }
+.badge.solo   { background: #cdeded; color: #117575; }
+.badge.solnogo{ background: #fadec2; color: #a05c10; }
+.badge.vfr    { background: #d8f0d3; color: #2e7a25; }
+.badge.mvfr   { background: #d3e3f7; color: #1f5aa6; }
+.badge.ifr    { background: #fadcdc; color: #a02020; }
+.badge.lifr   { background: #f0d3f7; color: #722085; }
+.badge.amber  { background: #faedb3; color: #836a10; }
+.badge.amend  { background: #f7e1b3; color: #8a5a10; }
+
+/* ── Two-column layouts ──────────────────────────────────── */
+.cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18pt;
+  page-break-inside: avoid;
+}
+
+/* ── TOC ───────────────────────────────────────────────────── */
+.toc {
+  font-size: 11pt;
+  line-height: 1.9;
+}
+.toc-row {
+  display: flex;
+  align-items: baseline;
+  border-bottom: 0.5pt dotted #aaa;
+  margin: 2pt 0;
+}
+.toc-row .toc-num {
+  color: #c0a878;
+  font-weight: 700;
+  min-width: 30pt;
+}
+.toc-row .toc-title { flex: 1; }
+.toc-row .toc-page {
+  color: #888;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 9.5pt;
+  padding-left: 6pt;
+}
+
+/* ── Footer note ──────────────────────────────────────────── */
+.footnote {
+  border-top: 0.5pt solid #ccc;
+  padding-top: 8pt;
+  margin-top: 24pt;
+  font-size: 9pt;
+  color: #666;
+  font-style: italic;
+}
+
+/* ── Mock dashboard layout boxes ─────────────────────────── */
+.mock {
+  border: 1pt solid #c0a878;
+  padding: 8pt;
+  margin: 6pt 0;
+  font-size: 9pt;
+  background: #faf8f1;
+}
+.mock-label {
+  font-weight: 700;
+  color: #4a5d3e;
+  font-size: 9pt;
+  text-transform: uppercase;
+  letter-spacing: 0.5pt;
+  margin-bottom: 4pt;
+}
+
+/* No-print elements (instructions for the reader) */
+.print-only { display: none; }
+@media print {
+  .screen-only { display: none !important; }
+  .print-only { display: block; }
+  .cover { padding: 1.5in 0 1in; }
+}
+.screen-help {
+  background: #faf3e8;
+  border: 1pt dashed #c87a2a;
+  padding: 12pt;
+  margin: 0 0 18pt 0;
+  font-size: 10pt;
+  color: #555;
+  border-radius: 4pt;
+}
+.screen-help b { color: #a05c10; }
+
+</style>
+</head>
+<body>
+
+<!-- Screen-only banner with instructions; auto-hidden when printing -->
+<div class="screen-help screen-only">
+  <b>Reader instructions:</b> This document is designed to be saved as PDF.
+  In your browser, open <kbd>File → Print…</kbd> (or <kbd>Cmd+P</kbd>),
+  set the destination to <b>Save as PDF</b>, ensure paper size is
+  <b>US Letter</b>, and confirm "Print backgrounds" is enabled so the
+  color accents render. The output is ~10 pages.
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     COVER PAGE
+     ════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="pretitle">Capabilities Brief</div>
+  <h1>My Weather Pal</h1>
+  <div class="subtitle">A real-time aviation training weather dashboard for Fort Novosel</div>
+
+  <div class="seal">
+    <div class="seal-title">Cairns Army Airfield · USAACE</div>
+    <div class="seal-sub">U.S. Army Aviation Center of Excellence</div>
+  </div>
+
+  <div class="meta">
+    <div><span class="label">Created by</span> Scott Nissen · "NICAD 99"</div>
+    <div><span class="label">Document type</span> Capabilities Brief</div>
+    <div><span class="label">Audience</span> Pilots · Instructors · Operators · Commanders</div>
+    <div><span class="label">Source</span> github.com/MrWhistleTips/weather-pal-dashboard</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     TABLE OF CONTENTS
+     ════════════════════════════════════════════════════════════ -->
+<div class="page">
+<h1>Contents</h1>
+<div class="lead">A guide to the document.</div>
+
+<div class="toc">
+  <div class="toc-row"><span class="toc-num">1</span><span class="toc-title">What it is, who it's for</span></div>
+  <div class="toc-row"><span class="toc-num">2</span><span class="toc-title">Where the data comes from</span></div>
+  <div class="toc-row"><span class="toc-num">3</span><span class="toc-title">Anatomy of the dashboard (top-to-bottom)</span></div>
+  <div class="toc-row"><span class="toc-num">4</span><span class="toc-title">VFR Operations section</span></div>
+  <div class="toc-row"><span class="toc-num">5</span><span class="toc-title">IFR Operations section</span></div>
+  <div class="toc-row"><span class="toc-num">6</span><span class="toc-title">Color &amp; symbol reference</span></div>
+  <div class="toc-row"><span class="toc-num">7</span><span class="toc-title">Special features</span></div>
+  <div class="toc-row"><span class="toc-num">8</span><span class="toc-title">Status &amp; failure indicators</span></div>
+  <div class="toc-row"><span class="toc-num">9</span><span class="toc-title">TV / kiosk mode</span></div>
+  <div class="toc-row"><span class="toc-num">10</span><span class="toc-title">Quick reference card (tear-out)</span></div>
+</div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     1. WHAT IT IS
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>1 · What it is, who it's for</h1>
+<div class="lead">A real-time training weather display for Fort Novosel pilots.</div>
+
+<p><strong>My Weather Pal</strong> is a single-pane briefing-room display that consolidates
+every piece of weather information a Fort Novosel training pilot needs into one
+glanceable view. It replaces the workflow of opening four browser tabs (army.mil
+PDFs, aviationweather.gov METARs, FAA WAAS map, NOAA TAF text) with a single
+URL that auto-refreshes every five minutes.</p>
+
+<h3>Who uses it</h3>
+<ul>
+  <li><strong>Pilots</strong> — quick GO/NO-GO check before stepping to the aircraft</li>
+  <li><strong>Instructors</strong> — visual aid during pre-flight briefings; everyone in the room reads the same data</li>
+  <li><strong>Standardization &amp; Operations</strong> — at-a-glance situational awareness during the duty day</li>
+  <li><strong>Schedulers / SDOs</strong> — early visibility into deteriorating conditions that may affect periods later in the day</li>
+</ul>
+
+<h3>What it answers, instantly</h3>
+<div class="callout">
+  <div class="callout-title">The four questions it's optimized for</div>
+  <ol style="margin: 4pt 0 0 16pt;">
+    <li>Is Cairns AAF GO or NO-GO for VFR training right now?</li>
+    <li>Are the four stagefields (Allen, Toth, Highbluff, Lucas) trainable, and if not, when will they be?</li>
+    <li>Can students fly solo today (1200/3, ≤15 kt wind, ≤10 kt gust spread)?</li>
+    <li>If we have to launch IFR, do we meet taxi mins, do we have legal alternates, and what does the TAF say for the next 12 hours?</li>
+  </ol>
+</div>
+
+<h3>Why it exists</h3>
+<p>The official Cairns Weather products (Mission Execution Forecast and DD Form 175-1)
+are issued as PDFs three times a day. They contain everything a pilot needs but require
+reading dense regulatory format and cross-referencing live METAR/TAF data from separate
+sources. My Weather Pal does that cross-reference automatically and presents the result
+as a HUD-style training-focused dashboard.</p>
+
+<p>The tool encodes <strong>USAACE Regulation 115-1</strong> (4 March 2024) — every threshold,
+zone definition, and amendment criterion comes from the regulation. <em>It is a pilot
+reference, not a substitute for official forecaster briefings.</em></p>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     2. DATA SOURCES
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>2 · Where the data comes from</h1>
+<div class="lead">Five independent sources, refreshed every five minutes.</div>
+
+<table class="zebra">
+  <thead>
+    <tr>
+      <th style="width: 22%;">Source</th>
+      <th style="width: 38%;">What we get</th>
+      <th>Refresh / cadence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>army.mil/rucker</strong></td>
+      <td>Official Cairns Weather products: AM / PM / N1 Mission Execution Forecasts, DD Form 175-1 Flight Weather Briefings, 7-Day Outlook chart</td>
+      <td>3 daily issuances (AM ≈ 04:45L, PM ≈ 10:45L, N1 ≈ 16:45L), plus amendments anytime</td>
+    </tr>
+    <tr>
+      <td><strong>aviationweather.gov</strong></td>
+      <td>Live METAR observations for KOZR + alternate airfields (KCEW, KDHN, KTOI, KMGM)</td>
+      <td>Every 5 minutes</td>
+    </tr>
+    <tr>
+      <td><strong>tgftp.nws.noaa.gov</strong></td>
+      <td>KOZR military TAF (used as fallback when aviationweather.gov has no military TAF cached)</td>
+      <td>4× daily (00 / 06 / 12 / 18 Z)</td>
+    </tr>
+    <tr>
+      <td><strong>nstb.tc.faa.gov</strong></td>
+      <td>FAA WAAS / GPS coverage snapshot at Cairns AAF (LPV200 / LPV / LNAV-VNAV / Marginal / Degraded)</td>
+      <td>Every 5 minutes</td>
+    </tr>
+    <tr>
+      <td><strong>spc.noaa.gov</strong> <em>(via Windy/ADS-B map embeds)</em></td>
+      <td>Convective overlay, lightning, traffic — bottom-of-page situational awareness</td>
+      <td>Live tile fetch on page render</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>How the pipeline works</h3>
+<div class="callout">
+  <div class="callout-title">End-to-end flow</div>
+  An always-on Mac mini in the office runs a <code>weather-pal-publisher</code>
+  CLI (Swift) every 5 minutes. The CLI scrapes army.mil for new PDFs, parses them
+  using PDFKit + custom regex (with Vision OCR fallback), fetches live METARs/TAFs/WAAS,
+  and pushes a single <code>data.json</code> file to a public GitHub repository.
+  The dashboard, hosted on GitHub Pages, fetches that JSON every 5 minutes and re-renders.
+  All third-party fetching happens server-side, so the browser only ever talks to GitHub.
+</div>
+
+<h3>Trust and verification</h3>
+<p>The dashboard always tells you how fresh each piece of data is. You'll see:</p>
+<ul>
+  <li><strong>Fetched X min ago</strong> — when this browser last pulled <code>data.json</code></li>
+  <li><strong>Published X min ago</strong> — when the publishing server last pushed new data (with a colored heartbeat dot: <span class="dot go"></span> green &lt;20 min, <span class="dot amber"></span> yellow 20–40 min, <span class="dot red"></span> red &gt;40 min)</li>
+  <li><strong>OLD WEATHER banner</strong> — appears if the displayed forecast is from a previous calendar day or its valid period has expired</li>
+  <li><strong>USING FORECAST · METAR IS STALE badge</strong> — if the live METAR is &gt;80 min old, the dashboard synthesizes conditions from the GOLDFISH area forecast and flags the substitution prominently</li>
+</ul>
+<p>The design principle: <strong>stale data is always labeled, never silently shown as fresh.</strong></p>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     3. ANATOMY
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>3 · Anatomy of the dashboard</h1>
+<div class="lead">Top-to-bottom walkthrough of every region.</div>
+
+<p>The dashboard is structured as a vertical scroll, optimized for a 4K TV display
+in the briefing room. Sections are grouped under <strong>VFR Operations</strong> and
+<strong>IFR Operations</strong> banners, mirroring how a pilot mentally categorizes
+the day's plan.</p>
+
+<h3>Top-to-bottom layout</h3>
+<table class="zebra">
+  <thead><tr><th style="width: 25%;">Region</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Pilot Reference Disclaimer</strong></td><td>Always-on muted gold strip reminding readers this is for reference, not authoritative GO/NO-GO</td></tr>
+    <tr><td><strong>Navbar</strong></td><td>Logo + title, datum chips (Forecast Date, Zulu, Local, Fetched, Published), Demo · Publish Log · Help · Refresh · Source buttons</td></tr>
+    <tr><td><strong>Period Selector</strong></td><td>AM / PM / N1 buttons; auto-snaps by local time (04:00L → AM, 10:50L → PM, 17:15L → N1)</td></tr>
+    <tr><td><strong>Solar/Lunar strip</strong></td><td>Sunrise · Sunset · EENT · Moonrise · Moonset · Illumination, centered</td></tr>
+    <tr><td><strong>METAR strip</strong></td><td>Raw KOZR METAR text, then decoded cells (Wind / Vis / Ceil / Temp / DP / Alt) — colored by current flight category</td></tr>
+    <tr><td><strong>Flight Level Winds strip</strong></td><td>1k / 3k / 6k / 9k inline winds + temps; "POSS ICE" badges where temps ≤ 4°C</td></tr>
+    <tr><td><strong>Active Advisories</strong></td><td>Amber-bordered card (only shown when there's an active or upcoming AWA / TWA / WATCH / WARNING)</td></tr>
+    <tr><td><strong>VFR Operations banner</strong></td><td>Section divider with the 7-Day Outlook dropdown centered</td></tr>
+    <tr><td><strong>Training Status panels</strong></td><td>5 console-light panels: Cairns + Allen + Toth + Highbluff + Lucas</td></tr>
+    <tr><td><strong>Area Forecasts</strong></td><td>3-column grid: GOLDFISH, BEARCAT, VANGUARD N/C/S, HAWK</td></tr>
+    <tr><td><strong>IFR Operations banner</strong></td><td>Section divider with the WAAS / GPS Coverage dropdown centered</td></tr>
+    <tr><td><strong>IFR Training strip</strong></td><td>Single-row: TAXI AUTHORIZED · IFR GO/NO-GO based on KOZR ceiling/visibility</td></tr>
+    <tr><td><strong>Alternate Planning</strong></td><td>5-card row: KCEW · KOZR · KDHN · KTOI · KMGM with current METAR + GO/NO-GO vs published mins</td></tr>
+    <tr><td><strong>Aerodrome Forecasts</strong></td><td>3-col grid of TAF-style FROM/TEMPO blocks for each airfield in/around the operating area</td></tr>
+    <tr><td><strong>Flight Hazards card</strong></td><td>Collapsible — turbulence, icing, thunderstorms, LLWS</td></tr>
+    <tr><td><strong>ADS-B Live Traffic + Windy Map</strong></td><td>Bottom row, side-by-side, both collapsible</td></tr>
+  </tbody>
+</table>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     4. VFR OPERATIONS
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>4 · VFR Operations</h1>
+<div class="lead">The single most-used part of the dashboard.</div>
+
+<h2>Training Status panels</h2>
+<p>Five glowing tactical-display panels. Each shows:</p>
+<ul>
+  <li><strong>Top color stripe</strong> — flight category color (VFR / MVFR / IFR / LIFR or NO GO)</li>
+  <li><strong>Station name</strong> in tracked Rajdhani caps</li>
+  <li><strong>Big status text</strong>: <span class="badge go">VFR GO</span> · <span class="badge nogo">NO GO</span> · <span class="badge unk">UNKNOWN</span></li>
+  <li><strong>Subtitle</strong>: ceiling/vis or area + countdown ("GOLDFISH · Trainable in 2h 15m")</li>
+  <li><strong>Recommended landing direction</strong> (VFR panels) — runway with the most headwind, plus crosswind side</li>
+  <li><strong>SOLO badge</strong> (stagefields, AM/PM only) — <span class="badge solo">SOLO GO</span> or <span class="badge solnogo">NO SOLO</span> with reason</li>
+  <li><strong>Advisory pip</strong> — small pulsing ⚠️ corner badge if an active advisory affects that area</li>
+</ul>
+
+<div class="callout">
+  <div class="callout-title">Training minimums</div>
+  <table style="margin: 4pt 0 0 0;">
+    <tr><td style="width: 35%;"><strong>Cairns AAF</strong></td><td>Ceiling ≥ 1000 ft AND visibility ≥ 3 SM</td></tr>
+    <tr><td><strong>Stagefields (4)</strong></td><td>Ceiling ≥ 700 ft AND visibility ≥ 1 SM</td></tr>
+  </table>
+</div>
+
+<h2>Stagefield → Area mapping</h2>
+<p>Each stagefield's GO/NO-GO comes from its host training-area forecast, not Cairns:</p>
+<table>
+  <tr><th>Stagefield</th><th>Area</th></tr>
+  <tr><td>Allen</td><td>GOLDFISH (NE quadrant)</td></tr>
+  <tr><td>Toth</td><td>GOLDFISH (NE quadrant)</td></tr>
+  <tr><td>Highbluff</td><td>BEARCAT (E/SE quadrant)</td></tr>
+  <tr><td>Lucas</td><td>VANGUARD C (Central)</td></tr>
+</table>
+
+<h2>Solo Operations gate</h2>
+<p>For student solo flights — stricter than standard training. AM and PM only (no solo at night).</p>
+<table class="zebra">
+  <tr><th>Check</th><th>Threshold</th></tr>
+  <tr><td>Ceiling</td><td>≥ 1200 ft</td></tr>
+  <tr><td>Visibility</td><td>≥ 3 SM</td></tr>
+  <tr><td>Sustained wind</td><td>≤ 15 kt</td></tr>
+  <tr><td>Gust spread</td><td>(gust − sustained) ≤ 10 kt</td></tr>
+  <tr><td>WWA wind gate</td><td>No wind-related AWA/TWA/WATCH/WARNING active <em>or</em> overlapping the period</td></tr>
+  <tr><td>Future segments</td><td>All conditions must hold through the entire forecast period — degrading later kills SOLO with a "(later)" suffix on the reason</td></tr>
+</table>
+
+<h2>SVFR Recovery gauge (Cairns panel)</h2>
+<p>Bottom row of the Cairns panel. Three independent tier dots showing whether
+current KOZR conditions support a Special VFR recovery:</p>
+<table>
+  <tr><th>Tier</th><th>Threshold</th></tr>
+  <tr><td><span class="dot go"></span> 700/1</td><td>Ceiling ≥ 700 ft AND visibility ≥ 1 SM</td></tr>
+  <tr><td><span class="dot go"></span> 600/2</td><td>Ceiling ≥ 600 ft AND visibility ≥ 2 SM</td></tr>
+  <tr><td><span class="dot go"></span> 500/3</td><td>Ceiling ≥ 500 ft AND visibility ≥ 3 SM</td></tr>
+</table>
+<p>Multiple green tiers means recovery has a buffer. Single green tier means you're
+operating right at the edge. Zero greens turns the row red.</p>
+
+<h2>Area Forecasts</h2>
+<p>Each card shows that zone's forecast text, color-coded by flight category per
+time segment. Time-aware: the active segment based on current Zulu time drives the
+GO/NO-GO badge and trainability countdown shown below the area name.</p>
+<p>Trainability labels:</p>
+<ul>
+  <li><span style="color:#2e7a25;">✅ Weather is Trainable</span> — current segment meets 700/1</li>
+  <li><span style="color:#836a10;">🕐 Trainable in Xh Xm</span> — currently NO-GO, future segment meets mins</li>
+  <li><span style="color:#a05c10;">⚠️ Untrainable in Xh Xm</span> — currently GO, future segment drops below</li>
+  <li><span style="color:#a02020;">❌ Weather is Untrainable</span> — below mins, no future improvement in this period</li>
+</ul>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     5. IFR OPERATIONS
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>5 · IFR Operations</h1>
+<div class="lead">For when training stays IFR.</div>
+
+<h2>IFR Training strip</h2>
+<p>Single-row card showing whether KOZR meets IFR taxi/training minimums:</p>
+<table class="zebra">
+  <tr><th>State</th><th>Meaning</th></tr>
+  <tr><td><span class="badge go">✓ TAXI AUTHORIZED</span></td><td>Ceiling ≥ 200 ft AND visibility ≥ ¼ SM</td></tr>
+  <tr><td><span class="badge nogo">✗ TAXI NOT AUTHORIZED</span></td><td>Below the above</td></tr>
+  <tr><td><span class="badge go">IFR GO</span> / <span class="badge nogo">IFR NO GO</span> / <span class="badge unk">UNKNOWN</span></td><td>Right-side big status</td></tr>
+</table>
+<p>If an active advisory affects IFR ops (criteria mentions wind, ceiling, visibility,
+fog, icing, thunderstorms, or LLWS), the strip flashes amber and shows a corner ⚠️ pip.</p>
+
+<h2>Alternate Planning</h2>
+<p>Five-card row showing whether each airfield meets <strong>published planning
+minimums</strong> (which already include the +400/+1 alternate buffer). Card turns
+green when current METAR ceiling AND visibility are at or above the published mins.</p>
+
+<table class="zebra">
+  <thead>
+    <tr><th>ICAO</th><th>Field</th><th>Approach</th><th>Min Ceil</th><th>Min Vis</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>KCEW</code></td><td>Bob Sikes / Crestview</td><td>ILS RWY 07</td><td>600 ft</td><td>1¼ SM</td></tr>
+    <tr><td><code>KOZR</code></td><td>Cairns AAF</td><td>ILS RWY 06</td><td>600 ft</td><td>1¼ SM</td></tr>
+    <tr><td><code>KDHN</code></td><td>Dothan Regional</td><td>ILS RWY 32</td><td>600 ft</td><td>1¼ SM</td></tr>
+    <tr><td><code>KTOI</code></td><td>Troy Municipal</td><td>ILS RWY 07</td><td>700 ft</td><td>1 7⁄16 SM</td></tr>
+    <tr><td><code>KMGM</code></td><td>Montgomery Regional</td><td>ILS RWY 28</td><td>600 ft</td><td>1¼ SM</td></tr>
+  </tbody>
+</table>
+
+<p>Each row shows the <strong>current METAR ceiling/visibility colored by flight
+category</strong>, plus a <span class="badge go">Poss. Alt</span> or
+<span class="badge nogo">No Alt</span> badge. If the METAR is &gt;80 min old, an
+"OLD" tag is appended.</p>
+
+<h2>Aerodrome Forecasts (TAF-style)</h2>
+<p>3-column grid of FROM/TEMPO/PROB blocks for the operating area's airfields,
+parsed from the DD 175-1's terminal-forecast section. Each card:</p>
+<ul>
+  <li><strong>ICAO header</strong> colored by the first non-TEMPO period's flight category</li>
+  <li><strong>Embedded current METAR</strong> directly below the ICAO (small monospace, colored by FAA category, green-tinted background when current, red when stale)</li>
+  <li><strong>FROM / predominant periods</strong>: header + weather on separate lines, colored by category</li>
+  <li><strong>TEMPO periods</strong>: gray, indented under the FROM they modify</li>
+  <li><strong>"Same as KOZR:"</strong> sister-airfield list when multiple fields share a forecast</li>
+</ul>
+
+<h2>Arrival Time Assistant</h2>
+<p>Toggle-enabled card above the aerodrome grid. Pick up to two local arrival times
+and the dashboard outlines the matching forecast period on each aerodrome card —
+gold for Time 1, green for Time 2, double outline if both fall in the same period.
+Persists in localStorage; survives page reloads. Use case: planning a 2-hour
+cross-country and wanting to see what the destination looks like at landing time.</p>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     6. COLOR & SYMBOL REFERENCE
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>6 · Color &amp; symbol reference</h1>
+<div class="lead">Everything that's colored, and what it means.</div>
+
+<h2>FAA flight categories</h2>
+<table>
+  <thead><tr><th>Color</th><th>Category</th><th>Ceiling</th><th>Visibility</th></tr></thead>
+  <tbody>
+    <tr><td><span class="dot vfr"></span> Green</td><td>VFR</td><td>&gt; 3000 ft</td><td>&gt; 5 SM</td></tr>
+    <tr><td><span class="dot mvfr"></span> Blue</td><td>MVFR</td><td>1000–3000 ft</td><td>3–5 SM</td></tr>
+    <tr><td><span class="dot ifr"></span> Red</td><td>IFR</td><td>500–999 ft</td><td>1–&lt;3 SM</td></tr>
+    <tr><td><span class="dot lifr"></span> Magenta</td><td>LIFR</td><td>&lt; 500 ft</td><td>&lt; 1 SM</td></tr>
+  </tbody>
+</table>
+
+<h2>Status badges</h2>
+<table class="zebra">
+  <tr><td><span class="badge go">VFR GO</span></td><td>Meets training minimums right now</td></tr>
+  <tr><td><span class="badge nogo">NO GO</span></td><td>Below minimums, no improvement in current segment</td></tr>
+  <tr><td><span class="badge unk">UNKNOWN</span></td><td>METAR is missing or &gt;80 min old (Cairns only)</td></tr>
+  <tr><td><span class="badge solo">SOLO GO</span></td><td>Stagefield meets all four solo gates</td></tr>
+  <tr><td><span class="badge solnogo">NO SOLO</span></td><td>One or more solo gates failed (reason shown next to badge)</td></tr>
+  <tr><td><span class="badge mvfr">POSS ICE</span></td><td>Flight level temp ≤ 4°C — possible icing</td></tr>
+  <tr><td><span class="badge ifr">High Winds</span></td><td>Flight level wind ≥ 20 kt</td></tr>
+  <tr><td><span class="badge amend">AMENDMENT</span></td><td>Forecast has been amended; navbar background tints light gold</td></tr>
+</table>
+
+<h2>Weather advisory types (Block 16 of MEF)</h2>
+<table class="zebra">
+  <thead><tr><th>Type</th><th>Color</th><th>Issued for</th></tr></thead>
+  <tbody>
+    <tr><td><strong>AWA</strong> Area Weather Advisory</td><td><span class="dot amber"></span> Yellow</td><td>Conditions within 60 NM of Cairns AAF</td></tr>
+    <tr><td><strong>TWA</strong> Terminal Weather Advisory</td><td><span class="dot red"></span> Red</td><td>Conditions within 15 NM of Cairns AAF</td></tr>
+    <tr><td><strong>WATCH</strong></td><td><span class="dot amber"></span> Yellow</td><td>Severe / hazardous conditions watch</td></tr>
+    <tr><td><strong>WARNING</strong></td><td><span class="dot red"></span> Red</td><td>Imminent / occurring severe conditions</td></tr>
+  </tbody>
+</table>
+
+<h2>Recommended landing arrows (training panels)</h2>
+<table>
+  <tr><td>↓ green</td><td>Favorable headwind component on the recommended runway</td></tr>
+  <tr><td>↑ red</td><td>Tailwind — runway is into the wind from the wrong end</td></tr>
+  <tr><td>← arrow</td><td>Right crosswind (wind from the right pushing aircraft left)</td></tr>
+  <tr><td>→ arrow</td><td>Left crosswind</td></tr>
+  <tr><td>↔ orange</td><td>Variable wind direction</td></tr>
+  <tr><td>Orange arrow</td><td>Crosswind component ≥ 15 kt</td></tr>
+</table>
+
+<h2>Heartbeat pip (navbar Published chip)</h2>
+<table>
+  <tr><td><span class="dot go"></span> Green</td><td>Published &lt; 20 min ago — server healthy</td></tr>
+  <tr><td><span class="dot amber"></span> Yellow</td><td>20–40 min — warning</td></tr>
+  <tr><td><span class="dot red"></span> Red (pulsing)</td><td>&gt; 40 min or no data — publishing automation has stopped</td></tr>
+</table>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     7. SPECIAL FEATURES
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>7 · Special features</h1>
+<div class="lead">The non-obvious tools tucked into the dashboard.</div>
+
+<h2>7-Day Outlook (VFR banner center)</h2>
+<p>Compact dropdown with 7 day-letters, each carrying a single colored dot summarizing
+the worst category across that day's AM/PM/N1 periods. Click to expand a detailed
+14-period × 7-category grid plus the forecaster's synopsis. Driven by the
+<code>06-12-mar-26.pdf</code>-style outlook chart issued weekly by Cairns Weather.</p>
+
+<h2>KOZR TAF strip (VFR banner)</h2>
+<p>Six colored hourly cells for the next 6 hours of KOZR TAF, expandable to a
+12-hour view. Each cell's color is the FAA flight category of the non-TEMPO/non-PROB
+TAF group in effect at that hour. Falls back to a "RAW TAF" text view when
+aviationweather.gov has no TAF cached and the parser doesn't have enough structure
+to color individual hours.</p>
+
+<h2>WAAS / GPS Coverage (IFR banner center)</h2>
+<p>Real-time FAA WAAS coverage classification for KOZR. The publisher fetches the
+official FAA snapshot, samples a 17×17 pixel region around Cairns, drops near-white
+state-border pixels, averages the rest, and threshold-matches against the FAA color
+ramp. Result is one of:</p>
+<ul>
+  <li><strong>Full LPV200</strong> — best precision approach available (special blue dot + glow)</li>
+  <li><strong>LPV</strong> — full precision approach</li>
+  <li><strong>LNAV/VNAV only</strong></li>
+  <li><strong>Marginal</strong></li>
+  <li><strong>Degraded</strong></li>
+  <li><strong>Unknown</strong> — sampling failed</li>
+</ul>
+
+<h2>Demo mode (15 scenarios)</h2>
+<p>The 🧪 Demo dropdown replaces live data with synthetic conditions for layout
+verification or training people on how the dashboard looks under various weather:</p>
+<div class="cols-2">
+  <ul>
+    <li>VFR · All GO</li>
+    <li>MVFR · Mixed</li>
+    <li>IFR · All NO GO</li>
+    <li>IFR · ALL GO (700/1)</li>
+    <li>LIFR · Cannot Taxi</li>
+    <li>High Winds · No Solo</li>
+    <li>Stale METAR · OLD DATA</li>
+    <li>No METAR · Unknown</li>
+  </ul>
+  <ul>
+    <li>Active Wind Advisory</li>
+    <li>⚠️ Amendment Issued</li>
+    <li>🕐 Upcoming Advisory</li>
+    <li>⚠️ Multiple Advisories Active</li>
+    <li>⏱️ Improving · Trainable in 2h</li>
+    <li>⏱️ Degrading · Untrainable in 2h</li>
+    <li>⏱️ Mixed · Multiple Timers</li>
+  </ul>
+</div>
+<p>Demo mode persists in localStorage. A yellow banner + viewport border appear while
+active. Switch to "Off" in the dropdown to return to live data.</p>
+
+<h2>Publish Log modal</h2>
+<p>📋 Publish Log button opens a modal with the recent publish history embedded in
+<code>data.json</code>: 6 stat cards (Last Run · Today's runs/failures · Success Rate
+· Streak · Failures · Avg Duration) plus a scrolling list of entries (newest first,
+green border for success, red for failure). Useful when troubleshooting why the
+"Published" chip is climbing into yellow/red.</p>
+
+<h2>ADS-B + Windy maps (bottom row)</h2>
+<p>Two side-by-side iframes, both collapsible:</p>
+<ul>
+  <li><strong>ADS-B Live Traffic</strong> — globe.adsbexchange.com centered on KOZR. Includes military aircraft (FlightRadar24 filters them out)</li>
+  <li><strong>Windy.com</strong> — embed.windy.com centered on Fort Rucker, wind overlay default. Click and drag for radar / clouds / temperature views</li>
+</ul>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     8. STATUS & FAILURE INDICATORS
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>8 · Status &amp; failure indicators</h1>
+<div class="lead">How to recognize when something's wrong.</div>
+
+<p>The dashboard never silently shows stale data. Every failure mode has a visible
+indicator. Here's how to read them:</p>
+
+<h2>Heartbeat pip turns red and pulses</h2>
+<div class="callout warn">
+  <div class="callout-title">What it means</div>
+  The publishing server (Mac mini in the office) hasn't pushed new data in &gt; 40 minutes.
+  Either the server is offline, the publisher process crashed, GitHub auth expired,
+  or the network is down.
+  <br><br>
+  <strong>What to do:</strong> SSH to the publishing host, check the publisher log,
+  verify the launchd agents are loaded. Until restored, the dashboard will keep
+  showing whatever was last published — visibly stale via the pip + age counter.
+</div>
+
+<h2>OLD WEATHER banner (yellow)</h2>
+<div class="callout warn">
+  <div class="callout-title">What it means</div>
+  The currently displayed forecast is operationally stale — either issued on a
+  previous calendar day in the operator's local time, or its valid period has
+  already ended (e.g., the N1 brief for last night still showing because today's
+  brief hasn't been issued yet). Yellow 3px viewport border + diagonal striping
+  over forecast-driven sections.
+  <br><br>
+  <strong>What to do:</strong> Treat it as last-known. The METAR / Cairns / IFR
+  Training / Alternate Planning sections still read live data and aren't dimmed.
+</div>
+
+<h2>USING FORECAST · METAR IS STALE (cyan badge)</h2>
+<div class="callout warn">
+  <div class="callout-title">What it means</div>
+  The live KOZR METAR is &gt; 80 minutes old. The dashboard has switched to
+  synthesizing conditions from the GOLDFISH area-forecast segment (because Cairns
+  AAF sits inside the GOLDFISH training area). The pseudo-METAR is prefixed
+  <code>FCST</code> so it's obviously not a real observation.
+  <br><br>
+  <strong>What to do:</strong> Auto-reverts as soon as a fresh METAR arrives.
+  No manual action needed.
+</div>
+
+<h2>UNKNOWN status (yellow ❓)</h2>
+<div class="callout">
+  <div class="callout-title">What it means</div>
+  Cairns shows UNKNOWN when the live METAR is missing entirely AND no GOLDFISH
+  fallback is available either (rare). Stagefields don't go UNKNOWN — they always
+  evaluate against the area forecast which is part of the brief itself.
+</div>
+
+<h2>Active Advisories card glows amber</h2>
+<div class="callout warn">
+  <div class="callout-title">What it means</div>
+  At least one AWA/TWA/WATCH/WARNING is currently in effect. Multiple stack
+  vertically inside the card; each shows expiry countdown ("Expires in 1h 24m").
+  An "Upcoming" banner above the active list previews the next pending advisory
+  (only the soonest is shown).
+</div>
+
+<h2>Old Cairns Weather data &gt; 24 hours</h2>
+<p>Day-after-day (e.g., a holiday weekend) the OLD WEATHER banner persists across
+calendar boundaries. The publisher will keep retrying army.mil every 5 minutes,
+silently — once a new brief lands the banner clears automatically.</p>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     9. TV / KIOSK MODE
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>9 · TV / kiosk mode</h1>
+<div class="lead">For the briefing-room display.</div>
+
+<p>Append <code>?tv=1</code> to the URL to enable kiosk display. Designed for distance
+viewing on a 4K TV.</p>
+
+<h2>What changes in TV mode</h2>
+<ul>
+  <li>Base font 15px → 20px</li>
+  <li>Training status text 26px → 38px</li>
+  <li>All card elements scaled up 25–50%</li>
+  <li>Cursor auto-hides after 3 seconds of inactivity</li>
+  <li>Page automatically reloads at 03:00 local to prevent browser memory bloat</li>
+  <li>Auto-detects when the source HTML changes (server deploy) and reloads silently</li>
+</ul>
+
+<h2>Auto-refresh behaviors</h2>
+<table class="zebra">
+  <tr><th>Trigger</th><th>What happens</th></tr>
+  <tr><td>Every 5 minutes</td><td>Re-fetch <code>data.json</code></td></tr>
+  <tr><td>Every minute</td><td>Re-render TAF strip and re-evaluate auto-period (AM → PM → N1 transitions)</td></tr>
+  <tr><td>Every 30 seconds</td><td>Update "Fetched X min ago" / "Published X min ago" labels</td></tr>
+  <tr><td>03:00 local</td><td>Full page reload (memory hygiene)</td></tr>
+  <tr><td>HTML deploy detected</td><td>Silent reload (compares ETag to initial)</td></tr>
+</table>
+
+<h2>Setup recommendation</h2>
+<div class="callout">
+  <div class="callout-title">Suggested briefing-room setup</div>
+  <ul>
+    <li>Modern 4K TV (40+ inches), wired to Ethernet or strong WiFi</li>
+    <li>Connected device: small form-factor PC (NUC), Mac mini, or Apple TV with browser app</li>
+    <li>Browser: Chrome or Safari, full-screen mode (F11 or Cmd+Ctrl+F)</li>
+    <li>URL: <code>https://mrwhistletips.github.io/weather-pal-dashboard/?tv=1</code></li>
+    <li>Power: TV always-on during operating hours; the daily 03:00 reload prevents memory leaks</li>
+  </ul>
+</div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     10. QUICK REFERENCE
+     ════════════════════════════════════════════════════════════ -->
+<div class="page-break page">
+<h1>10 · Quick reference card</h1>
+<div class="lead">The most-used numbers, in one place.</div>
+
+<h2>Training minimums (USAACE Reg 115-1)</h2>
+<table class="zebra">
+  <tr><th style="width: 30%;">Operation</th><th>Ceiling</th><th>Visibility</th><th>Other</th></tr>
+  <tr><td><strong>VFR Cairns</strong></td><td>≥ 1000 ft</td><td>≥ 3 SM</td><td>—</td></tr>
+  <tr><td><strong>VFR stagefield</strong></td><td>≥ 700 ft</td><td>≥ 1 SM</td><td>—</td></tr>
+  <tr><td><strong>SVFR recovery</strong></td><td>≥ 700 / 600 / 500 ft</td><td>≥ 1 / 2 / 3 SM</td><td>(any tier)</td></tr>
+  <tr><td><strong>IFR taxi</strong></td><td>≥ 200 ft</td><td>≥ ¼ SM</td><td>—</td></tr>
+  <tr><td><strong>Solo (AM/PM only)</strong></td><td>≥ 1200 ft</td><td>≥ 3 SM</td><td>Wind ≤ 15 kt; Gust spread ≤ 10 kt; No wind WWA</td></tr>
+</table>
+
+<h2>Period auto-snap (local time)</h2>
+<table>
+  <tr><th>Window</th><th>Active period</th></tr>
+  <tr><td>04:00 – 10:49</td><td>AM</td></tr>
+  <tr><td>10:50 – 17:14</td><td>PM</td></tr>
+  <tr><td>17:15 – 03:59</td><td>N1 (Night)</td></tr>
+</table>
+
+<h2>Amendment categories (Reg 115-1, App. E)</h2>
+<table class="zebra">
+  <thead><tr><th>Cat</th><th>Ceiling</th><th>Visibility</th></tr></thead>
+  <tbody>
+    <tr><td>A</td><td>&lt; 200 ft</td><td>&lt; ¼ SM</td></tr>
+    <tr><td>B</td><td>200–400 ft</td><td>¼ – ½ SM</td></tr>
+    <tr><td>C</td><td>500–900 ft</td><td>¾ – 1½ SM</td></tr>
+    <tr><td>D</td><td>1000–1500 ft</td><td>2 – 2½ SM</td></tr>
+    <tr><td>E</td><td>1600–2500 ft</td><td>3 SM</td></tr>
+    <tr><td>F</td><td>&gt; 2500 ft</td><td>&gt; 3 SM</td></tr>
+  </tbody>
+</table>
+<p style="font-size: 9.5pt; color: #666;">Amendment is required when conditions change by one or more categories,
+or when thunderstorms within 25 NM, surface winds ≥ 25 kt, wind direction changes ≥ 45°,
+or ISOLD/TEMPO onset/cessation occur.</p>
+
+<h2>Stagefield → Area mapping</h2>
+<table>
+  <tr><th>Stagefield</th><th>Area</th></tr>
+  <tr><td>Allen</td><td>GOLDFISH</td></tr>
+  <tr><td>Toth</td><td>GOLDFISH</td></tr>
+  <tr><td>Highbluff</td><td>BEARCAT</td></tr>
+  <tr><td>Lucas</td><td>VANGUARD C</td></tr>
+</table>
+
+<h2>Alternate planning minimums</h2>
+<table class="zebra">
+  <thead><tr><th>ICAO</th><th>Approach</th><th>Min Ceil</th><th>Min Vis</th></tr></thead>
+  <tbody>
+    <tr><td><code>KCEW</code></td><td>ILS RWY 07</td><td>600 ft</td><td>1¼ SM</td></tr>
+    <tr><td><code>KOZR</code></td><td>ILS RWY 06</td><td>600 ft</td><td>1¼ SM</td></tr>
+    <tr><td><code>KDHN</code></td><td>ILS RWY 32</td><td>600 ft</td><td>1¼ SM</td></tr>
+    <tr><td><code>KTOI</code></td><td>ILS RWY 07</td><td>700 ft</td><td>1 7⁄16 SM</td></tr>
+    <tr><td><code>KMGM</code></td><td>ILS RWY 28</td><td>600 ft</td><td>1¼ SM</td></tr>
+  </tbody>
+</table>
+<p style="font-size: 9.5pt; color: #666;">Mins shown already include the +400 ft / +1 SM alternate-planning buffer.</p>
+
+<div class="footnote">
+  This document and the dashboard it describes are for pilot reference only.
+  It is the pilot's responsibility to check official sources in determining
+  GO/NO-GO status for training. Source: USAACE Regulation 115-1 (4 March 2024)
+  · USAACE Weather Support · Headquarters, U.S. Army Aviation Center of Excellence,
+  Fort Novosel, Alabama. Dashboard hosted at
+  <code>mrwhistletips.github.io/weather-pal-dashboard</code>. Built and maintained by
+  Scott Nissen ("NICAD 99").
+</div>
+
+</div>
+
+</body>
+</html>
