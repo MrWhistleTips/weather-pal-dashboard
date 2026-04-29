@@ -408,7 +408,7 @@ table.zebra tr:nth-child(even) td { background: #faf9f5; }
 every piece of weather information a Fort Rucker Instructor Pilot needs into one
 glanceable view. It replaces the workflow of opening four browser tabs (army.mil
 PDFs, aviationweather.gov METARs, FAA WAAS map, NOAA TAF text) with a single
-URL that auto-refreshes every five minutes.</p>
+URL that auto-refreshes — main weather data every five minutes, lightning every minute.</p>
 
 <h3>Who uses it</h3>
 <ul>
@@ -505,8 +505,8 @@ reference, not a substitute for official forecaster briefings.</em></p>
 <h3>Trust and verification</h3>
 <p>The dashboard always tells you how fresh each piece of data is. You'll see:</p>
 <ul>
-  <li><strong>Fetched X min ago</strong> — when this browser last pulled <code>data.json</code></li>
-  <li><strong>Published X min ago</strong> — when the publishing server last pushed new data (publisher runs every 5 min). Colored heartbeat dot: <span class="dot go"></span> green &lt;10 min, <span class="dot amber"></span> yellow 10–20 min, <span class="dot red"></span> red &gt;20 min</li>
+  <li><strong>Published X min ago</strong> — when the main publishing server last pushed <code>data.json</code> (runs every 5 min). Colored heartbeat dot: <span class="dot go"></span> green &lt;10 min, <span class="dot amber"></span> yellow 10–20 min, <span class="dot red"></span> red &gt;20 min</li>
+  <li><strong>⚡ Detector</strong> — separate health pip for the standalone lightning service (runs every 1 min, independent). <span class="dot go"></span> green &lt;2 min, <span class="dot amber"></span> yellow 2–5 min, <span class="dot red"></span> red &gt;5 min. Hidden until the first successful <code>lightning.json</code> fetch.</li>
   <li><strong>OLD WEATHER banner</strong> — appears if the displayed forecast is from a previous calendar day or its valid period has expired</li>
   <li><strong>USING FORECAST · METAR IS STALE badge</strong> — if the live METAR is &gt;80 min old, the dashboard synthesizes conditions from the GOLDFISH area forecast and flags the substitution prominently</li>
 </ul>
@@ -531,7 +531,7 @@ the day's plan.</p>
   <thead><tr><th style="width: 25%;">Region</th><th>Purpose</th></tr></thead>
   <tbody>
     <tr><td><strong>Pilot Reference Disclaimer</strong></td><td>Always-on muted gold strip reminding readers this is for reference, not authoritative GO/NO-GO</td></tr>
-    <tr><td><strong>Navbar</strong></td><td>Logo + title, datum chips (Forecast Date, Zulu, Local, Fetched, Published), Demo · Publish Log · Help · Refresh · Source buttons</td></tr>
+    <tr><td><strong>Navbar</strong></td><td>Logo + title, datum chips (Forecast Date, Zulu, Local, Published with heartbeat pip, ⚡ Detector with lightning health pip), Demo · Publish Log · Help · Refresh · Source buttons</td></tr>
     <tr><td><strong>Period Selector</strong></td><td>AM / PM / N1 buttons; auto-snaps by local time (04:00L → AM, 10:50L → PM, 17:15L → N1)</td></tr>
     <tr><td><strong>Solar/Lunar strip</strong></td><td>Sunrise · Sunset · EENT · Moonrise · Moonset · Illumination, centered</td></tr>
     <tr><td><strong>METAR strip</strong></td><td>Raw KOZR METAR text, then decoded cells (Wind / Vis / Ceil / Temp / DP / Alt) — colored by current flight category</td></tr>
@@ -1178,9 +1178,10 @@ viewing on a 4K TV.</p>
 <h2>Auto-refresh behaviors</h2>
 <table class="zebra">
   <tr><th>Trigger</th><th>What happens</th></tr>
-  <tr><td>Every 5 minutes</td><td>Re-fetch <code>data.json</code></td></tr>
-  <tr><td>Every minute</td><td>Re-render TAF strip and re-evaluate auto-period (AM → PM → N1 transitions)</td></tr>
-  <tr><td>Every 30 seconds</td><td>Update "Fetched X min ago" / "Published X min ago" labels</td></tr>
+  <tr><td>Every 5 minutes</td><td>Re-fetch <code>data.json</code> (main weather data)</td></tr>
+  <tr><td>Every 1 minute</td><td>Re-fetch <code>lightning.json</code> + re-render TAF strip + re-evaluate auto-period (AM → PM → N1 transitions)</td></tr>
+  <tr><td>Every 30 seconds</td><td>Update "Published X min ago" label + heartbeat pip color</td></tr>
+  <tr><td>Every 1 second</td><td>Update lightning "X seconds ago" countdown + ⚡ Detector pip color</td></tr>
   <tr><td>03:00 local</td><td>Full page reload (memory hygiene)</td></tr>
   <tr><td>HTML deploy detected</td><td>Silent reload (compares ETag to initial)</td></tr>
 </table>
