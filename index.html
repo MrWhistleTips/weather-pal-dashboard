@@ -5730,13 +5730,15 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
     if (within5 > 0)        tier = 'danger';
     else if (within10 > 0)  tier = 'caution';
     if (tier) {
-      const last = lightningInRange.last_strike;
-      const distStr = last ? `${last.distance_nm.toFixed(1)}NM` : '—';
-      const cardStr = last ? bearingToCompass(last.bearing_deg) : '';
-      const inlineText = last ? `${distStr} ${cardStr}` : `${tier === 'danger' ? '≤5' : '≤10'}NM`;
+      // Prefer closest_strike — last_strike returns the newest in the
+      // 50 NM window, which can be 49 NM out and mask a closer strike.
+      const featured = lightningInRange.closest_strike || lightningInRange.last_strike;
+      const distStr = featured ? `${featured.distance_nm.toFixed(1)}NM` : '—';
+      const cardStr = featured ? bearingToCompass(featured.bearing_deg) : '';
+      const inlineText = featured ? `${distStr} ${cardStr}` : `${tier === 'danger' ? '≤5' : '≤10'}NM`;
       const count = tier === 'danger' ? within5 : within10;
-      const tooltip = last
-        ? `${count} flash${count > 1 ? 'es' : ''} within ${tier === 'danger' ? 5 : 10} NM · last @ ${last.distance_nm} NM bearing ${last.bearing_deg}°`
+      const tooltip = featured
+        ? `${count} flash${count > 1 ? 'es' : ''} within ${tier === 'danger' ? 5 : 10} NM · closest @ ${featured.distance_nm} NM bearing ${featured.bearing_deg}°`
         : `${count} flash within ${tier === 'danger' ? 5 : 10} NM`;
       lightningPipHTML = `<div class="training-panel-lightning-pip ${tier}" title="${escapeAttr(tooltip)}"><span class="ltg-icon">⚡</span><span>${inlineText}</span></div>`;
     }
@@ -6058,10 +6060,15 @@ function renderLightning() {
   }
   status.textContent = statusText;
 
-  // Detail line: last strike + countdown (countdown updates separately)
-  detail.dataset.lastStrikeIso = (lt.last_strike && lt.last_strike.time_iso) || '';
-  detail.dataset.lastDistance  = lt.last_strike ? String(lt.last_strike.distance_nm) : '';
-  detail.dataset.lastBearing   = lt.last_strike ? String(lt.last_strike.bearing_deg) : '';
+  // Detail line: prefer the closest strike (more operationally relevant)
+  // when the publisher provides it; otherwise fall back to the most-
+  // recent strike. Without this, a 49 NM newest-strike would mask a
+  // 7 NM strike that was 30 s older.
+  const featured = lt.closest_strike || lt.last_strike;
+  detail.dataset.lastStrikeIso = (featured && featured.time_iso) || '';
+  detail.dataset.lastDistance  = featured ? String(featured.distance_nm) : '';
+  detail.dataset.lastBearing   = featured ? String(featured.bearing_deg) : '';
+  detail.dataset.featuredKind  = lt.closest_strike ? 'closest' : 'last';
   updateLightningDetail();   // populate immediately
 
   // Count chips — show different combinations per tier to keep it readable
@@ -6163,7 +6170,8 @@ function updateLightningDetail() {
             : ageSec < 3600 ? `${Math.floor(ageSec / 60)}m ${ageSec % 60}s ago`
             : `${Math.floor(ageSec / 3600)}h ${Math.floor((ageSec % 3600) / 60)}m ago`;
   const compass = bearingToCompass(parseInt(brg, 10));
-  detail.textContent = `Last strike: ${dist} NM @ ${brg}° (${compass}) · ${ago} · ${breakdown}`;
+  const kind = detail.dataset.featuredKind === 'closest' ? 'Closest strike' : 'Last strike';
+  detail.textContent = `${kind}: ${dist} NM @ ${brg}° (${compass}) · ${ago} · ${breakdown}`;
 }
 
 /// Lightning service health pip — separate from the banner. Lives in
