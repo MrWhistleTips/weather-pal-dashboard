@@ -5753,8 +5753,21 @@ function escapeAttr(s) {
 ///      and two flanking badges become visible left/right of the time chips.
 ///   2. VFR section header — small AMD pill in the section detail line.
 function renderMEFAmendmentBadge(forecast) {
-  const amdNum = forecast && forecast.amendmentNumber;
-  const amdAt = forecast && forecast.mef && forecast.mef.amendedAt;
+  let amdNum = forecast && forecast.amendmentNumber;
+  let amdAt = forecast && forecast.mef && forecast.mef.amendedAt;
+  // Fallback: some forecasts (observed on N1) carry amendments only on
+  // per-area entries with the MEF-level fields null. If any area shows an
+  // amendment, surface it in the navbar so operators don't miss it.
+  if (!amdNum && !amdAt) {
+    const areas = (forecast && forecast.mef && forecast.mef.areaForecasts) || [];
+    for (const a of areas) {
+      if (a && (a.amendmentNumber || a.amendmentTime)) {
+        amdNum = amdNum || a.amendmentNumber;
+        amdAt  = amdAt  || a.amendmentTime;
+        break;
+      }
+    }
+  }
   const hasAmd = !!(amdNum || amdAt);
 
   // Toggle navbar gold tint
@@ -5768,7 +5781,12 @@ function renderMEFAmendmentBadge(forecast) {
   if (right) right.style.display = hasAmd ? 'inline-block' : 'none';
   if (rightText) {
     const parts = [];
-    if (amdNum != null) parts.push(`AMD ${amdNum}`);
+    if (amdNum != null) {
+      // Per-area amendments come pre-formatted as "AMD 1"; MEF-level is
+      // the bare number ("2"). Normalize so we don't render "AMD AMD 1".
+      const s = String(amdNum).trim();
+      parts.push(/^AMD\b/i.test(s) ? s : `AMD ${s}`);
+    }
     if (amdAt) parts.push(`@ ${amdAt}`);
     rightText.textContent = parts.join(' ') || 'AMENDMENT';
   }
