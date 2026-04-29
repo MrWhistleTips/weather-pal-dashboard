@@ -1564,7 +1564,9 @@ body.tv .svfr-gauge-tier-label { font-size: 13px; }
    can coexist. */
 .training-panel-lightning-pip {
   position: absolute;
-  top: 6px;
+  /* Sits one line below the station name so wide names like HIGHBLUFF
+     don't collide with the pip. */
+  top: 32px;
   left: 6px;
   display: inline-flex;
   align-items: center;
@@ -1605,7 +1607,7 @@ body.tv .svfr-gauge-tier-label { font-size: 13px; }
   color: #ffe6b0;
   box-shadow: 0 0 6px rgba(230,165,58,0.45);
 }
-body.tv .training-panel-lightning-pip { height: 22px; font-size: 11px; padding: 0 8px; }
+body.tv .training-panel-lightning-pip { height: 22px; font-size: 11px; padding: 0 8px; top: 44px; }
 body.tv .training-panel-lightning-pip .ltg-icon { font-size: 13px; }
 /* pipPulse replacement — every element that was animating box-shadow
    via @keyframes pipPulse now uses an ::after overlay with pre-baked
