@@ -1555,37 +1555,58 @@ body.tv .svfr-gauge-tier-label { font-size: 13px; }
   animation: pipPulse 2s ease-in-out infinite;
   cursor: help;
 }
-/* Lightning pip — top-LEFT corner. Appears when GOES-19 detects a flash
-   within 5 NM of THIS panel's station (Cairns or one of the four
-   stagefields). Uses red palette to distinguish from the amber advisory
-   pip on the opposite corner. */
+/* Lightning pip — top-LEFT corner pill with distance + cardinal direction.
+   Two tiers based on closest-strike distance to THIS panel's station:
+     ≤ 5 NM   — danger (red, pulsing)
+     ≤ 10 NM  — caution (yellow, static glow)
+     > 10 NM  — no pip
+   Distinct from the amber advisory pip in the top-RIGHT corner; both
+   can coexist. */
 .training-panel-lightning-pip {
   position: absolute;
   top: 6px;
   left: 6px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(214,69,69,0.30);
-  border: 1.5px solid var(--ifr);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  font-size: 10px;
+  gap: 3px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
   cursor: help;
   z-index: 2;
 }
-.training-panel-lightning-pip::after {
+.training-panel-lightning-pip .ltg-icon { font-size: 10px; }
+/* Danger tier — within 5 NM, pulsing red */
+.training-panel-lightning-pip.danger {
+  background: rgba(214,69,69,0.30);
+  border: 1.5px solid var(--ifr);
+  color: #ffd6d6;
+}
+.training-panel-lightning-pip.danger::after {
   content: "";
   position: absolute;
   inset: -1px;
-  border-radius: 50%;
+  border-radius: 9px;
   box-shadow: 0 0 10px rgba(214,69,69,0.85);
   opacity: 0;
   animation: glowOpacityPulse 1.4s ease-in-out infinite;
   will-change: opacity;
+  pointer-events: none;
 }
-body.tv .training-panel-lightning-pip { width: 22px; height: 22px; font-size: 12px; }
+/* Caution tier — 5-10 NM, static yellow */
+.training-panel-lightning-pip.caution {
+  background: rgba(230,165,58,0.25);
+  border: 1.5px solid var(--warning);
+  color: #ffe6b0;
+  box-shadow: 0 0 6px rgba(230,165,58,0.45);
+}
+body.tv .training-panel-lightning-pip { height: 22px; font-size: 11px; padding: 0 8px; }
+body.tv .training-panel-lightning-pip .ltg-icon { font-size: 13px; }
 /* pipPulse replacement — every element that was animating box-shadow
    via @keyframes pipPulse now uses an ::after overlay with pre-baked
    shadow and an opacity-only animation. The original @keyframes
@@ -3708,7 +3729,12 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
         <h3>Per-stagefield ⚡ pips</h3>
         <p>The banner is KOZR-centric. But the four stagefields (Allen ~4 NM SE, Toth ~8 NM ESE, Highbluff ~7 NM S, Lucas ~17 NM W) can have lightning in <i>their</i> 5 NM ring while KOZR's is clear — especially for Lucas, since it's far enough out west that storm cells in the western training area can hit Lucas without ever entering the KOZR ring.</p>
-        <p>To surface this, each Training Status panel (Cairns + 4 stagefields) gets its own small <b>⚡ pip</b> in the top-left corner whenever GOES-19 detects a flash within 5 NM of <i>that station</i>. Hovers show the last strike's distance and bearing relative to the panel's station. The publisher computes per-stagefield counts in a single pass through the same flash data — no extra fetches.</p>
+        <p>Each Training Status panel (Cairns + 4 stagefields) gets its own small <b>⚡ pill</b> in the top-left corner showing the closest strike's distance and compass cardinal direction (e.g. <code>2.1NM W</code> or <code>7.8NM SE</code>). Two tiers:</p>
+        <ul>
+          <li><b><span class="help-pip red"></span> Danger</b> — flash within <b>5 NM</b> of the station. Pulsing red border. Operationally significant for that specific airfield.</li>
+          <li><b><span class="help-pip yellow"></span> Caution</b> — flash within <b>10 NM</b> (but not 5). Static yellow glow. Watch carefully; the next strike may be inside the 5 NM ring.</li>
+        </ul>
+        <p>Pip is hidden when there are no flashes within 10 NM of that station. Hover for the full count + bearing in degrees. The publisher computes per-stagefield counts in a single pass through the same flash data — no extra fetches.</p>
 
         <h3>Storm motion / approach prediction</h3>
         <p>When the lightning service detects a coherent storm cell with enough flashes to track its motion, it adds an <b>approach line</b> below the detail line:</p>
@@ -4607,18 +4633,23 @@ function buildDemoData(key) {
         last_strike: { time_iso: nowIso, distance_nm: 31.2, bearing_deg: 305 },
       };
     } else if (s.lightning === 'stagefield') {
-      // Strike at Lucas only — Cairns and the other 3 stagefields are clear,
-      // exercises the per-panel ⚡ pip without triggering the main banner's
-      // CRITICAL tier.
+      // Mixed-tier per-panel demo:
+      //   Lucas — danger pip (red), strike at 2.1 NM W
+      //   Toth  — caution pip (yellow), strike at 7.8 NM SE
+      //   Cairns + Allen + Highbluff — clear (no pip)
+      // KOZR overall is clear (5/10 NM rings empty), so the main banner
+      // stays in INFO tier with distant strikes only — exercises the
+      // panel pips without the banner's CRITICAL tier swallowing focus.
       lightning = {
         fetched_at: new Date().toISOString(),
         lookback_min: 10,
         files_scanned: 30,
-        counts: { within_5nm: 0, within_10nm: 0, within_25nm: 0, within_50nm: 4 },
+        counts: { within_5nm: 0, within_10nm: 0, within_25nm: 5, within_50nm: 9 },
         last_strike: { time_iso: nowIso, distance_nm: 16.8, bearing_deg: 269 },
         stagefields: {
           allen:     { counts: { within_5nm: 0, within_10nm: 0, within_25nm: 0, within_50nm: 0 }, last_strike: null },
-          toth:      { counts: { within_5nm: 0, within_10nm: 0, within_25nm: 0, within_50nm: 0 }, last_strike: null },
+          toth:      { counts: { within_5nm: 0, within_10nm: 3, within_25nm: 3, within_50nm: 3 },
+                       last_strike: { time_iso: nowIso, distance_nm: 7.8, bearing_deg: 135 } },
           highbluff: { counts: { within_5nm: 0, within_10nm: 0, within_25nm: 0, within_50nm: 0 }, last_strike: null },
           lucas:     { counts: { within_5nm: 2, within_10nm: 4, within_25nm: 4, within_50nm: 4 },
                        last_strike: { time_iso: nowIso, distance_nm: 2.1, bearing_deg: 280 } },
@@ -5528,7 +5559,11 @@ function renderTraining(metar, forecast) {
   // Cairns reads from the top-level counts/last_strike (KOZR-centric);
   // each stagefield reads from LIGHTNING_DATA.stagefields[name].
   const cairnsLightning = (LIGHTNING_DATA && LIGHTNING_DATA.counts)
-    ? { within_5nm: LIGHTNING_DATA.counts.within_5nm || 0, last_strike: LIGHTNING_DATA.last_strike }
+    ? {
+        within_5nm:  LIGHTNING_DATA.counts.within_5nm  || 0,
+        within_10nm: LIGHTNING_DATA.counts.within_10nm || 0,
+        last_strike: LIGHTNING_DATA.last_strike,
+      }
     : null;
   let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus, isFallback, cairnsLightning);
 
@@ -5559,7 +5594,8 @@ function renderTraining(metar, forecast) {
     const sfKey = sf.name.toLowerCase();
     const sfLightning = (LIGHTNING_DATA && LIGHTNING_DATA.stagefields && LIGHTNING_DATA.stagefields[sfKey])
       ? {
-          within_5nm: LIGHTNING_DATA.stagefields[sfKey].counts.within_5nm || 0,
+          within_5nm:  LIGHTNING_DATA.stagefields[sfKey].counts.within_5nm  || 0,
+          within_10nm: LIGHTNING_DATA.stagefields[sfKey].counts.within_10nm || 0,
           last_strike: LIGHTNING_DATA.stagefields[sfKey].last_strike,
         }
       : null;
@@ -5646,16 +5682,30 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
     const tooltip = `${advisory.type} ${advisory.number || ''}: ${advisory.criteria || ''}`;
     pipHTML = `<div class="training-panel-advisory-pip" title="${escapeAttr(tooltip)}">⚠️</div>`;
   }
-  // Lightning pip — small ⚡ in top-LEFT corner when there's a flash
-  // within 5 NM of THIS station (Cairns or one of the four stagefields).
-  // Distinct from the banner at the top of the page, which is KOZR-only.
+  // Lightning pip — top-LEFT corner pill. Two tiers:
+  //   ≤ 5 NM  — danger  (red, pulsing)
+  //   ≤ 10 NM — caution (yellow, static glow)
+  // Shows the closest strike's distance + compass cardinal inline so the
+  // tier is glanceable at a distance without a tooltip. Hover gives the
+  // full count + bearing in degrees.
   let lightningPipHTML = '';
-  if (lightningInRange && lightningInRange.within_5nm > 0) {
-    const last = lightningInRange.last_strike;
-    const tooltip = last
-      ? `${lightningInRange.within_5nm} flash${lightningInRange.within_5nm > 1 ? 'es' : ''} within 5 NM · last @ ${last.distance_nm} NM, ${last.bearing_deg}°`
-      : `${lightningInRange.within_5nm} flash within 5 NM`;
-    lightningPipHTML = `<div class="training-panel-lightning-pip" title="${escapeAttr(tooltip)}">⚡</div>`;
+  if (lightningInRange) {
+    const within5  = lightningInRange.within_5nm  || 0;
+    const within10 = lightningInRange.within_10nm || 0;
+    let tier = null;
+    if (within5 > 0)        tier = 'danger';
+    else if (within10 > 0)  tier = 'caution';
+    if (tier) {
+      const last = lightningInRange.last_strike;
+      const distStr = last ? `${last.distance_nm.toFixed(1)}NM` : '—';
+      const cardStr = last ? bearingToCompass(last.bearing_deg) : '';
+      const inlineText = last ? `${distStr} ${cardStr}` : `${tier === 'danger' ? '≤5' : '≤10'}NM`;
+      const count = tier === 'danger' ? within5 : within10;
+      const tooltip = last
+        ? `${count} flash${count > 1 ? 'es' : ''} within ${tier === 'danger' ? 5 : 10} NM · last @ ${last.distance_nm} NM bearing ${last.bearing_deg}°`
+        : `${count} flash within ${tier === 'danger' ? 5 : 10} NM`;
+      lightningPipHTML = `<div class="training-panel-lightning-pip ${tier}" title="${escapeAttr(tooltip)}"><span class="ltg-icon">⚡</span><span>${inlineText}</span></div>`;
+    }
   }
   // Fallback badge — shown on the Cairns panel when the live METAR is
   // stale and we're reading GOLDFISH forecast conditions instead.
