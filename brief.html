@@ -482,7 +482,7 @@ reference, not a substitute for official forecaster briefings.</em></p>
 <h3>How the pipeline works</h3>
 <div class="callout">
   <div class="callout-title">End-to-end flow</div>
-  An always-on Mac mini in the office runs a <code>weather-pal-publisher</code>
+  An always-on server located offsite runs a <code>weather-pal-publisher</code>
   CLI (Swift) every 5 minutes. The CLI scrapes army.mil for new PDFs, parses them
   using PDFKit + custom regex (with Vision OCR fallback), fetches live METARs/TAFs/WAAS,
   and pushes a single <code>data.json</code> file to a public GitHub repository.
@@ -819,7 +819,7 @@ indicator. Here's how to read them:</p>
 <h2>Heartbeat pip turns red and pulses</h2>
 <div class="callout warn">
   <div class="callout-title">What it means</div>
-  The publishing server (Mac mini in the office) hasn't pushed new data in &gt; 40 minutes.
+  The publishing server (located offsite) hasn't pushed new data in &gt; 20 minutes.
   Either the server is offline, the publisher process crashed, GitHub auth expired,
   or the network is down.
   <br><br>
