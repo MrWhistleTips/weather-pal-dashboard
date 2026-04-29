@@ -5733,7 +5733,7 @@ function renderLightning() {
   const countsEl = document.getElementById('lightning-counts');
   if (!banner || !status || !detail || !countsEl) return;
 
-  const lt = DATA && DATA.lightning;
+  const lt = LIGHTNING_DATA;
   // Hide entirely when missing or zero activity within 50 NM
   if (!lt || !lt.counts || (lt.counts.within_50nm || 0) === 0) {
     banner.classList.remove('show', 'tier-critical', 'tier-warning', 'tier-info');
@@ -5794,8 +5794,10 @@ function updateLightningDetail() {
   const iso = detail.dataset.lastStrikeIso;
   const dist = detail.dataset.lastDistance;
   const brg  = detail.dataset.lastBearing;
+  const total50 = (LIGHTNING_DATA && LIGHTNING_DATA.counts && LIGHTNING_DATA.counts.within_50nm) || 0;
+  const lookback = (LIGHTNING_DATA && LIGHTNING_DATA.lookback_min) || 10;
   if (!iso || !dist) {
-    detail.textContent = `${(DATA && DATA.lightning && DATA.lightning.counts && DATA.lightning.counts.within_50nm) || 0} flashes within 50 NM in last ${(DATA && DATA.lightning && DATA.lightning.lookback_min) || 10} min`;
+    detail.textContent = `${total50} flashes within 50 NM in last ${lookback} min`;
     return;
   }
   const ts = Date.parse(iso);
@@ -5804,8 +5806,6 @@ function updateLightningDetail() {
             : ageSec < 3600 ? `${Math.floor(ageSec / 60)}m ${ageSec % 60}s ago`
             : `${Math.floor(ageSec / 3600)}h ${Math.floor((ageSec % 3600) / 60)}m ago`;
   const compass = bearingToCompass(parseInt(brg, 10));
-  const total50 = (DATA && DATA.lightning && DATA.lightning.counts && DATA.lightning.counts.within_50nm) || 0;
-  const lookback = (DATA && DATA.lightning && DATA.lightning.lookback_min) || 10;
   detail.textContent = `Last strike: ${dist} NM @ ${brg}° (${compass}) · ${ago} · ${total50} flashes within 50 NM in last ${lookback} min`;
 }
 
@@ -6422,6 +6422,13 @@ function toggleSevenDay() {
 // previous fetchTAF() that hit aviationweather.gov via a CORS proxy
 // is gone (publisher pre-fetches it server-side now).
 let TAF_OBSERVATION = null;
+
+/// Lightning summary fetched independently from lightning.json on a
+/// 1-min cadence (the Mac mini's separate com.weatherpal.lightning agent
+/// publishes that file). Renderer reads from this global, not from
+/// DATA.lightning, so the lightning lane updates without waiting for
+/// the main 5-min data.json refresh.
+let LIGHTNING_DATA = null;
 
 /// Pick the predominant (non-TEMPO / non-PROB) forecast group in effect at
 /// the given JS timestamp (seconds since epoch). The aviationweather.gov
@@ -7123,6 +7130,26 @@ function renderAll() {
     'Updated ' + localTimeHHMM();
 }
 
+/// Fetch lightning.json — pushed by the standalone lightning publisher
+/// every minute, independent of the main 5-min data.json cycle. We only
+/// re-render the lightning banner here, not the whole dashboard.
+async function loadLightning() {
+  // Demo mode supplies synthetic lightning via buildDemoData → DATA.lightning;
+  // skip the network fetch entirely in that case.
+  if (demoScenario && DEMO_SCENARIOS[demoScenario]) return;
+  try {
+    const res = await fetch('lightning.json?' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      LIGHTNING_DATA = await res.json();
+      renderLightning();
+      updateLightningDetail();
+    }
+  } catch (e) {
+    // Silent — lightning is best-effort. Don't surface fetch errors;
+    // the banner stays in its last-known state until the next tick.
+  }
+}
+
 async function loadData() {
   // Demo mode bypasses live fetch and uses synthetic data
   if (demoScenario && DEMO_SCENARIOS[demoScenario]) {
@@ -7137,6 +7164,10 @@ async function loadData() {
     }
     // Demo mode has no real TAF — hide the widget rather than show stale live data
     TAF_OBSERVATION = null;
+    // Demo lightning lives on DATA.lightning so buildDemoData can drive
+    // it from the scenario; copy into the runtime global the renderer
+    // reads from.
+    LIGHTNING_DATA = (DATA && DATA.lightning) || null;
     lastFetchedAt = new Date();
     renderAll();
     updateFetchedLabel();
@@ -7383,6 +7414,12 @@ setInterval(() => { renderTAF(); }, 60 * 1000);
 // don't need a separate WAAS timer.
 loadData();
 setInterval(loadData, DATA_REFRESH_MS);
+
+// Lightning lives in its own publisher (com.weatherpal.lightning, every
+// 1 min) and pushes lightning.json independently. Fetch it on its own
+// schedule — the main 5-min loadData cycle doesn't carry lightning data.
+loadLightning();
+setInterval(loadLightning, 60 * 1000);
 </script>
 </body>
 </html>
