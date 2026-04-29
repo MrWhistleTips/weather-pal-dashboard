@@ -2280,6 +2280,18 @@ body.tv .training-panel-solo-reason { font-size: 11px; }
 .lightning-banner.collapsed .lightning-experimental {
   display: none !important;
 }
+/* Tighten the banner to a single-line strip when collapsed —
+   smaller padding + smaller icon so it sits quietly above the
+   advisories card instead of taking a full data row. */
+.lightning-banner.collapsed {
+  padding: 4px 12px;
+  gap: 10px;
+}
+.lightning-banner.collapsed .lightning-icon { font-size: 18px; }
+.lightning-banner.collapsed .lightning-status { font-size: 13px; }
+body.tv .lightning-banner.collapsed { padding: 6px 16px; }
+body.tv .lightning-banner.collapsed .lightning-icon { font-size: 22px; }
+body.tv .lightning-banner.collapsed .lightning-status { font-size: 16px; }
 /* Experimental badge — sits at the far right of the lightning banner to
    signal this feature is still in active development (counts, motion
    detection, per-stagefield pips). Subdued styling so it never looks
