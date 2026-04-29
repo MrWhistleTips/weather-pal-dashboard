@@ -6201,20 +6201,41 @@ function renderTAF() {
   const detail = document.getElementById('taf-detail');
   if (!toggle || !hoursEl || !detail) return;
 
-  if (!TAF_OBSERVATION || !Array.isArray(TAF_OBSERVATION.fcsts) || TAF_OBSERVATION.fcsts.length === 0) {
+  // Three states:
+  //  1. No TAF at all — hide widget entirely
+  //  2. TAF with structured fcsts groups — full 12-hour colored strip
+  //  3. TAF with rawTAF only (tgftp text-feed fallback used by the publisher
+  //     when aviationweather.gov's JSON API has no military TAF cached) —
+  //     show a degraded label + raw text so pilots still see the forecast
+  if (!TAF_OBSERVATION) {
+    toggle.style.display = 'none';
+    detail.style.display = 'none';
+    return;
+  }
+
+  const hasFcsts = Array.isArray(TAF_OBSERVATION.fcsts) && TAF_OBSERVATION.fcsts.length > 0;
+  const hasRaw   = typeof TAF_OBSERVATION.rawTAF === 'string' && TAF_OBSERVATION.rawTAF.trim().length > 0;
+  if (!hasFcsts && !hasRaw) {
     toggle.style.display = 'none';
     detail.style.display = 'none';
     return;
   }
   toggle.style.display = 'inline-flex';
 
-  const slots = tafBannerSlots(TAF_OBSERVATION);
-  hoursEl.innerHTML = slots.map(s => `
-    <span class="sevenday-toggle-day" title="${s.hour}: ${s.category || 'n/a'}">
-      <span>${escapeHtml(s.hour)}</span>
-      <span class="sevenday-toggle-dot ${s.category === 'vfr' ? 'go' : s.category === 'mvfr' ? '' : s.category === 'ifr' ? 'nogo' : s.category === 'lifr' ? 'nogo' : ''}" style="${tafDotInlineStyle(s.category)}"></span>
-    </span>
-  `).join('');
+  if (hasFcsts) {
+    const slots = tafBannerSlots(TAF_OBSERVATION);
+    hoursEl.innerHTML = slots.map(s => `
+      <span class="sevenday-toggle-day" title="${s.hour}: ${s.category || 'n/a'}">
+        <span>${escapeHtml(s.hour)}</span>
+        <span class="sevenday-toggle-dot ${s.category === 'vfr' ? 'go' : s.category === 'mvfr' ? '' : s.category === 'ifr' ? 'nogo' : s.category === 'lifr' ? 'nogo' : ''}" style="${tafDotInlineStyle(s.category)}"></span>
+      </span>
+    `).join('');
+  } else {
+    // Raw-only fallback — show a single "RAW TAF" indicator instead of
+    // 12 colored dots, since we can't compute hourly categories without
+    // structured fcsts groups.
+    hoursEl.innerHTML = `<span class="sevenday-toggle-day" style="color:var(--tan);font-style:italic;">RAW TAF</span>`;
+  }
 
   detail.innerHTML = buildTAFDetailHTML(TAF_OBSERVATION);
 }
@@ -6230,7 +6251,31 @@ function tafDotInlineStyle(cat) {
 }
 
 function buildTAFDetailHTML(taf) {
-  // Show next 12 hours as a wider strip, plus raw TAF text + decoded groups
+  const hasFcsts = Array.isArray(taf.fcsts) && taf.fcsts.length > 0;
+  const issueLabel = taf.issueTime
+    ? `<span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.55);">Issued ${escapeHtml(taf.issueTime)}</span>`
+    : '';
+  const rawBlock = taf.rawTAF
+    ? `<div style="font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.5; color:rgba(255,255,255,0.8); padding:8px 10px; margin-top:10px; background:rgba(93,112,70,0.12); border-left:2px solid var(--tan); border-radius:2px; word-break:break-word;">${escapeHtml(taf.rawTAF)}</div>`
+    : '';
+
+  // Raw-only fallback (publisher's tgftp text-feed path) — show the raw
+  // TAF + a small note, skip the 12-hour colored strip since we can't
+  // compute hourly categories without structured fcsts groups.
+  if (!hasFcsts) {
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--tan);">KOZR TAF · RAW</span>
+        ${issueLabel}
+      </div>
+      <div style="font-family:'Rajdhani',sans-serif; font-size:11px; color:rgba(255,255,255,0.55); letter-spacing:0.5px; font-style:italic;">
+        12-hour colored strip unavailable — military TAF text only. See raw forecast below.
+      </div>
+      ${rawBlock}
+    `;
+  }
+
+  // Structured-fcsts path — show next 12 hours as a wider strip + raw text
   const now = new Date();
   const base = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(),
                                   now.getUTCDate(), now.getUTCHours(), 0, 0));
@@ -6251,14 +6296,6 @@ function buildTAFDetailHTML(taf) {
       <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.55); letter-spacing:0.3px;">${r.cat ? r.cat.toUpperCase() : '—'}</span>
     </div>
   `).join('');
-
-  const rawBlock = taf.rawTAF
-    ? `<div style="font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.5; color:rgba(255,255,255,0.8); padding:8px 10px; margin-top:10px; background:rgba(93,112,70,0.12); border-left:2px solid var(--tan); border-radius:2px; word-break:break-word;">${escapeHtml(taf.rawTAF)}</div>`
-    : '';
-
-  const issueLabel = taf.issueTime
-    ? `<span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.55);">Issued ${escapeHtml(taf.issueTime)}</span>`
-    : '';
 
   return `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
