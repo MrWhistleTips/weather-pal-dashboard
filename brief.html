@@ -766,6 +766,182 @@ western hemisphere for lightning flashes 24/7 at 500 frames per second. Every
 flash within 50 NM of KOZR in the last 10 minutes is summarized and rendered
 as a top-of-page banner with three severity tiers.</p>
 
+<h2>The GOES-19 satellite</h2>
+
+<p><strong>GOES-19</strong> (Geostationary Operational Environmental Satellite — 19)
+is one of NOAA's flagship weather satellites. It launched in June 2024 and took over
+the GOES-East operational position from GOES-16 in early 2025. From that position
+it provides continuous observation of the entire Western Hemisphere — the Americas
+plus a wide ocean buffer to the east and west.</p>
+
+<p>Key facts about its viewpoint:</p>
+<ul>
+  <li><strong>Geostationary orbit:</strong> 22,236 miles (35,786 km) above the equator at 75.2°W longitude. At that altitude its orbital period exactly matches Earth's rotation, so it stays fixed over the same patch of ground 24 hours a day.</li>
+  <li><strong>Field of view:</strong> the entire visible Earth disk from that vantage — every state, every ocean approach, every storm cell anywhere from Alaska to South America.</li>
+  <li><strong>Continuous operation:</strong> never sets, never reorients, never has to be retasked. Lightning detection is its routine job, not something it has to be pointed at.</li>
+</ul>
+
+<p>GOES-19 carries six instruments — visible/infrared imagers, magnetometers, solar
+imagers, particle detectors, and the lightning mapper. We only use the GLM for this
+feature; the other channels feed the radar and weather imagery you see on TV news.</p>
+
+<h2>How the GLM detects lightning</h2>
+
+<p>The Geostationary Lightning Mapper is essentially a very fast wide-field optical
+camera tuned to one specific wavelength of light: <strong>777.4 nanometers</strong>,
+which is an emission line of atomic oxygen that lightning produces strongly. Other
+visible light (sun glint, city lights, aircraft strobes) is filtered out by the
+narrowband filter, so the camera sees lightning and basically nothing else.</p>
+
+<table class="zebra">
+  <thead><tr><th>GLM specification</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Frame rate</strong></td><td>500 frames per second across the entire hemisphere</td></tr>
+    <tr><td><strong>Pixel resolution</strong></td><td>~8 km at the equator (a bit coarser at high latitudes)</td></tr>
+    <tr><td><strong>Wavelength</strong></td><td>777.4 nm (atomic oxygen emission line of lightning)</td></tr>
+    <tr><td><strong>Field of view</strong></td><td>Full Earth disk from geostationary orbit</td></tr>
+    <tr><td><strong>Detection method</strong></td><td>Pixel-brightness change between consecutive frames (2 ms apart)</td></tr>
+    <tr><td><strong>Detection efficiency</strong></td><td>~70–90% of all flashes (cloud-to-ground, intra-cloud, cloud-to-cloud)</td></tr>
+  </tbody>
+</table>
+
+<p>This is fundamentally different from ground-based lightning detection networks
+(such as Vaisala's commercial NLDN), which use radio-frequency triangulation between
+multiple ground antennas. GLM is purely optical and observes everything from above.
+The two methods complement each other; the dashboard uses GLM because it's free,
+public, and covers the entire training area uniformly.</p>
+
+<h2>The data hierarchy NOAA publishes</h2>
+
+<p>GLM doesn't ship raw camera frames — that would be hundreds of gigabytes per
+hour. NOAA's processing pipeline groups detected events into a meaningful hierarchy:</p>
+
+<table class="zebra">
+  <thead><tr><th>Level</th><th>Definition</th><th>Roughly equivalent to</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Event</strong></td>
+      <td>One pixel firing in one frame (2 ms long)</td>
+      <td>The smallest unit of detection — a brief flash in one location</td>
+    </tr>
+    <tr>
+      <td><strong>Group</strong></td>
+      <td>Adjacent events in the same frame, within 16.5 km of each other</td>
+      <td>One branch or arc of a lightning flash</td>
+    </tr>
+    <tr>
+      <td><strong>Flash</strong></td>
+      <td>Groups within 16.5 km and 330 ms of each other</td>
+      <td>A single discrete lightning flash (the unit a pilot would call "a strike")</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Our processing operates at the <strong>flash</strong> level — that's what a human
+observer would count as one bolt of lightning. Every flash record contains its
+latitude, longitude, start time (microsecond precision), duration, and total
+optical energy.</p>
+
+<p>NOAA bundles these flash records into NetCDF-4 files (a self-describing scientific
+data format used widely in atmospheric science) and publishes them with a product
+name of <strong>GLM-L2-LCFA</strong> ("Level-2 Lightning Cluster Filter Algorithm").
+A new file is written about every 20 seconds, covering the events from that 20-second
+window. Each file is small (50–500 KB) and contains every flash anywhere in the
+Western Hemisphere during that window.</p>
+
+<h2>How we get it to the dashboard</h2>
+
+<p>NOAA partners with Amazon Web Services to host all GOES-19 data in a public
+S3 bucket — <code>noaa-goes19</code> — as part of the AWS Open Data registry.
+That means anyone can read the data with no authentication, no API key, no rate
+limit, and no cost. We use the public HTTPS interface; the bucket is structured by
+date and hour:</p>
+
+<div class="callout">
+  <div class="callout-title">Bucket layout</div>
+  <code>https://noaa-goes19.s3.amazonaws.com/GLM-L2-LCFA/{year}/{day-of-year}/{hour}/</code>
+  <br><br>
+  Each hour folder contains roughly 180 NetCDF files (one every 20 seconds).
+  Files publish about 10–30 seconds after the events they contain — that's
+  the satellite-to-bucket latency of NOAA's processing pipeline.
+</div>
+
+<h2>What runs on the publishing server</h2>
+
+<p>An always-on server located offsite runs a small dedicated process for lightning,
+separate from the main 5-min weather publisher. The lightning service does this
+every minute:</p>
+
+<ol>
+  <li><strong>List recent files.</strong> Query the S3 bucket for both the current and previous hour folders. (We span two hours so we don't miss files when the clock crosses an hour boundary.)</li>
+  <li><strong>Filter to a 10-minute window.</strong> Take only files whose modification timestamp is within the last 10 minutes — typically about 30 files (10 minutes × 3 files per minute).</li>
+  <li><strong>Download each file.</strong> Fetch the NetCDF-4 binary directly into memory (no temporary disk files).</li>
+  <li><strong>Parse the NetCDF.</strong> Extract three arrays from each file: <code>flash_lat</code>, <code>flash_lon</code>, and <code>flash_time_offset</code>. Decode the time offsets against the file's reference epoch (typically "seconds since 2000-01-01 12:00:00 UTC") to get a real timestamp for each flash.</li>
+  <li><strong>Distance check.</strong> For every flash, compute the great-circle distance from KOZR (31.2767°N, 85.7105°W) using the haversine formula. Convert to nautical miles.</li>
+  <li><strong>Filter to 50 NM.</strong> Discard any flash farther than 50 nautical miles from Cairns. This is the outer ring of the dashboard's banner — anything beyond is noise from distant storms.</li>
+  <li><strong>Bucketize.</strong> Count surviving flashes into four concentric bands: ≤5 NM (operations halt), ≤10 NM (vicinity), ≤25 NM (approach), ≤50 NM (outer awareness).</li>
+  <li><strong>Identify the most recent strike.</strong> Sort the surviving flashes by time, take the latest one, and compute its bearing from KOZR (initial great-circle bearing, in degrees from true north).</li>
+  <li><strong>Build the summary.</strong> Assemble a small JSON document: counts in each band, last-strike location/time/distance/bearing, and metadata (lookback window, file count, fetch timestamp).</li>
+  <li><strong>Push to GitHub.</strong> If the new payload is byte-identical to the current <code>lightning.json</code> on the dashboard repo (clear weather, identical zeros), skip the commit. Otherwise, push the new file via the GitHub Contents API. This keeps the repo's commit log clean during quiet periods.</li>
+</ol>
+
+<p>The service uses Python (the de-facto standard for NetCDF processing thanks to
+the <code>netCDF4</code> library), runs as a launchd-managed background agent on
+the publishing server, and logs every run to a dedicated log file. A typical
+healthy run takes 5–10 seconds end to end (most of which is downloading the
+~15 MB of NetCDF data over the public internet).</p>
+
+<h2>What runs on the dashboard side</h2>
+
+<p>The dashboard polls the public <code>lightning.json</code> file every minute on its
+own independent schedule (no coordination with the main 5-min cycle). When new data
+arrives, the dashboard:</p>
+
+<ol>
+  <li>Decodes the JSON.</li>
+  <li>Determines the appropriate banner tier from the count fields:
+      <code>within_5nm > 0</code> → CRITICAL,
+      otherwise <code>within_10nm > 0</code> → VICINITY,
+      otherwise <code>within_50nm > 0</code> → DISTANT,
+      otherwise hide.</li>
+  <li>Renders the banner with the matching color, status text, and pulse animation.</li>
+  <li>Populates the count chips and the last-strike line (distance, bearing, compass cardinal).</li>
+  <li>Starts a once-per-second timer that updates the "X seconds ago" countdown live, so the operator can read freshness without waiting for the next data fetch.</li>
+</ol>
+
+<p>The dashboard does <em>not</em> fetch GLM data directly from AWS — that would
+require every connected viewer to download ~15 MB of NetCDF every minute, parse it
+in JavaScript, and individually compute distance/bearing math. By keeping the
+heavy lifting on the publishing server, all viewers benefit from a single shared
+fetch/computation, and the dashboard stays responsive on modest hardware (4K TV
+displays, phones on cellular).</p>
+
+<h2>End-to-end latency budget</h2>
+
+<p>The full chain from a real lightning strike to a banner update on the briefing
+room TV breaks down like this:</p>
+
+<table class="zebra">
+  <thead><tr><th>Stage</th><th>Typical time</th></tr></thead>
+  <tbody>
+    <tr><td>Strike happens (real-world atmospheric event)</td><td>—</td></tr>
+    <tr><td>GOES-19 GLM detects + NOAA processes the file</td><td>~20 seconds</td></tr>
+    <tr><td>File lands in the public S3 bucket</td><td>~10 seconds</td></tr>
+    <tr><td>Lightning service's next 1-min tick fires</td><td>0–60 seconds (avg 30)</td></tr>
+    <tr><td>Service downloads + parses + pushes</td><td>~5–10 seconds</td></tr>
+    <tr><td>GitHub Pages CDN propagates the new <code>lightning.json</code></td><td>~10–30 seconds</td></tr>
+    <tr><td>Dashboard's next fetch picks it up</td><td>0–60 seconds (avg 30)</td></tr>
+    <tr><td><strong>Total worst-case</strong></td><td><strong>~3 minutes</strong></td></tr>
+    <tr><td><strong>Total typical</strong></td><td><strong>~60–90 seconds</strong></td></tr>
+    <tr><td><strong>Total best-case</strong></td><td><strong>~45 seconds</strong></td></tr>
+  </tbody>
+</table>
+
+<p>For storm cells moving at the typical 25 knots, even worst-case latency means
+the storm has only moved about 1.25 NM closer between detection and display —
+well inside the 5 NM operational ring. The system is fast enough to be
+operationally trustworthy.</p>
+
 <h2>The three tiers</h2>
 <p>The banner color and pulse behavior matches the closest detected strike:</p>
 <table class="zebra">
