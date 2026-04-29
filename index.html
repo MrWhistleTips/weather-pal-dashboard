@@ -3363,7 +3363,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Zulu / Local time</b> — kept current with a 30-second tick. Matches UTC and the system clock of the display.</li>
           <li><b>Fetched Xm ago</b> — time since the last successful fetch of <code>data.json</code> + live METAR. A ⚠ symbol means the most recent METAR fetch failed (hover for details).</li>
           <li><b>Published Xm ago</b> — heartbeat indicator confirming the publishing server is still pushing fresh data. Colored pip: <b>green</b> when the server last exported data &lt;20 min ago, <b>yellow</b> 20–40 min, <b>red (pulsing)</b> &gt;40 min or no data yet. If this goes red, the server probably went idle — check the publishing automation.</li>
-          <li><b>🧪 Demo</b> — 13 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
+          <li><b>🧪 Demo</b> — 15 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
           <li><b>❔ Help</b> — opens this document.</li>
           <li><b>📡 Source</b> — opens the army.mil weather page in a new tab.</li>
         </ul>
@@ -3735,7 +3735,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <section id="help-demo">
         <h2>Demo Mode</h2>
-        <p>The 🧪 Demo dropdown in the navbar replaces live data with 13 preset scenarios — useful for verifying layout or demonstrating how the dashboard reacts to different conditions:</p>
+        <p>The 🧪 Demo dropdown in the navbar replaces live data with 15 preset scenarios — useful for verifying layout or demonstrating how the dashboard reacts to different conditions:</p>
         <ul>
           <li>VFR · All GO</li>
           <li>MVFR · Mixed</li>
@@ -3748,6 +3748,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>Active Wind Advisory</li>
           <li>⚠️ Amendment Issued</li>
           <li>🕐 Upcoming Advisory</li>
+          <li>⚠️ Multiple Advisories Active — exercises the full stack (AWA / TWA / WATCH / WARNING + upcoming)</li>
           <li>⏱️ Improving / Degrading / Mixed Timers</li>
         </ul>
         <p>Demo mode persists in localStorage. A yellow banner + yellow viewport border appear while active. Select "Off" from the dropdown to return to live data.</p>
@@ -7027,7 +7028,7 @@ initCollapsibles();
 updateClock();
 setInterval(updateClock, 30 * 1000);
 // Re-check auto period every minute so the page snaps to the
-// correct forecast at 04:00, 10:50, and 17:00 local.
+// correct forecast at 04:00, 10:50, and 17:15 local.
 setInterval(applyAutoPeriod, 60 * 1000);
 // "Fetched Xm ago" label tick
 setInterval(updateFetchedLabel, 30 * 1000);
