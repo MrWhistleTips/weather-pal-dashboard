@@ -1001,6 +1001,62 @@ operationally trustworthy.</p>
 2 minutes. GLM has ~30 seconds of detection-to-availability latency on the
 satellite side; the dashboard adds another minute or so for the polling cycle.</p>
 
+<h2>Storm motion tracking</h2>
+<p>Beyond just counting strikes, the lightning service tracks coherent
+storm cells over a 30-minute window and projects an <strong>ETA to each
+ring</strong> around KOZR (50 / 25 / 10 / 5 NM and the field itself). When
+a cell is approaching, a third line appears under the banner detail:</p>
+
+<div class="callout">
+  <code>🚨 Cell approaching at 28 kt — ~14 min to 5 NM ring</code> <span class="badge unk">MODERATE</span>
+</div>
+
+<p>The line goes <strong>red with a 🚨 icon</strong> when the projected ETA to
+the 5 NM ring is ≤15 minutes — even when the active banner tier is still
+DISTANT or VICINITY. That way an inbound cell stands out before it crosses
+into the closer rings.</p>
+
+<h3>How it works</h3>
+<p>Five-step pipeline, all running on the publishing server every minute:</p>
+<ol>
+  <li><strong>Cluster</strong> — every flash in the last 30 minutes within 100 NM of KOZR is grouped into "cells" by spatial proximity (any two flashes within 5 NM of each other belong to the same cell). Implemented via a stdlib Union-Find — no external dependencies.</li>
+  <li><strong>Time-bin</strong> — each cell's flashes are sorted into 5-minute time buckets (0–5 min ago, 5–10, 10–15, …, up to 25–30).</li>
+  <li><strong>Centroid trajectory</strong> — for each bucket with at least 2 flashes, compute the average position. The sequence of centroids over time is the cell's track.</li>
+  <li><strong>Linear motion fit</strong> — least-squares regression on the (time, x) and (time, y) centroid coordinates yields a velocity vector (speed in knots, bearing in degrees from true north).</li>
+  <li><strong>Project + intersect</strong> — closed-form quadratic solve for when the projected path enters each ring radius. The smallest positive root is the first crossing time.</li>
+</ol>
+
+<h3>Confidence rating</h3>
+<table class="zebra">
+  <thead><tr><th>Label</th><th>Requires</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge go">HIGH</span></td><td>≥30 flashes, ≥5 time buckets, R² ≥ 0.8</td></tr>
+    <tr><td><span class="badge unk">MODERATE</span></td><td>≥10 flashes, ≥3 buckets, R² ≥ 0.5</td></tr>
+    <tr><td><span class="badge solnogo">LOW</span></td><td>Below MODERATE thresholds — typically not shown</td></tr>
+  </tbody>
+</table>
+
+<p><strong>R²</strong> is the goodness-of-fit of the linear motion model. A perfectly straight track gives R² = 1.0; a noisy or curving track gives lower values. Cells with R² &lt; 0.5 are dropped entirely — better to say nothing than to commit to an unreliable ETA.</p>
+
+<h3>What gets dropped (no prediction shown)</h3>
+<ul>
+  <li><strong>Sparse cells</strong> — fewer than 10 flashes can't be tracked reliably</li>
+  <li><strong>Brief cells</strong> — fewer than 3 time buckets means we don't have enough trajectory points</li>
+  <li><strong>Stationary cells</strong> — speed under 5 knots is treated as noise</li>
+  <li><strong>Receding cells</strong> — when the motion vector points away from KOZR, no warning is needed</li>
+  <li><strong>Beyond 30 min</strong> — even reliable trajectories aren't projected past 30 minutes ahead, because atmospheric dynamics make longer projections unreliable</li>
+</ul>
+
+<h3>Operational caveat</h3>
+<div class="callout warn">
+  <div class="callout-title">Awareness, not prediction-as-fact</div>
+  Real storm cells split, merge, intensify, and dissipate in ways pure
+  linear motion can't capture. The system is conservative on purpose —
+  when in doubt, it stays silent. A wrong ETA is worse than no ETA. Treat
+  the projection as a <em>heads-up</em> that lets you start preparing,
+  not as a guarantee of when conditions will deteriorate.
+</div>
+
 <h2>When the banner hides</h2>
 <p>The banner is <em>only</em> shown when there's been at least one flash within
 50 NM of KOZR in the last 10 minutes. On clear-weather days, the banner is
@@ -1011,7 +1067,8 @@ develops anywhere in the operating area.</p>
 <ul>
   <li><strong>Not a substitute for the duty forecaster's call.</strong> The official 5-NM ops-halt determination is made by the weather forecaster reading the KOZR ASOS automated lightning detector. The dashboard's banner is awareness; their call is authoritative.</li>
   <li><strong>Not 100% detection.</strong> GLM is optical (looks for the 777.4 nm oxygen emission line of lightning). Detection efficiency is high (~70–90%) but flashes deeply embedded in cloud where the optical signal is fully absorbed may be missed.</li>
-  <li><strong>Not a strike map.</strong> Current rendering shows the most-recent strike's distance/bearing only, not all individual strikes plotted on a map. Storm motion can be inferred by watching the banner refresh over time.</li>
+  <li><strong>Not a strike map.</strong> The banner shows the most-recent strike's distance and bearing, plus a motion-derived ETA when available — but doesn't plot every individual strike. For a full map view, use the Windy.com embed at the bottom of the dashboard.</li>
+  <li><strong>Not a guaranteed ETA.</strong> The storm-motion projection assumes linear extrapolation of recent cell motion. Real storms accelerate, decelerate, change direction, and split. The projection is a heads-up, not a hard schedule — verify with the duty forecaster before committing operationally.</li>
 </ul>
 
 <h1 class="page-break">8 · Special features</h1>
@@ -1044,7 +1101,7 @@ ramp. Result is one of:</p>
   <li><strong>Unknown</strong> — sampling failed</li>
 </ul>
 
-<h2>Demo mode (15 scenarios)</h2>
+<h2>Demo mode (19 scenarios)</h2>
 <p>The 🧪 Demo dropdown replaces live data with synthetic conditions for layout
 verification or training people on how the dashboard looks under various weather:</p>
 <div class="cols-2">
@@ -1066,6 +1123,10 @@ verification or training people on how the dashboard looks under various weather
     <li>⏱️ Improving · Trainable in 2h</li>
     <li>⏱️ Degrading · Untrainable in 2h</li>
     <li>⏱️ Mixed · Multiple Timers</li>
+    <li>⚡ Lightning · within 5 NM (CRITICAL)</li>
+    <li>⚡ Lightning · within 10 NM (VICINITY)</li>
+    <li>⚡ Lightning · distant only (INFO)</li>
+    <li>🌩️ Lightning · inbound (storm tracking, ~14-min ETA)</li>
   </ul>
 </div>
 <p>Demo mode persists in localStorage. A yellow banner + viewport border appear while
