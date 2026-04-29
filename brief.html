@@ -1126,10 +1126,20 @@ the worst category across that day's AM/PM/N1 periods. Click to expand a detaile
 
 <h2>KOZR TAF strip (VFR banner)</h2>
 <p>Six colored hourly cells for the next 6 hours of KOZR TAF, expandable to a
-12-hour view. Each cell's color is the FAA flight category of the non-TEMPO/non-PROB
-TAF group in effect at that hour. Falls back to a "RAW TAF" text view when
-aviationweather.gov has no TAF cached and the parser doesn't have enough structure
-to color individual hours.</p>
+12-hour view. Each cell's color is the FAA flight category for that hour. Falls
+back to a "RAW TAF" text view when aviationweather.gov has no TAF cached and the
+parser doesn't have enough structure to color individual hours.</p>
+
+<h3>Worst-case per-hour color</h3>
+<p>The cell color is the <strong>worst of the active main group (BECMG / FM /
+initial) AND any active TEMPO / PROB overlay</strong> at that hour. This matches
+aviationweather.gov's display convention — so a TEMPO TSRA with 2 SM visibility
+shows the hour as IFR even when the main BECMG has 6+ SM and only mid-level
+clouds. Operationally this surfaces hours where conditions COULD drop to IFR/LIFR,
+not just the predominant forecast.</p>
+<p>In the expanded 12-hour view, hours where a TEMPO/PROB overlay is driving the
+worse color get an asterisk on the category label (e.g. <code>IFR*</code>) with a
+hover-tooltip. Severity ranking: VFR &lt; MVFR &lt; IFR &lt; LIFR.</p>
 
 <h2>WAAS / GPS Coverage (IFR banner center)</h2>
 <p>Real-time FAA WAAS coverage classification for KOZR. The publisher fetches the

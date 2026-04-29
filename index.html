@@ -3799,7 +3799,12 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>Full raw TAF text in a monospaced block for reference</li>
           <li>Issue time</li>
         </ul>
-        <p>Uses the aviationweather.gov TAF API's pre-decoded <code>fcsts</code> groups (no raw TAF regex on the client). The non-TEMPO / non-PROB group in effect at each hour drives that hour's category. Widget hides entirely when KOZR has no published TAF (rare — KOZR issues 30-hour military TAFs every 6 hours at 00/06/12/18Z).</p>
+        <p>Uses the aviationweather.gov TAF API's pre-decoded <code>fcsts</code> groups (no raw TAF regex on the client). For KOZR's military TAF, the publisher falls back to NWS tgftp text-product feed and parses BECMG / FROM / TEMPO / PROB groups locally. Widget hides entirely when KOZR has no published TAF (rare — KOZR issues 30-hour military TAFs every 6 hours at 00/06/12/18Z).</p>
+
+        <h3>Worst-case per-hour color</h3>
+        <p>The dot color at each hour is the <b>worst</b> of the active main group (BECMG / FM / initial) AND any active TEMPO / PROB overlay. Matches aviationweather.gov's display convention — so a TEMPO TSRA with 2 SM visibility shows up as IFR even when the main group has 6+ SM and only mid-level clouds. Operationally this means the strip surfaces hours where conditions COULD drop to IFR/LIFR, not just the predominant forecast.</p>
+        <p>In the expanded 12-hour view, hours where a TEMPO/PROB overlay is driving the worse color get an asterisk on the category label (e.g. <code>IFR*</code>) with a hover-tooltip explaining it. Severity ranking: VFR &lt; MVFR &lt; IFR &lt; LIFR.</p>
+
         <p>State persists via <code>localStorage.tafOpen</code> so the TV keeps the expanded view across the nightly 03:00 reload.</p>
       </section>
 
