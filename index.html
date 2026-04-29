@@ -1427,12 +1427,12 @@ body.tv .mef-amd-badge { font-size: 13px; padding: 4px 10px; }
 
 /* Pending advisory banner above the active advisories card */
 .pending-advisory {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 12px;
-  margin-bottom: 4px;
-  border-radius: 4px;
+  gap: 8px;
+  padding: 4px 10px;
+  margin: 0;
+  border-radius: 3px;
   background: rgba(74,144,226,0.10);
   border: 1px solid rgba(74,144,226,0.4);
   border-left: 3px solid var(--mvfr);
@@ -1447,7 +1447,7 @@ body.tv .mef-amd-badge { font-size: 13px; padding: 4px 10px; }
   color: var(--mvfr);
   text-transform: uppercase;
 }
-.pending-advisory-text { color: var(--text); flex: 1; }
+.pending-advisory-text { color: var(--text); }
 .pending-advisory-time {
   font-family: 'JetBrains Mono', monospace;
   color: var(--text-dim);
@@ -2349,13 +2349,35 @@ body.tv .lightning-count-chip { font-size: 14px; padding: 4px 9px; }
 #advisories-card::before, #advisories-card::after {
   border-color: var(--warning);
 }
-.advisory {
-  display: flex; align-items: center; gap: 10px;
+/* Advisories card: layout overrides so the active advisories flow
+   inline next to the "⚠️ Active Advisories" label (same row), instead
+   of stacking under the header. Saves a row of vertical space at the
+   top of the dashboard during active weather. */
+#advisories-card .card-header {
+  flex-wrap: wrap;
+  gap: 10px;
   padding: 6px 10px;
-  margin-bottom: 4px;
+}
+#advisories-card .card-title { flex: 0 0 auto; }
+#advisories-card .card-title::after { display: none; }   /* drop the trailing tan accent line so the title hugs the advisory */
+#advisories-card .card-subtitle { margin-left: auto; }   /* push count chip to the right edge */
+.advisories-inline {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.advisory {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 8px;
+  margin: 0;                                              /* was 4px bottom — no longer block-stacked */
   border-radius: 3px;
   border-left: 3px solid var(--warning);
   background: rgba(230,165,58,0.08);
+  max-width: 100%;
 }
 .advisory.red {
   border-left-color: var(--nogo);
@@ -3339,13 +3361,17 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div class="lightning-counts" id="lightning-counts"></div>
   </div>
 
-  <!-- Active Advisories (shown above both sections when active) -->
+  <!-- Active Advisories (shown above both sections when active).
+       Layout note: the advisories list lives inline within the card
+       header — same row as the "⚠️ Active Advisories" label — so a
+       single active advisory takes one row instead of two. Multiple
+       advisories wrap to additional rows in the same header. -->
   <div id="advisories-card" class="card" style="display:none; margin-bottom:4px;">
     <div class="card-header">
       <div class="card-title"><span class="card-title-icon">⚠️</span>Active Advisories</div>
+      <div class="advisories-inline" id="advisories-body"></div>
       <div class="card-subtitle" id="advisories-count">0 active</div>
     </div>
-    <div class="card-body" id="advisories-body"></div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════ -->
