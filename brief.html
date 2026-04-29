@@ -92,6 +92,12 @@ section + section { page-break-inside: avoid; }
   font-size: 10pt;
   color: #555;
   line-height: 1.7;
+  /* Wrap as an inline-block so the credits line up vertically as a single
+     left-aligned column, and the whole block centers within the cover —
+     instead of each line independently centering (which makes lines with
+     long values like the GitHub URL look visually offset right). */
+  display: inline-block;
+  text-align: left;
 }
 .cover .meta .label {
   display: inline-block;
