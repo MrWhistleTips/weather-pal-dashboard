@@ -2195,6 +2195,118 @@ body.tv .training-panel-solo-reason { font-size: 11px; }
   word-break: break-all;
 }
 
+/* LIGHTNING BANNER — three tiers based on closest-strike distance.
+   Always sits directly above the Active Advisories card. Hidden when
+   no flashes detected within the publisher's lookback window. */
+.lightning-banner {
+  display: none;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  margin: 0 0 4px 0;
+  border: 2px solid var(--warning);
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(230,165,58,0.18), rgba(230,165,58,0.06));
+  font-family: 'Rajdhani', sans-serif;
+}
+.lightning-banner.show { display: flex; }
+.lightning-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.lightning-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.lightning-status {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.lightning-detail {
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  color: rgba(255,255,255,0.78);
+  letter-spacing: 0.3px;
+}
+.lightning-counts {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.lightning-count-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: rgba(0,0,0,0.30);
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+.lightning-count-chip b { color: #fff; font-weight: 700; }
+
+/* TIER 1 — within 5 NM. Operations halted. Pulsing red border. */
+.lightning-banner.tier-critical {
+  border-color: var(--ifr);
+  background: linear-gradient(90deg, rgba(214,69,69,0.32), rgba(214,69,69,0.10));
+  position: relative;
+  overflow: hidden;
+}
+.lightning-banner.tier-critical::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 28px rgba(214,69,69,0.55);
+  opacity: 0;
+  animation: lightningPulse 1.4s ease-in-out infinite;
+  will-change: opacity;
+}
+.lightning-banner.tier-critical .lightning-status { color: #ff6b6b; }
+@keyframes lightningPulse {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+
+/* TIER 2 — within 10 NM. Vicinity. Static amber glow. */
+.lightning-banner.tier-warning {
+  border-color: var(--warning);
+  box-shadow: 0 0 14px rgba(230,165,58,0.30);
+}
+.lightning-banner.tier-warning .lightning-status { color: var(--warning); }
+
+/* TIER 3 — distant only (25–50 NM). Subtle yellow. */
+.lightning-banner.tier-info {
+  border-color: rgba(230,165,58,0.5);
+  background: linear-gradient(90deg, rgba(230,165,58,0.10), rgba(230,165,58,0.03));
+  padding: 7px 12px;
+}
+.lightning-banner.tier-info .lightning-status {
+  font-size: 13px;
+  color: rgba(230,165,58,0.95);
+}
+.lightning-banner.tier-info .lightning-icon { font-size: 20px; }
+
+/* TV mode bumps proportional to other sections */
+body.tv .lightning-banner { padding: 14px 22px; gap: 18px; }
+body.tv .lightning-status { font-size: 22px; }
+body.tv .lightning-detail { font-size: 15px; }
+body.tv .lightning-icon { font-size: 38px; }
+body.tv .lightning-banner.tier-info .lightning-status { font-size: 17px; }
+body.tv .lightning-count-chip { font-size: 14px; padding: 4px 9px; }
+
+/* Mobile: stack the counts under the content */
+@media (max-width: 768px) {
+  .lightning-banner { flex-wrap: wrap; }
+  .lightning-counts { flex-basis: 100%; }
+}
+
 /* ADVISORIES — pulsing alert glow */
 #advisories-card {
   border-color: var(--warning);
@@ -3153,6 +3265,18 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div class="flw-strip-cells" id="flw-body"></div>
   </div>
 
+  <!-- Lightning banner (only shown when GLM detects flashes within 50 NM
+       of KOZR in the last 10 min). Three tiers: critical <5 NM (red,
+       pulsing), warning <10 NM (amber), info 25–50 NM (subtle yellow). -->
+  <div id="lightning-banner" class="lightning-banner">
+    <div class="lightning-icon">⚡</div>
+    <div class="lightning-content">
+      <div class="lightning-status" id="lightning-status">—</div>
+      <div class="lightning-detail" id="lightning-detail">—</div>
+    </div>
+    <div class="lightning-counts" id="lightning-counts"></div>
+  </div>
+
   <!-- Active Advisories (shown above both sections when active) -->
   <div id="advisories-card" class="card" style="display:none; margin-bottom:4px;">
     <div class="card-header">
@@ -3333,6 +3457,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <a href="#help-solar">Solar / Lunar Strip</a>
         <a href="#help-metar">METAR Strip</a>
         <a href="#help-flw">Flight Level Winds</a>
+        <a href="#help-lightning">Lightning Banner</a>
         <a href="#help-advisories">Active &amp; Upcoming Advisories</a>
         <a href="#help-vfr">VFR Operations</a>
         <a href="#help-7day">7-Day Outlook</a>
@@ -3365,7 +3490,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Zulu / Local time</b> — kept current with a 30-second tick. Matches UTC and the system clock of the display.</li>
           <li><b>Fetched Xm ago</b> — time since the last successful fetch of <code>data.json</code> + live METAR. A ⚠ symbol means the most recent METAR fetch failed (hover for details).</li>
           <li><b>Published Xm ago</b> — heartbeat indicator confirming the publishing server is still pushing fresh data. Publisher runs every 5 min, so thresholds are: <b>green</b> &lt;10 min, <b>yellow</b> 10–20 min, <b>red (pulsing)</b> &gt;20 min or no data yet. If this goes red, the server probably went idle — check the publishing automation.</li>
-          <li><b>🧪 Demo</b> — 15 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
+          <li><b>🧪 Demo</b> — 18 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
           <li><b>❔ Help</b> — opens this document.</li>
           <li><b>📡 Source</b> — opens the army.mil weather page in a new tab.</li>
         </ul>
@@ -3467,6 +3592,18 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>Temp text turns <span style="color:var(--mvfr);font-weight:700;">blue</span> when temp ≤ 4°C</li>
           <li>Blue <span class="help-badge blue">POSS ICE</span> badge appended when temp ≤ 4°C (liquid water + cold = icing risk)</li>
         </ul>
+      </section>
+
+      <section id="help-lightning">
+        <h2>Lightning Banner</h2>
+        <p>Sits above the Active Advisories card whenever the publisher's GOES-19 lightning fetcher detects flashes within 50 NM of KOZR in the past 10 minutes. Three tiers based on the closest strike:</p>
+        <ul>
+          <li><b>⚡ Within 5 NM</b> — <span class="help-badge red">CRITICAL</span> · pulsing red border. Matches Cairns's operational rule that all flight operations halt when lightning is within 5 NM of the field.</li>
+          <li><b>⚡ Within 10 NM</b> — <span class="help-badge amber">VICINITY</span> · static amber glow. Watch carefully; conditions are deteriorating.</li>
+          <li><b>⚡ Within 25–50 NM only</b> — <span class="help-badge yellow">DISTANT</span> · subtle yellow strip. Storm cells are around but not yet in the operating area.</li>
+        </ul>
+        <p>Each banner shows the last strike's distance, bearing, and a <b>"X seconds/minutes ago"</b> countdown that ticks every second so you know how recently lightning was detected. Count chips on the right (e.g. <code>4 ≤5NM · 11 ≤10NM</code>) show flash totals at each radius over the publisher's lookback window.</p>
+        <p>Data source: <b>GOES-19 Geostationary Lightning Mapper</b> via NOAA's public AWS Open Data bucket. Server-side fetch every publisher tick (~5 min) — no per-viewer downloads or browser parsing. Latency from strike to banner: typically 30–90 seconds.</p>
       </section>
 
       <section id="help-advisories">
@@ -3737,7 +3874,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <section id="help-demo">
         <h2>Demo Mode</h2>
-        <p>The 🧪 Demo dropdown in the navbar replaces live data with 15 preset scenarios — useful for verifying layout or demonstrating how the dashboard reacts to different conditions:</p>
+        <p>The 🧪 Demo dropdown in the navbar replaces live data with 18 preset scenarios — useful for verifying layout or demonstrating how the dashboard reacts to different conditions:</p>
         <ul>
           <li>VFR · All GO</li>
           <li>MVFR · Mixed</li>
@@ -3751,6 +3888,9 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>⚠️ Amendment Issued</li>
           <li>🕐 Upcoming Advisory</li>
           <li>⚠️ Multiple Advisories Active — exercises the full stack (AWA / TWA / WATCH / WARNING + upcoming)</li>
+          <li>⚡ Lightning · within 5 NM — Tier 1 critical (operations halted)</li>
+          <li>⚡ Lightning · within 10 NM — Tier 2 vicinity warning</li>
+          <li>⚡ Lightning · distant only — Tier 3 informational</li>
           <li>⏱️ Improving / Degrading / Mixed Timers</li>
         </ul>
         <p>Demo mode persists in localStorage. A yellow banner + yellow viewport border appear while active. Select "Off" from the dropdown to return to live data.</p>
@@ -3958,6 +4098,30 @@ const DEMO_SCENARIOS = {
       };
     },
     advisory: false,
+  },
+  'lightning-critical': {
+    name: '⚡ Lightning · within 5 NM',
+    desc: 'Critical tier — lightning inside the 5 NM ops-halt radius',
+    metarOpts: ({ flt: 'IFR', wdir: 250, wspd: 22, wgst: 32, visib: '3', clouds: [{cover:'BKN',base:1200}], wxString: 'TSRA' }),
+    areaText: '25022G32KT 3SM TSRA BKN012 OVC025',
+    advisory: false,
+    lightning: 'critical',
+  },
+  'lightning-warning': {
+    name: '⚡ Lightning · within 10 NM',
+    desc: 'Vicinity tier — lightning between 5 and 10 NM',
+    metarOpts: ({ flt: 'MVFR', wdir: 240, wspd: 14, wgst: 22, visib: '5', clouds: [{cover:'BKN',base:2500}] }),
+    areaText: '24014G22KT 5SM BKN025',
+    advisory: false,
+    lightning: 'warning',
+  },
+  'lightning-distant': {
+    name: '⚡ Lightning · distant only',
+    desc: 'Info tier — lightning detected 25–50 NM out, approaching weather watch',
+    metarOpts: ({ flt: 'VFR', wdir: 220, wspd: 10, visib: '10+', clouds: [{cover:'SCT',base:5000}] }),
+    areaText: '22010KT 7SM SCT050 BKN150',
+    advisory: false,
+    lightning: 'distant',
   },
 };
 
@@ -4289,8 +4453,42 @@ function buildDemoData(key) {
     }
   });
 
+  // Synthetic lightning summary for the three lightning demo scenarios.
+  // Real publisher emits this from GOES-19 GLM data; here we build a
+  // shape-compatible object with sensible counts for each tier.
+  let lightning = null;
+  if (s.lightning) {
+    const nowIso = new Date(Date.now() - 90 * 1000).toISOString();   // "90s ago"
+    if (s.lightning === 'critical') {
+      lightning = {
+        fetched_at: new Date().toISOString(),
+        lookback_min: 10,
+        files_scanned: 30,
+        counts: { within_5nm: 4, within_10nm: 11, within_25nm: 38, within_50nm: 72 },
+        last_strike: { time_iso: nowIso, distance_nm: 2.3, bearing_deg: 287 },
+      };
+    } else if (s.lightning === 'warning') {
+      lightning = {
+        fetched_at: new Date().toISOString(),
+        lookback_min: 10,
+        files_scanned: 30,
+        counts: { within_5nm: 0, within_10nm: 6, within_25nm: 24, within_50nm: 51 },
+        last_strike: { time_iso: nowIso, distance_nm: 7.4, bearing_deg: 295 },
+      };
+    } else {  // 'distant'
+      lightning = {
+        fetched_at: new Date().toISOString(),
+        lookback_min: 10,
+        files_scanned: 30,
+        counts: { within_5nm: 0, within_10nm: 0, within_25nm: 8, within_50nm: 47 },
+        last_strike: { time_iso: nowIso, distance_nm: 31.2, bearing_deg: 305 },
+      };
+    }
+  }
+
   return {
     metar: metar,
+    lightning: lightning,
     forecasts: [
       makeForecast('AM', '1200Z-1800Z'),
       makeForecast('PM', '1800Z-0030Z'),
@@ -5520,6 +5718,101 @@ function advisoryAffectsIFR(advisory) {
   if (!advisory || !advisory.criteria) return false;
   const t = String(advisory.criteria).toUpperCase();
   return /\bWIND|GUST|CEIL|VIS|FOG|FG|BR|SHRA|TS|ICING|FRZG|WIND SHEAR|LLWS\b/.test(t);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LIGHTNING BANNER — fed by data.lightning (GOES-19 GLM via the
+   Mac mini publisher's Python preprocessor). Three tiers based on
+   closest-strike distance. Banner hidden when no flashes within the
+   publisher's lookback window.
+   ───────────────────────────────────────────────────────────── */
+function renderLightning() {
+  const banner = document.getElementById('lightning-banner');
+  const status = document.getElementById('lightning-status');
+  const detail = document.getElementById('lightning-detail');
+  const countsEl = document.getElementById('lightning-counts');
+  if (!banner || !status || !detail || !countsEl) return;
+
+  const lt = DATA && DATA.lightning;
+  // Hide entirely when missing or zero activity within 50 NM
+  if (!lt || !lt.counts || (lt.counts.within_50nm || 0) === 0) {
+    banner.classList.remove('show', 'tier-critical', 'tier-warning', 'tier-info');
+    return;
+  }
+
+  // Determine tier
+  const c = lt.counts;
+  let tier;
+  if ((c.within_5nm || 0) > 0)        tier = 'critical';
+  else if ((c.within_10nm || 0) > 0)  tier = 'warning';
+  else                                 tier = 'info';
+
+  // Status line
+  let statusText;
+  if (tier === 'critical') {
+    statusText = `⚡ Lightning within 5 NM — Operations Halted`;
+  } else if (tier === 'warning') {
+    statusText = `⚡ Lightning in vicinity (within 10 NM)`;
+  } else {
+    statusText = `⚡ Distant lightning detected`;
+  }
+  status.textContent = statusText;
+
+  // Detail line: last strike + countdown (countdown updates separately)
+  detail.dataset.lastStrikeIso = (lt.last_strike && lt.last_strike.time_iso) || '';
+  detail.dataset.lastDistance  = lt.last_strike ? String(lt.last_strike.distance_nm) : '';
+  detail.dataset.lastBearing   = lt.last_strike ? String(lt.last_strike.bearing_deg) : '';
+  updateLightningDetail();   // populate immediately
+
+  // Count chips — show different combinations per tier to keep it readable
+  const chips = [];
+  if (tier === 'critical') {
+    if (c.within_5nm)  chips.push(`<span class="lightning-count-chip"><b>${c.within_5nm}</b> ≤5NM</span>`);
+    if (c.within_10nm) chips.push(`<span class="lightning-count-chip"><b>${c.within_10nm}</b> ≤10NM</span>`);
+    if (c.within_25nm) chips.push(`<span class="lightning-count-chip"><b>${c.within_25nm}</b> ≤25NM</span>`);
+    if (c.within_50nm) chips.push(`<span class="lightning-count-chip"><b>${c.within_50nm}</b> ≤50NM</span>`);
+  } else if (tier === 'warning') {
+    if (c.within_10nm) chips.push(`<span class="lightning-count-chip"><b>${c.within_10nm}</b> ≤10NM</span>`);
+    if (c.within_25nm) chips.push(`<span class="lightning-count-chip"><b>${c.within_25nm}</b> ≤25NM</span>`);
+    if (c.within_50nm) chips.push(`<span class="lightning-count-chip"><b>${c.within_50nm}</b> ≤50NM</span>`);
+  } else {
+    if (c.within_25nm) chips.push(`<span class="lightning-count-chip"><b>${c.within_25nm}</b> ≤25NM</span>`);
+    if (c.within_50nm) chips.push(`<span class="lightning-count-chip"><b>${c.within_50nm}</b> ≤50NM</span>`);
+  }
+  countsEl.innerHTML = chips.join('');
+
+  banner.classList.remove('tier-critical', 'tier-warning', 'tier-info');
+  banner.classList.add('show', 'tier-' + tier);
+}
+
+/// Refresh the "Last strike: X NM @ Y° · Zs ago" line. Called on
+/// initial render and once per second so the countdown stays accurate
+/// without needing the rest of the dashboard to re-render.
+function updateLightningDetail() {
+  const detail = document.getElementById('lightning-detail');
+  if (!detail) return;
+  const iso = detail.dataset.lastStrikeIso;
+  const dist = detail.dataset.lastDistance;
+  const brg  = detail.dataset.lastBearing;
+  if (!iso || !dist) {
+    detail.textContent = `${(DATA && DATA.lightning && DATA.lightning.counts && DATA.lightning.counts.within_50nm) || 0} flashes within 50 NM in last ${(DATA && DATA.lightning && DATA.lightning.lookback_min) || 10} min`;
+    return;
+  }
+  const ts = Date.parse(iso);
+  const ageSec = Math.max(0, Math.round((Date.now() - ts) / 1000));
+  const ago = ageSec < 60 ? `${ageSec}s ago`
+            : ageSec < 3600 ? `${Math.floor(ageSec / 60)}m ${ageSec % 60}s ago`
+            : `${Math.floor(ageSec / 3600)}h ${Math.floor((ageSec % 3600) / 60)}m ago`;
+  const compass = bearingToCompass(parseInt(brg, 10));
+  const total50 = (DATA && DATA.lightning && DATA.lightning.counts && DATA.lightning.counts.within_50nm) || 0;
+  const lookback = (DATA && DATA.lightning && DATA.lightning.lookback_min) || 10;
+  detail.textContent = `Last strike: ${dist} NM @ ${brg}° (${compass}) · ${ago} · ${total50} flashes within 50 NM in last ${lookback} min`;
+}
+
+function bearingToCompass(deg) {
+  if (isNaN(deg)) return '';
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(((deg % 360) / 22.5)) % 16];
 }
 
 function renderAdvisories(forecast) {
@@ -6804,6 +7097,7 @@ function renderAll() {
   }
   renderTraining(metar, forecast);
   renderMETAR(metar);
+  renderLightning();
   renderAdvisories(forecast);
   renderAreas(forecast);
   renderAerodromes(forecast);
@@ -7072,6 +7366,11 @@ setInterval(updateClock, 30 * 1000);
 setInterval(applyAutoPeriod, 60 * 1000);
 // "Fetched Xm ago" label tick
 setInterval(updateFetchedLabel, 30 * 1000);
+// Lightning "X ago" countdown tick — runs every second so the operator
+// can read time-since-last-strike at a glance during fast-evolving cells.
+// Only updates the detail text; the banner tier doesn't change between
+// data refreshes.
+setInterval(updateLightningDetail, 1000);
 // Re-render the TAF strip every minute so the hour labels stay in sync
 // as the UTC clock advances — without this, the strip would only update
 // on the 5-min data cycle and could show stale hours for up to 5 min
