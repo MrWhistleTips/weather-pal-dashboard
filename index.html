@@ -4709,6 +4709,13 @@ function setDemoScenario(key) {
   } else {
     localStorage.removeItem('demoScenario');
     document.body.classList.remove('demo');
+    // Lightning lives on its own fetch loop separate from data.json,
+    // so loadData() alone won't refresh it. Clear the demo's synthetic
+    // payload immediately AND trigger a fresh fetch from lightning.json
+    // — otherwise demo lightning state (banner / per-panel pips) would
+    // linger until the next 1-min loadLightning tick.
+    LIGHTNING_DATA = null;
+    loadLightning();
   }
   renderDemoMenu();
   loadData();
