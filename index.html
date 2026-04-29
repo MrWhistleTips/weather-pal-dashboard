@@ -2264,6 +2264,25 @@ body.tv .training-panel-solo-reason { font-size: 11px; }
   font-family: 'Rajdhani', sans-serif;
 }
 .lightning-banner.show { display: flex; }
+/* Experimental badge — sits at the far right of the lightning banner to
+   signal this feature is still in active development (counts, motion
+   detection, per-stagefield pips). Subdued styling so it never looks
+   like a count chip or alert. */
+.lightning-experimental {
+  flex-shrink: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px dashed rgba(192,168,120,0.55);
+  color: rgba(192,168,120,0.85);
+  background: rgba(192,168,120,0.06);
+  text-transform: uppercase;
+  cursor: help;
+}
+body.tv .lightning-experimental { font-size: 12px; padding: 4px 10px; letter-spacing: 2px; }
 .lightning-icon {
   font-size: 28px;
   flex-shrink: 0;
@@ -3413,6 +3432,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <div class="lightning-approach" id="lightning-approach" style="display:none;"></div>
     </div>
     <div class="lightning-counts" id="lightning-counts"></div>
+    <div class="lightning-experimental" title="This feature is in active development. Counts and movement detection are experimental.">EXPERIMENTAL</div>
   </div>
 
   <!-- Active Advisories (shown above both sections when active).
