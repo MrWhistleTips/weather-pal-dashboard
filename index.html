@@ -2264,6 +2264,22 @@ body.tv .training-panel-solo-reason { font-size: 11px; }
   font-family: 'Rajdhani', sans-serif;
 }
 .lightning-banner.show { display: flex; }
+.lightning-banner { cursor: pointer; }
+.lightning-chevron {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--tan);
+  opacity: 0.7;
+  transition: transform 0.18s ease;
+  margin-left: 4px;
+}
+.lightning-banner.collapsed .lightning-chevron { transform: rotate(-90deg); }
+.lightning-banner.collapsed .lightning-detail,
+.lightning-banner.collapsed .lightning-approach,
+.lightning-banner.collapsed .lightning-counts,
+.lightning-banner.collapsed .lightning-experimental {
+  display: none !important;
+}
 /* Experimental badge — sits at the far right of the lightning banner to
    signal this feature is still in active development (counts, motion
    detection, per-stagefield pips). Subdued styling so it never looks
@@ -3421,7 +3437,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- Lightning banner (only shown when GLM detects flashes within 50 NM
        of KOZR in the last 10 min). Three tiers: critical <5 NM (red,
        pulsing), warning <10 NM (amber), info 25–50 NM (subtle yellow). -->
-  <div id="lightning-banner" class="lightning-banner">
+  <div id="lightning-banner" class="lightning-banner collapsed" onclick="toggleLightningBanner()" title="Click to expand / collapse">
     <div class="lightning-icon">⚡</div>
     <div class="lightning-content">
       <div class="lightning-status" id="lightning-status">—</div>
@@ -3433,6 +3449,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     </div>
     <div class="lightning-counts" id="lightning-counts"></div>
     <div class="lightning-experimental" title="This feature is in active development. Counts and movement detection are experimental.">EXPERIMENTAL</div>
+    <div class="lightning-chevron" aria-hidden="true">▾</div>
   </div>
 
   <!-- Active Advisories (shown above both sections when active).
@@ -6816,6 +6833,28 @@ function renderOldWeatherWarning(forecast) {
   document.body.classList.add('old-weather');
 }
 
+/// Lightning banner expand/collapse. Default state is collapsed —
+/// shows just the icon + status text + chevron. Expanded state reveals
+/// the detail line, approach line, count chips, and experimental badge.
+/// Persisted in localStorage so the TV remembers operator preference
+/// across the nightly 03:00 reload.
+function toggleLightningBanner() {
+  const banner = document.getElementById('lightning-banner');
+  if (!banner) return;
+  const willCollapse = !banner.classList.contains('collapsed');
+  banner.classList.toggle('collapsed', willCollapse);
+  localStorage.setItem('lightningBannerCollapsed', willCollapse ? '1' : '0');
+}
+
+function applyLightningBannerCollapsedState() {
+  const banner = document.getElementById('lightning-banner');
+  if (!banner) return;
+  // Default to collapsed when no preference has been saved.
+  const stored = localStorage.getItem('lightningBannerCollapsed');
+  const collapsed = stored === null ? true : stored === '1';
+  banner.classList.toggle('collapsed', collapsed);
+}
+
 function toggleSevenDay() {
   const toggle = document.getElementById('sevenday-toggle');
   const detail = document.getElementById('sevenday-detail');
@@ -7831,6 +7870,7 @@ setInterval(checkForDashboardUpdate, 5 * 60 * 1000);
 
 setupPeriodButtons();
 initCollapsibles();
+applyLightningBannerCollapsedState();
 updateClock();
 setInterval(updateClock, 30 * 1000);
 // Re-check auto period every minute so the page snaps to the
