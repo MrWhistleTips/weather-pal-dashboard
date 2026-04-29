@@ -2894,7 +2894,28 @@ body.demo .demo-menu-btn {
   border-radius: 4px;
   z-index: 200;
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-  overflow: hidden;
+  /* Cap height to ~80% of the viewport and allow vertical scrolling so
+     long scenario lists (currently 19 entries — likely to grow) don't
+     overflow off the bottom of small screens or short windows. */
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Subtle scrollbar styling so it matches the OD-green chrome */
+  scrollbar-width: thin;
+  scrollbar-color: var(--od-border) transparent;
+}
+.demo-menu-list::-webkit-scrollbar {
+  width: 8px;
+}
+.demo-menu-list::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.20);
+}
+.demo-menu-list::-webkit-scrollbar-thumb {
+  background: var(--od-border);
+  border-radius: 4px;
+}
+.demo-menu-list::-webkit-scrollbar-thumb:hover {
+  background: var(--tan);
 }
 .demo-menu.open .demo-menu-list { display: block; }
 .demo-menu-item {
