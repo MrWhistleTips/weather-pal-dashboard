@@ -1555,6 +1555,37 @@ body.tv .svfr-gauge-tier-label { font-size: 13px; }
   animation: pipPulse 2s ease-in-out infinite;
   cursor: help;
 }
+/* Lightning pip — top-LEFT corner. Appears when GOES-19 detects a flash
+   within 5 NM of THIS panel's station (Cairns or one of the four
+   stagefields). Uses red palette to distinguish from the amber advisory
+   pip on the opposite corner. */
+.training-panel-lightning-pip {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(214,69,69,0.30);
+  border: 1.5px solid var(--ifr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: help;
+  z-index: 2;
+}
+.training-panel-lightning-pip::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(214,69,69,0.85);
+  opacity: 0;
+  animation: glowOpacityPulse 1.4s ease-in-out infinite;
+  will-change: opacity;
+}
+body.tv .training-panel-lightning-pip { width: 22px; height: 22px; font-size: 12px; }
 /* pipPulse replacement — every element that was animating box-shadow
    via @keyframes pipPulse now uses an ::after overlay with pre-baked
    shadow and an opacity-only animation. The original @keyframes
@@ -3578,7 +3609,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Zulu / Local time</b> — kept current with a 30-second tick. Matches UTC and the system clock of the display.</li>
           <li><b>Published Xm ago</b> — heartbeat indicator confirming the publishing server is still pushing fresh data. Publisher runs every 5 min, so thresholds are: <b>green</b> &lt;10 min, <b>yellow</b> 10–20 min, <b>red (pulsing)</b> &gt;20 min or no data yet. If this goes red, the server probably went idle — check the publishing automation.</li>
           <li><b>⚡ Detector</b> — separate health pip for the standalone lightning service (which runs every minute, independent of the main 5-min publisher). Thresholds: <b>green</b> &lt;2 min, <b>yellow</b> 2–5 min, <b>red (pulsing)</b> &gt;5 min. Only appears after the first successful <code>lightning.json</code> fetch — hidden on initial page load. Hover for last-fetch age + flash count within 50 NM.</li>
-          <li><b>🧪 Demo</b> — 19 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
+          <li><b>🧪 Demo</b> — 20 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
           <li><b>❔ Help</b> — opens this document.</li>
           <li><b>📡 Source</b> — opens the army.mil weather page in a new tab.</li>
         </ul>
@@ -3674,6 +3705,10 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>⚡ Within 25–50 NM only</b> — <span class="help-badge yellow">DISTANT</span> · subtle yellow strip. Storm cells are around but not yet in the operating area.</li>
         </ul>
         <p>Each banner shows the last strike's distance, bearing, and a <b>"X seconds/minutes ago"</b> countdown that ticks every second so you know how recently lightning was detected. Count chips on the right (e.g. <code>4 ≤5NM · 11 ≤10NM</code>) show flash totals at each radius over the publisher's lookback window.</p>
+
+        <h3>Per-stagefield ⚡ pips</h3>
+        <p>The banner is KOZR-centric. But the four stagefields (Allen ~4 NM SE, Toth ~8 NM ESE, Highbluff ~7 NM S, Lucas ~17 NM W) can have lightning in <i>their</i> 5 NM ring while KOZR's is clear — especially for Lucas, since it's far enough out west that storm cells in the western training area can hit Lucas without ever entering the KOZR ring.</p>
+        <p>To surface this, each Training Status panel (Cairns + 4 stagefields) gets its own small <b>⚡ pip</b> in the top-left corner whenever GOES-19 detects a flash within 5 NM of <i>that station</i>. Hovers show the last strike's distance and bearing relative to the panel's station. The publisher computes per-stagefield counts in a single pass through the same flash data — no extra fetches.</p>
 
         <h3>Storm motion / approach prediction</h3>
         <p>When the lightning service detects a coherent storm cell with enough flashes to track its motion, it adds an <b>approach line</b> below the detail line:</p>
@@ -3953,7 +3988,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <section id="help-demo">
         <h2>Demo Mode</h2>
-        <p>The 🧪 Demo dropdown in the navbar replaces live data with 19 preset scenarios — useful for verifying layout or demonstrating how the dashboard reacts to different conditions:</p>
+        <p>The 🧪 Demo dropdown in the navbar replaces live data with 20 preset scenarios — useful for verifying layout or demonstrating how the dashboard reacts to different conditions:</p>
         <ul>
           <li>VFR · All GO</li>
           <li>MVFR · Mixed</li>
@@ -3971,6 +4006,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>⚡ Lightning · within 10 NM — Tier 2 vicinity warning</li>
           <li>⚡ Lightning · distant only — Tier 3 informational</li>
           <li>🌩️ Lightning · inbound (storm tracking) — distant + cell approaching at 28 kt with ~14 min ETA to 5 NM ring (imminent)</li>
+          <li>⚡ Lightning · at a stagefield — strike within 5 NM of Lucas only (KOZR clear), exercises the per-panel ⚡ pip</li>
           <li>⏱️ Improving / Degrading / Mixed Timers</li>
         </ul>
         <p>Demo mode persists in localStorage. A yellow banner + yellow viewport border appear while active. Select "Off" from the dropdown to return to live data.</p>
@@ -4201,6 +4237,14 @@ const DEMO_SCENARIOS = {
     areaText: '28014KT 8SM BKN035',
     advisory: false,
     lightning: 'inbound',
+  },
+  'lightning-stagefield': {
+    name: '⚡ Lightning · at a stagefield',
+    desc: 'Strike within 5 NM of Lucas (Cairns clear) — exercises the per-panel ⚡ pip',
+    metarOpts: ({ flt: 'VFR', wdir: 270, wspd: 12, visib: '10+', clouds: [{cover:'BKN',base:4500}] }),
+    areaText: '27012KT 7SM BKN045',
+    advisory: false,
+    lightning: 'stagefield',
   },
 };
 
@@ -4561,6 +4605,24 @@ function buildDemoData(key) {
         files_scanned: 30,
         counts: { within_5nm: 0, within_10nm: 0, within_25nm: 8, within_50nm: 47 },
         last_strike: { time_iso: nowIso, distance_nm: 31.2, bearing_deg: 305 },
+      };
+    } else if (s.lightning === 'stagefield') {
+      // Strike at Lucas only — Cairns and the other 3 stagefields are clear,
+      // exercises the per-panel ⚡ pip without triggering the main banner's
+      // CRITICAL tier.
+      lightning = {
+        fetched_at: new Date().toISOString(),
+        lookback_min: 10,
+        files_scanned: 30,
+        counts: { within_5nm: 0, within_10nm: 0, within_25nm: 0, within_50nm: 4 },
+        last_strike: { time_iso: nowIso, distance_nm: 16.8, bearing_deg: 269 },
+        stagefields: {
+          allen:     { counts: { within_5nm: 0, within_10nm: 0, within_25nm: 0, within_50nm: 0 }, last_strike: null },
+          toth:      { counts: { within_5nm: 0, within_10nm: 0, within_25nm: 0, within_50nm: 0 }, last_strike: null },
+          highbluff: { counts: { within_5nm: 0, within_10nm: 0, within_25nm: 0, within_50nm: 0 }, last_strike: null },
+          lucas:     { counts: { within_5nm: 2, within_10nm: 4, within_25nm: 4, within_50nm: 4 },
+                       last_strike: { time_iso: nowIso, distance_nm: 2.1, bearing_deg: 280 } },
+        },
       };
     } else if (s.lightning === 'inbound') {
       // Storm cell ~28 NM out, approaching at 28 kt — projected to enter
@@ -5461,7 +5523,14 @@ function renderTraining(metar, forecast) {
 
   const cairnsLanding = landingHTML('Cairns', forecast);
   const isFallback = !!(metar && metar._isForecastFallback);
-  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus, isFallback);
+  // Per-station lightning lookups for the panel ⚡ pip — all read from
+  // LIGHTNING_DATA which is populated by the standalone lightning service.
+  // Cairns reads from the top-level counts/last_strike (KOZR-centric);
+  // each stagefield reads from LIGHTNING_DATA.stagefields[name].
+  const cairnsLightning = (LIGHTNING_DATA && LIGHTNING_DATA.counts)
+    ? { within_5nm: LIGHTNING_DATA.counts.within_5nm || 0, last_strike: LIGHTNING_DATA.last_strike }
+    : null;
+  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus, isFallback, cairnsLightning);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
@@ -5486,7 +5555,15 @@ function renderTraining(metar, forecast) {
     // Advisory pip — true if any active advisory affects this area
     const affectingAdv = activeAdvs.find(a => advisoryAffectsArea(a, sf.area));
     const landing = landingHTML(sf.name, forecast);
-    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, null);
+    // Per-stagefield lightning lookup
+    const sfKey = sf.name.toLowerCase();
+    const sfLightning = (LIGHTNING_DATA && LIGHTNING_DATA.stagefields && LIGHTNING_DATA.stagefields[sfKey])
+      ? {
+          within_5nm: LIGHTNING_DATA.stagefields[sfKey].counts.within_5nm || 0,
+          last_strike: LIGHTNING_DATA.stagefields[sfKey].last_strike,
+        }
+      : null;
+    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, null, false, sfLightning);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
@@ -5518,7 +5595,7 @@ function computeSVFRRecovery(metar) {
   return { status: anyMet ? 'go' : 'nogo', tiers };
 }
 
-function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svfr, isFallback) {
+function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svfr, isFallback, lightningInRange) {
   // SVFR Recovery tier gauge — three segments showing which of ≥700/1,
   // ≥600/2, ≥500/3 are currently satisfied by the live KOZR METAR.
   let svfrHTML = '';
@@ -5569,6 +5646,17 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
     const tooltip = `${advisory.type} ${advisory.number || ''}: ${advisory.criteria || ''}`;
     pipHTML = `<div class="training-panel-advisory-pip" title="${escapeAttr(tooltip)}">⚠️</div>`;
   }
+  // Lightning pip — small ⚡ in top-LEFT corner when there's a flash
+  // within 5 NM of THIS station (Cairns or one of the four stagefields).
+  // Distinct from the banner at the top of the page, which is KOZR-only.
+  let lightningPipHTML = '';
+  if (lightningInRange && lightningInRange.within_5nm > 0) {
+    const last = lightningInRange.last_strike;
+    const tooltip = last
+      ? `${lightningInRange.within_5nm} flash${lightningInRange.within_5nm > 1 ? 'es' : ''} within 5 NM · last @ ${last.distance_nm} NM, ${last.bearing_deg}°`
+      : `${lightningInRange.within_5nm} flash within 5 NM`;
+    lightningPipHTML = `<div class="training-panel-lightning-pip" title="${escapeAttr(tooltip)}">⚡</div>`;
+  }
   // Fallback badge — shown on the Cairns panel when the live METAR is
   // stale and we're reading GOLDFISH forecast conditions instead.
   const fallbackHTML = isFallback
@@ -5580,6 +5668,7 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
   const stagefieldClass = (name && name.toUpperCase() !== 'CAIRNS') ? ' stagefield' : '';
   return `
     <div class="training-panel ${status}${stagefieldClass}">
+      ${lightningPipHTML}
       ${pipHTML}
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-status">${label}</div>
