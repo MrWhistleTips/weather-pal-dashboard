@@ -539,7 +539,7 @@ the day's plan.</p>
     <tr><td><strong>Lightning banner</strong></td><td>Three-tier strike alert (only shown when GOES-19 detects flashes within 50 NM of KOZR in the last 10 min) — see §7</td></tr>
     <tr><td><strong>Active Advisories</strong></td><td>Amber-bordered card (only shown when there's an active or upcoming AWA / TWA / WATCH / WARNING)</td></tr>
     <tr><td><strong>VFR Operations banner</strong></td><td>Section divider with the 7-Day Outlook dropdown centered</td></tr>
-    <tr><td><strong>Training Status panels</strong></td><td>5 console-light panels: Cairns + Allen + Toth + Highbluff + Lucas</td></tr>
+    <tr><td><strong>Training Status panels</strong></td><td>5 console-light panels: Cairns + Allen + Toth + Highbluff + Lucas. Each panel can show a top-left ⚡ lightning pill (DANGER ≤5 NM red / CAUTION ≤10 NM yellow) and a top-right ⚠️ advisory pip — see §7</td></tr>
     <tr><td><strong>Area Forecasts</strong></td><td>3-column grid: GOLDFISH, BEARCAT, VANGUARD N/C/S, HAWK</td></tr>
     <tr><td><strong>IFR Operations banner</strong></td><td>Section divider with the WAAS / GPS Coverage dropdown centered</td></tr>
     <tr><td><strong>IFR Training strip</strong></td><td>Single-row: TAXI AUTHORIZED · IFR GO/NO-GO based on KOZR ceiling/visibility</td></tr>
@@ -1057,6 +1057,50 @@ into the closer rings.</p>
   not as a guarantee of when conditions will deteriorate.
 </div>
 
+<h2>Per-stagefield lightning pips</h2>
+<p>The top-of-page lightning banner is <strong>KOZR-centric</strong>. But Cairns is just one of the five stations operators care about — the four stagefields are spread 4–17 NM around it, and a storm cell can put lightning inside a stagefield's 5 NM ring while KOZR's is still clear:</p>
+
+<table class="zebra">
+  <thead><tr><th>Stagefield</th><th>FAA ID</th><th>Distance from KOZR</th><th>Bearing</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Allen</strong></td><td><code>05AL</code></td><td>4.15 NM</td><td>131° (SE)</td></tr>
+    <tr><td><strong>Toth</strong></td><td><code>24AL</code></td><td>8.23 NM</td><td>112° (ESE)</td></tr>
+    <tr><td><strong>Highbluff</strong></td><td><code>14AL</code></td><td>7.49 NM</td><td>189° (S)</td></tr>
+    <tr><td><strong>Lucas</strong></td><td><code>25AL</code></td><td>16.96 NM</td><td>269° (W)</td></tr>
+  </tbody>
+</table>
+<p style="font-size: 9.5pt; color: #666;">All four are FAA-IDed private heliports — they have no ICAO code. Coordinates verified from airnav.com.</p>
+
+<p>To surface per-station awareness, each Training Status panel (Cairns + 4 stagefields) gets a small <strong>lightning pill in the top-LEFT corner</strong> showing the closest strike's distance and compass cardinal direction. Two tiers based on distance:</p>
+
+<table class="zebra">
+  <thead><tr><th>Pip</th><th>Trigger</th><th>Visual</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="badge ifr">DANGER</span></td>
+      <td>Flash within <strong>5 NM</strong> of the panel's station</td>
+      <td>Red pulsing pill</td>
+      <td><code>⚡ 2.1NM W</code></td>
+    </tr>
+    <tr>
+      <td><span class="badge amber">CAUTION</span></td>
+      <td>Flash within <strong>10 NM</strong> (but not 5)</td>
+      <td>Yellow static glow pill</td>
+      <td><code>⚡ 7.8NM SE</code></td>
+    </tr>
+    <tr>
+      <td><em>(hidden)</em></td>
+      <td>No flash within 10 NM of that station</td>
+      <td>Pip not rendered</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Inline text shows the distance to 0.1 NM precision plus the compass cardinal so the threat direction is glanceable without hovering. Hover for the full count of strikes plus the bearing in degrees. The pip lives in the top-LEFT corner of each panel; the existing advisory ⚠️ pip lives in the top-RIGHT — both can show simultaneously without overlapping.</p>
+
+<p><strong>How it's computed:</strong> the publishing server tracks each station's coordinates and applies the same haversine-distance + radius-bucket filter to the 10-minute flash window for Cairns AND each of the four stagefields in a single pass. Output JSON adds a <code>stagefields: {allen, toth, highbluff, lucas}</code> object to <code>lightning.json</code>, each containing the same <code>counts</code> and <code>last_strike</code> shape as the KOZR-centric top-level fields. No additional satellite data fetches; the per-station math is essentially free.</p>
+
 <h2>When the banner hides</h2>
 <p>The banner is <em>only</em> shown when there's been at least one flash within
 50 NM of KOZR in the last 10 minutes. On clear-weather days, the banner is
@@ -1101,7 +1145,7 @@ ramp. Result is one of:</p>
   <li><strong>Unknown</strong> — sampling failed</li>
 </ul>
 
-<h2>Demo mode (19 scenarios)</h2>
+<h2>Demo mode (20 scenarios)</h2>
 <p>The 🧪 Demo dropdown replaces live data with synthetic conditions for layout
 verification or training people on how the dashboard looks under various weather:</p>
 <div class="cols-2">
@@ -1127,6 +1171,7 @@ verification or training people on how the dashboard looks under various weather
     <li>⚡ Lightning · within 10 NM (VICINITY)</li>
     <li>⚡ Lightning · distant only (INFO)</li>
     <li>🌩️ Lightning · inbound (storm tracking, ~14-min ETA)</li>
+    <li>⚡ Lightning · at a stagefield (per-panel pip demo)</li>
   </ul>
 </div>
 <p>Demo mode persists in localStorage. A yellow banner + viewport border appear while
