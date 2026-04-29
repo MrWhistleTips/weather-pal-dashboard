@@ -388,10 +388,11 @@ table.zebra tr:nth-child(even) td { background: #faf9f5; }
   <div class="toc-row"><span class="toc-num">4</span><span class="toc-title">VFR Operations section</span></div>
   <div class="toc-row"><span class="toc-num">5</span><span class="toc-title">IFR Operations section</span></div>
   <div class="toc-row"><span class="toc-num">6</span><span class="toc-title">Color &amp; symbol reference</span></div>
-  <div class="toc-row"><span class="toc-num">7</span><span class="toc-title">Special features</span></div>
-  <div class="toc-row"><span class="toc-num">8</span><span class="toc-title">Status &amp; failure indicators</span></div>
-  <div class="toc-row"><span class="toc-num">9</span><span class="toc-title">TV / kiosk mode</span></div>
-  <div class="toc-row"><span class="toc-num">10</span><span class="toc-title">Quick reference card (tear-out)</span></div>
+  <div class="toc-row"><span class="toc-num">7</span><span class="toc-title">Lightning Detection (5 NM ops-halt rule)</span></div>
+  <div class="toc-row"><span class="toc-num">8</span><span class="toc-title">Special features</span></div>
+  <div class="toc-row"><span class="toc-num">9</span><span class="toc-title">Status &amp; failure indicators</span></div>
+  <div class="toc-row"><span class="toc-num">10</span><span class="toc-title">TV / kiosk mode</span></div>
+  <div class="toc-row"><span class="toc-num">11</span><span class="toc-title">Quick reference card (tear-out)</span></div>
 </div>
 </div>
 
@@ -446,7 +447,7 @@ reference, not a substitute for official forecaster briefings.</em></p>
      ════════════════════════════════════════════════════════════ -->
 <div class="page-break page">
 <h1>2 · Where the data comes from</h1>
-<div class="lead">Five independent sources, refreshed every five minutes.</div>
+<div class="lead">Six independent sources, fetched on their own cadences.</div>
 
 <table class="zebra">
   <thead>
@@ -476,6 +477,11 @@ reference, not a substitute for official forecaster briefings.</em></p>
       <td><strong>nstb.tc.faa.gov</strong></td>
       <td>FAA WAAS / GPS coverage snapshot at Cairns AAF (LPV200 / LPV / LNAV-VNAV / Marginal / Degraded)</td>
       <td>Every 5 minutes</td>
+    </tr>
+    <tr>
+      <td><strong>noaa-goes19 (AWS Open Data)</strong></td>
+      <td>GOES-19 Geostationary Lightning Mapper (GLM) — every cloud-to-ground, intra-cloud, and cloud-to-cloud flash within ~50 NM of KOZR</td>
+      <td>Every 1 minute (independent service from the main 5-min publisher)</td>
     </tr>
     <tr>
       <td><strong>spc.noaa.gov</strong> <em>(via Windy/ADS-B map embeds)</em></td>
@@ -530,6 +536,7 @@ the day's plan.</p>
     <tr><td><strong>Solar/Lunar strip</strong></td><td>Sunrise · Sunset · EENT · Moonrise · Moonset · Illumination, centered</td></tr>
     <tr><td><strong>METAR strip</strong></td><td>Raw KOZR METAR text, then decoded cells (Wind / Vis / Ceil / Temp / DP / Alt) — colored by current flight category</td></tr>
     <tr><td><strong>Flight Level Winds strip</strong></td><td>1k / 3k / 6k / 9k inline winds + temps; "POSS ICE" badges where temps ≤ 4°C</td></tr>
+    <tr><td><strong>Lightning banner</strong></td><td>Three-tier strike alert (only shown when GOES-19 detects flashes within 50 NM of KOZR in the last 10 min) — see §7</td></tr>
     <tr><td><strong>Active Advisories</strong></td><td>Amber-bordered card (only shown when there's an active or upcoming AWA / TWA / WATCH / WARNING)</td></tr>
     <tr><td><strong>VFR Operations banner</strong></td><td>Section divider with the 7-Day Outlook dropdown centered</td></tr>
     <tr><td><strong>Training Status panels</strong></td><td>5 console-light panels: Cairns + Allen + Toth + Highbluff + Lucas</td></tr>
@@ -726,6 +733,17 @@ parsed from the DD 175-1's terminal-forecast section. Each card:</p>
   <tr><td>Orange arrow</td><td>Crosswind component ≥ 15 kt</td></tr>
 </table>
 
+<h2>Lightning banner tiers</h2>
+<table class="zebra">
+  <thead><tr><th>Tier</th><th>Trigger</th><th>Visual</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge ifr">CRITICAL</span></td><td>Flashes within <strong>5 NM</strong></td><td>Pulsing red border, "OPERATIONS HALTED" — matches the Cairns 5-NM operational rule</td></tr>
+    <tr><td><span class="badge amber">VICINITY</span></td><td>Flashes within <strong>10 NM</strong> (but none within 5)</td><td>Static amber glow, "in vicinity"</td></tr>
+    <tr><td><span class="badge unk">DISTANT</span></td><td>Flashes within <strong>25–50 NM</strong> only</td><td>Subtle yellow strip, "distant lightning detected"</td></tr>
+    <tr><td><em>(hidden)</em></td><td>No activity within 50 NM in last 10 min</td><td>Banner not rendered</td></tr>
+  </tbody>
+</table>
+
 <h2>Heartbeat pip (navbar Published chip)</h2>
 <table>
   <tr><td><span class="dot go"></span> Green</td><td>Published &lt; 10 min ago — healthy (publisher runs every 5 min, buffer for one slow tick)</td></tr>
@@ -739,7 +757,85 @@ parsed from the DD 175-1's terminal-forecast section. Each card:</p>
      7. SPECIAL FEATURES
      ════════════════════════════════════════════════════════════ -->
 <div class="page-break page">
-<h1>7 · Special features</h1>
+<h1>7 · Lightning Detection</h1>
+<div class="lead">Real-time satellite-based lightning awareness, with Cairns's 5 NM ops-halt rule built in.</div>
+
+<p>The dashboard fetches lightning strike data from the <strong>GOES-19 Geostationary
+Lightning Mapper (GLM)</strong> — a satellite instrument that watches the entire
+western hemisphere for lightning flashes 24/7 at 500 frames per second. Every
+flash within 50 NM of KOZR in the last 10 minutes is summarized and rendered
+as a top-of-page banner with three severity tiers.</p>
+
+<h2>The three tiers</h2>
+<p>The banner color and pulse behavior matches the closest detected strike:</p>
+<table class="zebra">
+  <thead>
+    <tr><th>Tier</th><th>Trigger</th><th>Status text</th><th>Visual</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="badge ifr">CRITICAL</span></td>
+      <td>Within 5 NM</td>
+      <td>"⚡ Lightning within 5 NM — Operations Halted"</td>
+      <td>Pulsing red border, full-width</td>
+    </tr>
+    <tr>
+      <td><span class="badge amber">VICINITY</span></td>
+      <td>Within 10 NM (but not 5)</td>
+      <td>"⚡ Lightning in vicinity (within 10 NM)"</td>
+      <td>Static amber glow</td>
+    </tr>
+    <tr>
+      <td><span class="badge unk">DISTANT</span></td>
+      <td>Within 25–50 NM only</td>
+      <td>"⚡ Distant lightning detected"</td>
+      <td>Subtle yellow strip, smaller</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout danger">
+  <div class="callout-title">5-mile rule</div>
+  Cairns's operational policy halts <em>all</em> flight operations when lightning
+  is detected within 5 NM of the field. The CRITICAL tier exists specifically to
+  surface that condition the moment GOES-19 detects a strike inside that radius.
+  When this banner is red, ops should be stopped — no exceptions.
+</div>
+
+<h2>What each banner shows</h2>
+<p>Every tier displays:</p>
+<ul>
+  <li><strong>Last strike location</strong> — distance in NM, bearing in degrees, and a cardinal compass direction (e.g. <code>23.2 NM @ 287° (WNW)</code>)</li>
+  <li><strong>Live "X seconds/minutes ago" countdown</strong> — ticks every second so you can read freshness at a glance during fast-evolving cells</li>
+  <li><strong>Strike count chips</strong> — flash totals at each radius over the last 10-minute window (e.g. <code>4 ≤5NM · 11 ≤10NM · 38 ≤25NM · 72 ≤50NM</code>)</li>
+</ul>
+
+<h2>Update cadence</h2>
+<p>Lightning runs as an independent service, separate from the main 5-min publisher:</p>
+<ul>
+  <li><strong>Backend fetch:</strong> every 60 seconds, the publishing server pulls the most recent GLM data from NOAA's AWS Open Data bucket and pushes a fresh <code>lightning.json</code> to the dashboard repo.</li>
+  <li><strong>Dashboard refresh:</strong> the dashboard fetches <code>lightning.json</code> on its own 1-minute interval, separate from the 5-min main data refresh.</li>
+  <li><strong>Live countdown:</strong> the "X ago" label updates every second between data fetches.</li>
+</ul>
+
+<p><strong>End-to-end latency:</strong> from strike to banner is typically under
+2 minutes. GLM has ~30 seconds of detection-to-availability latency on the
+satellite side; the dashboard adds another minute or so for the polling cycle.</p>
+
+<h2>When the banner hides</h2>
+<p>The banner is <em>only</em> shown when there's been at least one flash within
+50 NM of KOZR in the last 10 minutes. On clear-weather days, the banner is
+completely hidden — no chrome, no clutter. It appears the moment a storm
+develops anywhere in the operating area.</p>
+
+<h2>What this is <em>not</em></h2>
+<ul>
+  <li><strong>Not a substitute for the duty forecaster's call.</strong> The official 5-NM ops-halt determination is made by the weather forecaster reading the KOZR ASOS automated lightning detector. The dashboard's banner is awareness; their call is authoritative.</li>
+  <li><strong>Not 100% detection.</strong> GLM is optical (looks for the 777.4 nm oxygen emission line of lightning). Detection efficiency is high (~70–90%) but flashes deeply embedded in cloud where the optical signal is fully absorbed may be missed.</li>
+  <li><strong>Not a strike map.</strong> Current rendering shows the most-recent strike's distance/bearing only, not all individual strikes plotted on a map. Storm motion can be inferred by watching the banner refresh over time.</li>
+</ul>
+
+<h1 class="page-break">8 · Special features</h1>
 <div class="lead">The non-obvious tools tucked into the dashboard.</div>
 
 <h2>7-Day Outlook (VFR banner center)</h2>
@@ -816,7 +912,7 @@ green border for success, red for failure). Useful when troubleshooting why the
      8. STATUS & FAILURE INDICATORS
      ════════════════════════════════════════════════════════════ -->
 <div class="page-break page">
-<h1>8 · Status &amp; failure indicators</h1>
+<h1>9 · Status &amp; failure indicators</h1>
 <div class="lead">How to recognize when something's wrong.</div>
 
 <p>The dashboard never silently shows stale data. Every failure mode has a visible
@@ -887,7 +983,7 @@ silently — once a new brief lands the banner clears automatically.</p>
      9. TV / KIOSK MODE
      ════════════════════════════════════════════════════════════ -->
 <div class="page-break page">
-<h1>9 · TV / kiosk mode</h1>
+<h1>10 · TV / kiosk mode</h1>
 <div class="lead">For the briefing-room display.</div>
 
 <p>Append <code>?tv=1</code> to the URL to enable kiosk display. Designed for distance
@@ -931,7 +1027,7 @@ viewing on a 4K TV.</p>
      10. QUICK REFERENCE
      ════════════════════════════════════════════════════════════ -->
 <div class="page-break page">
-<h1>10 · Quick reference card</h1>
+<h1>11 · Quick reference card</h1>
 <div class="lead">The most-used numbers, in one place.</div>
 
 <h2>Training minimums</h2>
@@ -950,6 +1046,14 @@ viewing on a 4K TV.</p>
   <tr><td>04:00 – 10:49</td><td>AM</td></tr>
   <tr><td>10:50 – 17:14</td><td>PM</td></tr>
   <tr><td>17:15 – 03:59</td><td>N1 (Night)</td></tr>
+</table>
+
+<h2>Lightning banner tiers</h2>
+<table class="zebra">
+  <tr><th>Tier</th><th>Trigger radius</th><th>Action</th></tr>
+  <tr><td><span class="badge ifr">CRITICAL</span></td><td>Within 5 NM</td><td><strong>HALT operations</strong> (Cairns 5-NM rule)</td></tr>
+  <tr><td><span class="badge amber">VICINITY</span></td><td>5–10 NM</td><td>Watch carefully; deteriorating</td></tr>
+  <tr><td><span class="badge unk">DISTANT</span></td><td>25–50 NM</td><td>Storm cells in area; not yet inbound</td></tr>
 </table>
 
 <h2 class="page-break">Amendment categories (Reg 115-1, App. E)</h2>
