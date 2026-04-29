@@ -6104,10 +6104,17 @@ function updateLightningDetail() {
   const iso = detail.dataset.lastStrikeIso;
   const dist = detail.dataset.lastDistance;
   const brg  = detail.dataset.lastBearing;
-  const total50 = (LIGHTNING_DATA && LIGHTNING_DATA.counts && LIGHTNING_DATA.counts.within_50nm) || 0;
+  const counts = (LIGHTNING_DATA && LIGHTNING_DATA.counts) || {};
+  const c5  = counts.within_5nm  || 0;
+  const c10 = counts.within_10nm || 0;
+  const c25 = counts.within_25nm || 0;
+  const c50 = counts.within_50nm || 0;
   const lookback = (LIGHTNING_DATA && LIGHTNING_DATA.lookback_min) || 10;
+  // Per-ring breakdown so the operator can see where strikes are
+  // concentrating as they happen, not just the 50-NM total.
+  const breakdown = `${c5} ≤5NM · ${c10} ≤10NM · ${c25} ≤25NM · ${c50} ≤50NM (last ${lookback} min)`;
   if (!iso || !dist) {
-    detail.textContent = `${total50} flashes within 50 NM in last ${lookback} min`;
+    detail.textContent = breakdown;
     return;
   }
   const ts = Date.parse(iso);
@@ -6116,7 +6123,7 @@ function updateLightningDetail() {
             : ageSec < 3600 ? `${Math.floor(ageSec / 60)}m ${ageSec % 60}s ago`
             : `${Math.floor(ageSec / 3600)}h ${Math.floor((ageSec % 3600) / 60)}m ago`;
   const compass = bearingToCompass(parseInt(brg, 10));
-  detail.textContent = `Last strike: ${dist} NM @ ${brg}° (${compass}) · ${ago} · ${total50} flashes within 50 NM in last ${lookback} min`;
+  detail.textContent = `Last strike: ${dist} NM @ ${brg}° (${compass}) · ${ago} · ${breakdown}`;
 }
 
 /// Lightning service health pip — separate from the banner. Lives in
