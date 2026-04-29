@@ -3212,10 +3212,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <div class="nav-datum-value" id="local-time">—</div>
     </div>
     <div class="nav-datum">
-      <div class="nav-datum-label">Fetched</div>
-      <div class="nav-datum-value" id="fetched-ago">—</div>
-    </div>
-    <div class="nav-datum">
       <div class="nav-datum-label">Published</div>
       <div class="nav-datum-value">
         <span id="publish-heartbeat-pip" class="publish-heartbeat-pip"></span>
@@ -3463,7 +3459,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <nav class="help-toc">
         <a href="#help-top-bar">Top Bar · Navbar</a>
-        <a href="#help-pipeline">Data Pipeline — Fetched vs Published</a>
+        <a href="#help-pipeline">Heartbeat Pips — Published &amp; ⚡ Detector</a>
         <a href="#help-period">Period Selector · AM / PM / N1</a>
         <a href="#help-solar">Solar / Lunar Strip</a>
         <a href="#help-metar">METAR Strip</a>
@@ -3499,7 +3495,6 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <ul>
           <li><b>Weather Pal logo</b> — app icon + title. When an amendment is active the navbar tints a soft gold and pulsing <span class="help-badge amber">⚠️ AMENDMENT</span> badges flank the time display.</li>
           <li><b>Zulu / Local time</b> — kept current with a 30-second tick. Matches UTC and the system clock of the display.</li>
-          <li><b>Fetched Xm ago</b> — time since the last successful fetch of <code>data.json</code> + live METAR. A ⚠ symbol means the most recent METAR fetch failed (hover for details).</li>
           <li><b>Published Xm ago</b> — heartbeat indicator confirming the publishing server is still pushing fresh data. Publisher runs every 5 min, so thresholds are: <b>green</b> &lt;10 min, <b>yellow</b> 10–20 min, <b>red (pulsing)</b> &gt;20 min or no data yet. If this goes red, the server probably went idle — check the publishing automation.</li>
           <li><b>⚡ Detector</b> — separate health pip for the standalone lightning service (which runs every minute, independent of the main 5-min publisher). Thresholds: <b>green</b> &lt;2 min, <b>yellow</b> 2–5 min, <b>red (pulsing)</b> &gt;5 min. Only appears after the first successful <code>lightning.json</code> fetch — hidden on initial page load. Hover for last-fetch age + flash count within 50 NM.</li>
           <li><b>🧪 Demo</b> — 18 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
@@ -3509,17 +3504,8 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       </section>
 
       <section id="help-pipeline">
-        <h2>Data Pipeline — Fetched vs Published</h2>
-        <p>Two timestamps in the navbar track two different things. Both matter for knowing whether the dashboard is showing real-time data or silently serving stale content.</p>
-
-        <h3>Fetched Xm ago</h3>
-        <p><b>"When did <em>this browser</em> last pull from the server?"</b> Client-side clock. Resets to 0s every time the dashboard's 5-minute data-refresh cycle runs. If the browser is alive, this ticks like a clock — even if the data itself hasn't changed in hours.</p>
-        <p>A ⚠ symbol appended here means the last live METAR fetch failed; hover for details. Otherwise it's just a freshness indicator for the browser.</p>
-
-        <h3>Published Xm ago</h3>
-        <p><b>"When did the <em>publishing server</em> last push new data to GitHub?"</b> Server-side source of truth. Reads from <code>DATA.exportedAt</code>, which is stamped on the JSON at the moment the publish automation ran on the server. This is the <em>real</em> "is our data fresh?" signal — if the server's automation stops firing, this climbs even while Fetched keeps ticking at 0s.</p>
-
-        <h3>Heartbeat Pip Colors</h3>
+        <h2>Heartbeat Pip Colors</h2>
+        <p>The <b>Published Xm ago</b> chip in the navbar carries a colored pip that confirms the publishing server is still pushing fresh data. The chip itself reads <code>DATA.exportedAt</code> from <code>data.json</code> — the timestamp the server stamped at the moment it published.</p>
         <table class="help-table">
           <thead><tr><th>Pip</th><th>Age</th><th>Meaning</th></tr></thead>
           <tbody>
@@ -3531,42 +3517,34 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
         <h3>Troubleshooting</h3>
         <table class="help-table">
-          <thead><tr><th>Fetched</th><th>Published</th><th>What it means</th><th>Fix</th></tr></thead>
+          <thead><tr><th>Symptom</th><th>What it means</th><th>Fix</th></tr></thead>
           <tbody>
             <tr>
-              <td>2m</td><td><span class="help-pip green"></span> 7m</td>
-              <td>Everything working. Browser polling, server publishing.</td>
+              <td><span class="help-pip green"></span> Published 7m</td>
+              <td>Everything working. Server is publishing on schedule.</td>
               <td>—</td>
             </tr>
             <tr>
-              <td>2m</td><td><span class="help-pip red"></span> 3h</td>
-              <td>Browser keeps pulling but it's just re-reading stale data. Publishing server is idle or the automation stopped.</td>
+              <td><span class="help-pip red"></span> Published 3h</td>
+              <td>Publishing server is idle or the automation stopped. Dashboard is showing stale content.</td>
               <td>Verify the publishing server is awake and the publish automation is still running.</td>
             </tr>
             <tr>
-              <td>30m+</td><td><span class="help-pip green"></span> 5m</td>
-              <td>Publish is fine but the TV's browser stopped polling — possibly frozen or network dropped.</td>
-              <td>Reload the TV browser (Cmd/Ctrl+R) or wait for the nightly 03:00 auto-reload.</td>
-            </tr>
-            <tr>
-              <td>⚠</td><td>any</td>
-              <td>Live METAR fetch is failing — aviationweather.gov or the CORS proxy returned an error.</td>
-              <td>Usually transient — resolves within a few minutes as the API recovers. Hover the ⚠ for the exact error.</td>
+              <td>⚡ Detector pip red</td>
+              <td>Lightning service has stopped. Banner data is stale.</td>
+              <td>Check the lightning agent on the publishing server.</td>
             </tr>
           </tbody>
         </table>
 
-        <h3>Why not combine them?</h3>
-        <p>Before the Published pip was added, you could look at the TV and see <i>"Fetched 2m ago"</i> and assume everything was fresh — even if the publishing server had been offline for hours. Splitting the two timestamps makes that failure mode obvious: a green Fetched paired with a red Published pip means "the TV is alive but the data isn't."</p>
-
         <h3>Data Flow</h3>
         <p>Three independent legs, each with their own cadence:</p>
         <ol>
-          <li><b>Publishing server → GitHub</b> — every ~15 min. Fetches the latest forecasts + METAR, decodes them, and publishes a fresh <code>data.json</code>.</li>
-          <li><b>TV browser → GitHub (data)</b> — every 5 min. Pulls <code>data.json</code> + live METAR, re-renders in place (no page reload).</li>
+          <li><b>Publishing server → GitHub</b> — every 5 min for the main publisher (data.json), every 1 min for the standalone lightning service (lightning.json).</li>
+          <li><b>TV browser → GitHub</b> — every 5 min for data.json, every 1 min for lightning.json. Re-renders in place (no page reload).</li>
           <li><b>TV browser → GitHub (code)</b> — every 5 min. ETag check on <code>index.html</code>. Reloads the page only when a new dashboard version has been deployed.</li>
         </ol>
-        <p>Worst-case propagation from a server publish to the TV: ~5 minutes. Worst-case from a code push to the TV: ~7 minutes.</p>
+        <p>Worst-case propagation from a server publish to the TV: ~5 min for main data, ~2 min for lightning. Worst-case from a code push to the TV: ~7 min.</p>
       </section>
 
       <section id="help-period">
@@ -3924,7 +3902,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <h2>Mobile / Phone View</h2>
         <p>The dashboard is fully responsive. Two breakpoints kick in below the desktop layout:</p>
         <ul>
-          <li><b>≤ 768px (tablet / phone landscape):</b> Navbar wraps — brand left, action buttons right, datum chips (Forecast Date, Zulu, Local, Fetched, Published heartbeat) drop to their own row underneath. Section banners wrap so the 7-Day Outlook + TAF + WAAS widgets stack onto a second banner row at full width. Training panels switch to a 2-column grid; alternates also 2-column. METAR decoded cells wrap. Flight Level Winds becomes horizontally scrollable. Map iframes shrink to 260px tall.</li>
+          <li><b>≤ 768px (tablet / phone landscape):</b> Navbar wraps — brand left, action buttons right, datum chips (Forecast Date, Zulu, Local, Published heartbeat, ⚡ Detector) drop to their own row underneath. Section banners wrap so the 7-Day Outlook + TAF + WAAS widgets stack onto a second banner row at full width. Training panels switch to a 2-column grid; alternates also 2-column. METAR decoded cells wrap. Flight Level Winds becomes horizontally scrollable. Map iframes shrink to 260px tall.</li>
           <li><b>≤ 500px (phone portrait):</b> All multi-column grids collapse to 1 column. Everything single-stack and readable on a phone screen.</li>
         </ul>
         <p><b>Sticky navbar on mobile</b> — once you scroll, the navbar pins itself to the top of the viewport so the brand, all timestamps, and the heartbeat pip stay visible. Background extends through the iPhone notch / status-bar safe area so nothing transparent shows behind the iOS clock.</p>
@@ -3972,15 +3950,6 @@ const ALTERNATES = [
 let ALTERNATE_METARS = {};
 const TV_MODE = /[?&]tv=(1|true)/i.test(location.search);
 let DATA = null;
-let lastFetchedAt = null;
-// Browser-side METAR fetching was retired — DATA.metar comes from data.json
-// (server-side fetch by the Mac mini publisher). These two were left referenced
-// inside updateFetchedLabel() and were throwing ReferenceError on every
-// 30-second tick, freezing both the Fetched and Published chips at "—".
-// lastMetarReportTime is hydrated from DATA.metar.reportTime in loadData();
-// lastMetarFetchError stays null (no browser fetch can fail anymore).
-let lastMetarFetchError = null;
-let lastMetarReportTime = null;
 let demoScenario = localStorage.getItem('demoScenario') || null;
 
 /* ============================================================
@@ -7228,9 +7197,8 @@ async function loadData() {
     // it from the scenario; copy into the runtime global the renderer
     // reads from.
     LIGHTNING_DATA = (DATA && DATA.lightning) || null;
-    lastFetchedAt = new Date();
     renderAll();
-    updateFetchedLabel();
+    updatePublishHeartbeat();
     return;
   }
   // Single source of truth: data.json carries METAR, TAF, alternate
@@ -7252,35 +7220,11 @@ async function loadData() {
   ALTERNATE_METARS = (DATA && DATA.alternateMetars) ? { ...DATA.alternateMetars } : {};
   TAF_OBSERVATION  = (DATA && DATA.taf) || null;
 
-  lastMetarReportTime = (DATA && DATA.metar && DATA.metar.reportTime) || null;
-  lastFetchedAt = new Date();
   renderAll();
   // WAAS state now also flows through data.json (DATA.waas + waas.png
   // pushed same-origin by the publisher). refreshWAAS() reads from
   // DATA + sets the same-origin image URL.
   refreshWAAS();
-  updateFetchedLabel();
-}
-
-function updateFetchedLabel() {
-  const el = document.getElementById('fetched-ago');
-  if (!el) return;
-  if (!lastFetchedAt) { el.textContent = '—'; return; }
-  const secs = Math.floor((Date.now() - lastFetchedAt.getTime()) / 1000);
-  let txt;
-  if (secs < 60) txt = secs + 's ago';
-  else if (secs < 3600) txt = Math.floor(secs / 60) + 'm ago';
-  else txt = Math.floor(secs / 3600) + 'h ago';
-  if (lastMetarFetchError) {
-    txt += ' ⚠';
-    el.title = `Live METAR fetch error: ${lastMetarFetchError}`;
-    el.style.color = 'var(--warning)';
-  } else {
-    el.title = lastMetarReportTime ? `Last METAR: ${lastMetarReportTime}` : '';
-    el.style.color = '';
-  }
-  el.textContent = txt;
-
   updatePublishHeartbeat();
 }
 
@@ -7455,8 +7399,10 @@ setInterval(updateClock, 30 * 1000);
 // Re-check auto period every minute so the page snaps to the
 // correct forecast at 04:00, 10:50, and 17:15 local.
 setInterval(applyAutoPeriod, 60 * 1000);
-// "Fetched Xm ago" label tick
-setInterval(updateFetchedLabel, 30 * 1000);
+// "Published Xm ago" pip + label tick — runs every 30s so the timestamp
+// climbs even when no new data has arrived (heartbeat goes green→yellow→red
+// on its own as time passes since the last successful publish).
+setInterval(updatePublishHeartbeat, 30 * 1000);
 // Lightning "X ago" countdown tick — runs every second so the operator
 // can read time-since-last-strike at a glance during fast-evolving cells.
 // Only updates the detail text; the banner tier doesn't change between
