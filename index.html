@@ -2234,6 +2234,36 @@ body.tv .training-panel-solo-reason { font-size: 11px; }
   color: rgba(255,255,255,0.78);
   letter-spacing: 0.3px;
 }
+.lightning-approach {
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+  padding: 3px 8px;
+  background: rgba(0,0,0,0.30);
+  border-left: 2px solid var(--warning);
+  border-radius: 2px;
+}
+.lightning-approach.imminent {
+  border-left-color: var(--ifr);
+  background: rgba(214,69,69,0.18);
+  color: #ffdcdc;
+}
+.lightning-approach .approach-confidence {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.40);
+  color: rgba(255,255,255,0.75);
+  border-radius: 2px;
+}
+body.tv .lightning-approach { font-size: 15px; }
+body.tv .lightning-approach .approach-confidence { font-size: 11px; }
 .lightning-counts {
   display: flex;
   gap: 6px;
@@ -3280,6 +3310,10 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div class="lightning-content">
       <div class="lightning-status" id="lightning-status">—</div>
       <div class="lightning-detail" id="lightning-detail">—</div>
+      <!-- Approach line — only populated when an inbound storm cell has
+           been detected with enough confidence (lightning_publish.py's
+           motion analyzer). Hidden when approach is null. -->
+      <div class="lightning-approach" id="lightning-approach" style="display:none;"></div>
     </div>
     <div class="lightning-counts" id="lightning-counts"></div>
   </div>
@@ -3497,7 +3531,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Zulu / Local time</b> — kept current with a 30-second tick. Matches UTC and the system clock of the display.</li>
           <li><b>Published Xm ago</b> — heartbeat indicator confirming the publishing server is still pushing fresh data. Publisher runs every 5 min, so thresholds are: <b>green</b> &lt;10 min, <b>yellow</b> 10–20 min, <b>red (pulsing)</b> &gt;20 min or no data yet. If this goes red, the server probably went idle — check the publishing automation.</li>
           <li><b>⚡ Detector</b> — separate health pip for the standalone lightning service (which runs every minute, independent of the main 5-min publisher). Thresholds: <b>green</b> &lt;2 min, <b>yellow</b> 2–5 min, <b>red (pulsing)</b> &gt;5 min. Only appears after the first successful <code>lightning.json</code> fetch — hidden on initial page load. Hover for last-fetch age + flash count within 50 NM.</li>
-          <li><b>🧪 Demo</b> — 18 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
+          <li><b>🧪 Demo</b> — 19 preset scenarios that replace live data with synthetic weather for testing layout and training responses. Active demo shows a yellow banner + yellow viewport border.</li>
           <li><b>❔ Help</b> — opens this document.</li>
           <li><b>📡 Source</b> — opens the army.mil weather page in a new tab.</li>
         </ul>
@@ -3588,12 +3622,20 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <h2>Lightning Banner</h2>
         <p>Sits above the Active Advisories card whenever the publisher's GOES-19 lightning fetcher detects flashes within 50 NM of KOZR in the past 10 minutes. Three tiers based on the closest strike:</p>
         <ul>
-          <li><b>⚡ Within 5 NM</b> — <span class="help-badge red">CRITICAL</span> · pulsing red border. Matches Cairns's operational rule that all flight operations halt when lightning is within 5 NM of the field.</li>
+          <li><b>⚡ Within 5 NM</b> — <span class="help-badge red">CRITICAL</span> · pulsing red border. Surfaces Cairns's 5-NM operational rule. Banner reads "Operations Possibly Affected, Check Official Weather" — defers the authoritative halt call to the duty forecaster.</li>
           <li><b>⚡ Within 10 NM</b> — <span class="help-badge amber">VICINITY</span> · static amber glow. Watch carefully; conditions are deteriorating.</li>
           <li><b>⚡ Within 25–50 NM only</b> — <span class="help-badge yellow">DISTANT</span> · subtle yellow strip. Storm cells are around but not yet in the operating area.</li>
         </ul>
         <p>Each banner shows the last strike's distance, bearing, and a <b>"X seconds/minutes ago"</b> countdown that ticks every second so you know how recently lightning was detected. Count chips on the right (e.g. <code>4 ≤5NM · 11 ≤10NM</code>) show flash totals at each radius over the publisher's lookback window.</p>
-        <p>Data source: <b>GOES-19 Geostationary Lightning Mapper</b> via NOAA's public AWS Open Data bucket. Server-side fetch every publisher tick (~5 min) — no per-viewer downloads or browser parsing. Latency from strike to banner: typically 30–90 seconds.</p>
+
+        <h3>Storm motion / approach prediction</h3>
+        <p>When the lightning service detects a coherent storm cell with enough flashes to track its motion, it adds an <b>approach line</b> below the detail line:</p>
+        <p><code>🌩️ Cell approaching at 28 kt — ~14 min to 5 NM ring</code> <span class="help-badge yellow">MODERATE</span></p>
+        <p>The publisher clusters strikes by spatial proximity (within 5 NM = same cell), bins them into 5-minute time buckets, fits a least-squares motion vector to the centroid trajectory, and projects forward. ETA is computed analytically (quadratic intersection of the projected path with each radius ring). The line goes <b>red and shows a 🚨 icon</b> when the projected ETA to the 5 NM ring is ≤15 min, regardless of the active banner tier — so an inbound cell stands out even when there's no current strike inside 10 NM.</p>
+        <p><b>Confidence</b> badges (HIGH / MODERATE / LOW) reflect flash count, bucket coverage, and trajectory linearity (R²). Motion analysis is conservative: requires ≥10 flashes in a cell across ≥3 time buckets and R² ≥ 0.5 before reporting any prediction. Cells with motion vectors pointing away from KOZR are skipped. The dashboard caps projections at 30 minutes — beyond that, atmospheric dynamics make the prediction unreliable.</p>
+        <p><b>Operational caveat:</b> This is awareness, not prediction-as-fact. Real storm cells split, merge, intensify, and dissipate in ways pure linear motion can't capture. A wrong ETA is worse than no ETA — when in doubt, the system stays silent.</p>
+
+        <p>Data source: <b>GOES-19 Geostationary Lightning Mapper</b> via NOAA's public AWS Open Data bucket. Server-side fetch every minute (independent service, separate from the main 5-min publisher) — no per-viewer downloads or browser parsing. Latency from strike to banner: typically 30–90 seconds.</p>
       </section>
 
       <section id="help-advisories">
@@ -3864,7 +3906,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <section id="help-demo">
         <h2>Demo Mode</h2>
-        <p>The 🧪 Demo dropdown in the navbar replaces live data with 18 preset scenarios — useful for verifying layout or demonstrating how the dashboard reacts to different conditions:</p>
+        <p>The 🧪 Demo dropdown in the navbar replaces live data with 19 preset scenarios — useful for verifying layout or demonstrating how the dashboard reacts to different conditions:</p>
         <ul>
           <li>VFR · All GO</li>
           <li>MVFR · Mixed</li>
@@ -3878,9 +3920,10 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>⚠️ Amendment Issued</li>
           <li>🕐 Upcoming Advisory</li>
           <li>⚠️ Multiple Advisories Active — exercises the full stack (AWA / TWA / WATCH / WARNING + upcoming)</li>
-          <li>⚡ Lightning · within 5 NM — Tier 1 critical (operations halted)</li>
+          <li>⚡ Lightning · within 5 NM — Tier 1 critical (operations possibly affected)</li>
           <li>⚡ Lightning · within 10 NM — Tier 2 vicinity warning</li>
           <li>⚡ Lightning · distant only — Tier 3 informational</li>
+          <li>🌩️ Lightning · inbound (storm tracking) — distant + cell approaching at 28 kt with ~14 min ETA to 5 NM ring (imminent)</li>
           <li>⏱️ Improving / Degrading / Mixed Timers</li>
         </ul>
         <p>Demo mode persists in localStorage. A yellow banner + yellow viewport border appear while active. Select "Off" from the dropdown to return to live data.</p>
@@ -4103,6 +4146,14 @@ const DEMO_SCENARIOS = {
     areaText: '22010KT 7SM SCT050 BKN150',
     advisory: false,
     lightning: 'distant',
+  },
+  'lightning-inbound': {
+    name: '🌩️ Lightning · inbound (storm tracking)',
+    desc: 'Distant strikes plus an approaching storm cell — projected ETA to 5 NM ring',
+    metarOpts: ({ flt: 'MVFR', wdir: 280, wspd: 14, visib: '8', clouds: [{cover:'BKN',base:3500}] }),
+    areaText: '28014KT 8SM BKN035',
+    advisory: false,
+    lightning: 'inbound',
   },
 };
 
@@ -4456,13 +4507,43 @@ function buildDemoData(key) {
         counts: { within_5nm: 0, within_10nm: 6, within_25nm: 24, within_50nm: 51 },
         last_strike: { time_iso: nowIso, distance_nm: 7.4, bearing_deg: 295 },
       };
-    } else {  // 'distant'
+    } else if (s.lightning === 'distant') {
       lightning = {
         fetched_at: new Date().toISOString(),
         lookback_min: 10,
         files_scanned: 30,
         counts: { within_5nm: 0, within_10nm: 0, within_25nm: 8, within_50nm: 47 },
         last_strike: { time_iso: nowIso, distance_nm: 31.2, bearing_deg: 305 },
+      };
+    } else if (s.lightning === 'inbound') {
+      // Storm cell ~28 NM out, approaching at 28 kt — projected to enter
+      // the 5 NM ring in ~14 min (imminent threshold).
+      lightning = {
+        fetched_at: new Date().toISOString(),
+        lookback_min: 10,
+        files_scanned: 30,
+        counts: { within_5nm: 0, within_10nm: 0, within_25nm: 0, within_50nm: 38 },
+        last_strike: { time_iso: nowIso, distance_nm: 28.5, bearing_deg: 295 },
+        approach: {
+          tracked_cells: 1,
+          closest_inbound: {
+            centroid_lat: 31.55,
+            centroid_lon: -86.20,
+            current_distance_nm: 28.5,
+            speed_kts: 28.0,
+            motion_bearing_deg: 110,
+            approaching_kozr: true,
+            flash_count: 47,
+            buckets_observed: 5,
+            r_squared: 0.83,
+            minutes_to_50nm: null,
+            minutes_to_25nm: 7,
+            minutes_to_10nm: 14,
+            minutes_to_5nm: 14,
+            minutes_to_field: 21,
+            confidence: 'moderate',
+          },
+        },
       };
     }
   }
@@ -5764,6 +5845,56 @@ function renderLightning() {
 
   banner.classList.remove('tier-critical', 'tier-warning', 'tier-info');
   banner.classList.add('show', 'tier-' + tier);
+
+  // Approach line — populated by the lightning service's motion analyzer
+  // when an inbound storm cell has been detected with enough confidence.
+  renderLightningApproach(lt.approach);
+}
+
+/// Render the approach line under the banner detail. Hidden when
+/// `approach` is null (no inbound cell or insufficient data to project).
+function renderLightningApproach(approach) {
+  const el = document.getElementById('lightning-approach');
+  if (!el) return;
+  if (!approach || !approach.closest_inbound) {
+    el.style.display = 'none';
+    return;
+  }
+  const c = approach.closest_inbound;
+  const eta5  = c.minutes_to_5nm;
+  const eta10 = c.minutes_to_10nm;
+  const eta25 = c.minutes_to_25nm;
+  const eta50 = c.minutes_to_50nm;
+
+  // Pick the most operationally relevant ETA to lead with.
+  // Prefer 5 NM if it's reachable in <30 min — that's the ops-halt line.
+  let leadLabel, leadEta;
+  if (eta5  != null) { leadLabel = '5 NM ring';  leadEta = eta5; }
+  else if (eta10 != null) { leadLabel = '10 NM ring'; leadEta = eta10; }
+  else if (eta25 != null) { leadLabel = '25 NM ring'; leadEta = eta25; }
+  else if (eta50 != null) { leadLabel = '50 NM ring'; leadEta = eta50; }
+  else { el.style.display = 'none'; return; }
+
+  // "imminent" = projected to enter the 5 NM ring within 15 min.
+  // Reddens the approach line regardless of the active banner tier so
+  // an approaching cell stands out even when there's no current strike
+  // inside 5 NM (the case where the dashboard would otherwise be in
+  // VICINITY or DISTANT tier but the storm is bearing down).
+  const imminent = (eta5 != null && eta5 <= 15);
+  el.classList.toggle('imminent', imminent);
+
+  const speed = c.speed_kts;
+  const conf  = (c.confidence || 'low').toUpperCase();
+  const cellsExtra = (approach.tracked_cells > 1)
+    ? ` · ${approach.tracked_cells} cells tracked`
+    : '';
+  const etaText = `~${Math.round(leadEta)} min to ${leadLabel}`;
+  const icon = imminent ? '🚨' : '🌩️';
+
+  el.innerHTML = `${icon} Cell approaching at ${speed} kt — ${etaText}` +
+    `<span class="approach-confidence" title="Confidence based on flash count, bucket coverage, and trajectory linearity">${conf}</span>` +
+    cellsExtra;
+  el.style.display = 'block';
 }
 
 /// Refresh the "Last strike: X NM @ Y° · Zs ago" line. Called on
