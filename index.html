@@ -5630,9 +5630,10 @@ function renderTraining(metar, forecast) {
   // each stagefield reads from LIGHTNING_DATA.stagefields[name].
   const cairnsLightning = (LIGHTNING_DATA && LIGHTNING_DATA.counts)
     ? {
-        within_5nm:  LIGHTNING_DATA.counts.within_5nm  || 0,
-        within_10nm: LIGHTNING_DATA.counts.within_10nm || 0,
-        last_strike: LIGHTNING_DATA.last_strike,
+        within_5nm:     LIGHTNING_DATA.counts.within_5nm  || 0,
+        within_10nm:    LIGHTNING_DATA.counts.within_10nm || 0,
+        last_strike:    LIGHTNING_DATA.last_strike,
+        closest_strike: LIGHTNING_DATA.closest_strike,
       }
     : null;
   let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus, isFallback, cairnsLightning);
@@ -5664,9 +5665,10 @@ function renderTraining(metar, forecast) {
     const sfKey = sf.name.toLowerCase();
     const sfLightning = (LIGHTNING_DATA && LIGHTNING_DATA.stagefields && LIGHTNING_DATA.stagefields[sfKey])
       ? {
-          within_5nm:  LIGHTNING_DATA.stagefields[sfKey].counts.within_5nm  || 0,
-          within_10nm: LIGHTNING_DATA.stagefields[sfKey].counts.within_10nm || 0,
-          last_strike: LIGHTNING_DATA.stagefields[sfKey].last_strike,
+          within_5nm:     LIGHTNING_DATA.stagefields[sfKey].counts.within_5nm  || 0,
+          within_10nm:    LIGHTNING_DATA.stagefields[sfKey].counts.within_10nm || 0,
+          last_strike:    LIGHTNING_DATA.stagefields[sfKey].last_strike,
+          closest_strike: LIGHTNING_DATA.stagefields[sfKey].closest_strike,
         }
       : null;
     cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, null, false, sfLightning);
