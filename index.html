@@ -6227,11 +6227,11 @@ function updateLightningDetail() {
 
 /// Lightning service health pip — separate from the banner. Lives in
 /// the navbar next to the Published heartbeat. Confirms the standalone
-/// lightning publisher is still pushing lightning.json every minute.
-/// Thresholds (lightning publisher runs every 60 seconds):
-///   green  <2 min  — healthy (allows for one slow tick)
-///   yellow 2–5 min — 2–5 cycles missed; watch it
-///   red    >5 min  — 5+ cycles missed; service is stalled
+/// lightning publisher is still pushing lightning.json every 2 min.
+/// Thresholds (lightning publisher runs every 120 seconds):
+///   green  <3 min  — healthy (allows for one slow tick)
+///   yellow 3–7 min — 2–3 cycles missed; watch it
+///   red    >7 min  — 3+ cycles missed; service is stalled
 ///   gray   no data — never received a lightning.json yet (initial state)
 function updateLightningHealth() {
   const chip = document.getElementById('lightning-health-chip');
@@ -6261,9 +6261,9 @@ function updateLightningHealth() {
     label = Math.floor(ageSec / 3600) + 'h ago';
   }
 
-  if (ageSec < 120)       cls = 'ok';   // <2 min — healthy (1 missed tick OK)
-  else if (ageSec < 300)  cls = 'warn'; // 2–5 min — 2–5 cycles missed
-  else                    cls = 'bad';  // >5 min — service stalled
+  if (ageSec < 180)       cls = 'ok';   // <3 min — healthy (1 slow tick OK at 2-min cadence)
+  else if (ageSec < 420)  cls = 'warn'; // 3–7 min — 2–3 cycles missed
+  else                    cls = 'bad';  // >7 min — service stalled
 
   text.textContent = label;
   pip.className = 'publish-heartbeat-pip ' + cls;
@@ -7938,7 +7938,9 @@ setInterval(loadData, DATA_REFRESH_MS);
 // 1 min) and pushes lightning.json independently. Fetch it on its own
 // schedule — the main 5-min loadData cycle doesn't carry lightning data.
 loadLightning();
-setInterval(loadLightning, 60 * 1000);
+// Publisher runs every 2 min; poll at 90s so the dashboard sees a fresh
+// payload within ~30 s of each publish without spamming GitHub Pages.
+setInterval(loadLightning, 90 * 1000);
 </script>
 </body>
 </html>
