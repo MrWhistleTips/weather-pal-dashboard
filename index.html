@@ -1090,6 +1090,70 @@ body.tv .wx-anim-rain .wx-rain-drop {
 }
 body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
 
+/* LIGHTNING — brief radial-gradient flash from the top of the panel
+   that mimics cloud-internal illumination. Two flash <i> elements
+   with co-prime cycle durations (5s + 8s for "active") so the visible
+   pattern drifts and never repeats. flash-a includes a quick
+   secondary peak ~80 ms after the main one — real lightning often
+   has visible recurrence in the same flash. mix-blend-mode: screen
+   makes the white brighten anything underneath instead of laying
+   flat over it (rain drops + fog wisps catch the illumination too).
+   Background is warm-white (rgba 255, 250, 220) — slightly amber to
+   match real lightning, not pure cool-white. */
+.wx-anim-lightning {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.wx-lightning-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 130% 80% at 50% -10%,
+    rgba(255, 250, 220, 0.95) 0%,
+    rgba(255, 250, 220, 0.55) 22%,
+    rgba(255, 250, 220, 0.20) 45%,
+    rgba(255, 250, 220, 0.05) 70%,
+    transparent 85%);
+  opacity: 0;
+  mix-blend-mode: screen;
+  will-change: opacity;
+}
+/* flash-a — main pulse + quick recurrence ~30 ms later */
+.wx-lightning-flash.flash-a { animation: wx-lightning-a 5s linear infinite; }
+@keyframes wx-lightning-a {
+  0%, 79.5%   { opacity: 0; }
+  80%         { opacity: 0.55; }
+  81.5%       { opacity: 0.10; }
+  82.5%       { opacity: 0.70; }
+  86%         { opacity: 0; }
+  100%        { opacity: 0; }
+}
+/* flash-b — single softer pulse offset on a co-prime cycle so the
+   firing pattern drifts vs flash-a */
+.wx-lightning-flash.flash-b { animation: wx-lightning-b 8s linear infinite; animation-delay: 1.7s; }
+@keyframes wx-lightning-b {
+  0%, 88.5%   { opacity: 0; }
+  89%         { opacity: 0.45; }
+  92%         { opacity: 0; }
+  100%        { opacity: 0; }
+}
+/* Intensity tuning. Sparse stretches the cycles so flashes are
+   infrequent. Intense compresses them so the panel is near-continuous,
+   and bumps the peak so it reads as "in the storm" rather than
+   "nearby storm". */
+.wx-anim-lightning.intensity-sparse  .wx-lightning-flash.flash-a { animation-duration: 10s; }
+.wx-anim-lightning.intensity-sparse  .wx-lightning-flash.flash-b { animation-duration: 14s; }
+.wx-anim-lightning.intensity-intense .wx-lightning-flash.flash-a { animation-duration: 2.5s; }
+.wx-anim-lightning.intensity-intense .wx-lightning-flash.flash-b { animation-duration: 3.5s; }
+.wx-anim-lightning.intensity-intense .wx-lightning-flash {
+  background: radial-gradient(ellipse 140% 95% at 50% -5%,
+    rgba(255, 250, 220, 1.00) 0%,
+    rgba(255, 250, 220, 0.70) 22%,
+    rgba(255, 250, 220, 0.30) 45%,
+    rgba(255, 250, 220, 0.08) 70%,
+    transparent 90%);
+}
+
 /* IFR ONLY (intermediate) — color matches actual METAR flight category */
 .training-panel.cat-mvfr {
   border-color: rgba(74,144,226,0.5);
@@ -6177,10 +6241,6 @@ function renderTraining(metar, forecast) {
 
   const cairnsLanding = landingHTML('Cairns', forecast);
   const isFallback = !!(metar && metar._isForecastFallback);
-  // Weather animations — only fire for the live KOZR METAR (not the
-  // GOLDFISH forecast fallback). Currently just rain; structured so
-  // we can extend to snow / TS / fog.
-  const cairnsWx = (metar && !isFallback) ? metarWxCodes(metar) : [];
   // Per-station lightning lookups for the panel ⚡ pip — all read from
   // LIGHTNING_DATA which is populated by the standalone lightning service.
   // Cairns reads from the top-level counts/last_strike (KOZR-centric);
@@ -6189,10 +6249,17 @@ function renderTraining(metar, forecast) {
     ? {
         within_5nm:     LIGHTNING_DATA.counts.within_5nm  || 0,
         within_10nm:    LIGHTNING_DATA.counts.within_10nm || 0,
+        within_25nm:    LIGHTNING_DATA.counts.within_25nm || 0,
         last_strike:    LIGHTNING_DATA.last_strike,
         closest_strike: LIGHTNING_DATA.closest_strike,
       }
     : null;
+  // Weather animations — rain/fog from METAR (skipped during forecast
+  // fallback because we don't fake those when we don't have a real
+  // observation), lightning from GLM (runs regardless of METAR state).
+  const cairnsWx = (metar && !isFallback) ? metarWxCodes(metar) : [];
+  const cairnsLightningWx = lightningWxCode(cairnsLightning);
+  if (cairnsLightningWx) cairnsWx.push(cairnsLightningWx);
   let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus, isFallback, cairnsLightning, cairnsWx);
 
   for (const sf of stagefields) {
@@ -6229,10 +6296,15 @@ function renderTraining(metar, forecast) {
       ? {
           within_5nm:     LIGHTNING_DATA.stagefields[sfKey].counts.within_5nm  || 0,
           within_10nm:    LIGHTNING_DATA.stagefields[sfKey].counts.within_10nm || 0,
+          within_25nm:    LIGHTNING_DATA.stagefields[sfKey].counts.within_25nm || 0,
           last_strike:    LIGHTNING_DATA.stagefields[sfKey].last_strike,
           closest_strike: LIGHTNING_DATA.stagefields[sfKey].closest_strike,
         }
       : null;
+    // Lightning flash animation when GLM saw strikes within 25 NM of
+    // this specific station (Lucas might flash while KOZR stays calm).
+    const sfLightningWx = lightningWxCode(sfLightning);
+    if (sfLightningWx) sfWx.push(sfLightningWx);
     cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, null, false, sfLightning, sfWx);
   }
 
@@ -6276,6 +6348,27 @@ function computeSVFRRecovery(metar) {
 // Recognized fog family: FG, BR (mist), MIFG, BCFG, PRFG, VCFG, FZFG.
 // We strip remarks (everything after RMK) before matching so e.g.
 // "RMK ... PRESRR" can't false-match.
+// Lightning animation derived from GLM data — not from METAR/forecast
+// text. Triggers off the per-station within_25nm count which is the
+// "close enough to see, far enough to be sustained activity" zone.
+// 5/10 NM are already driving the banner's CRITICAL/VICINITY tiers
+// and the per-panel ⚡ pip; 25 NM is what the panel-flash should react
+// to. Scales flash frequency by intensity so 30 strikes/10min looks
+// visibly different from 2.
+//
+// Returns null when there's nothing in range — caller adds the result
+// to the wx codes array conditionally.
+function lightningWxCode(lightningInRange) {
+  if (!lightningInRange) return null;
+  const c = lightningInRange.within_25nm || 0;
+  if (c < 1) return null;
+  let intensity;
+  if (c <= 3)        intensity = 'sparse';
+  else if (c <= 15)  intensity = 'active';
+  else               intensity = 'intense';
+  return { kind: 'lightning', intensity };
+}
+
 // Area-forecast variant: scans a MEF area forecast text block (the
 // segments inside e.g. forecast.mef.areaForecasts[].forecast) for
 // rain / fog tokens active right now. Includes the active main
@@ -6387,6 +6480,20 @@ function wxAnimationHTML(codes) {
       wisps.push(`<i class="wx-fog-wisp" style="top:${top}%;height:${height}%;animation-duration:${dur}s;animation-delay:-${delay}s;opacity:${op}"></i>`);
     }
     inner += `<div class="wx-anim wx-anim-fog" aria-hidden="true">${wisps.join('')}</div>`;
+  }
+  const lightning = codes.find(c => c && c.kind === 'lightning');
+  if (lightning) {
+    // Two flash elements with co-prime cycle durations so the visible
+    // pattern drifts and never repeats exactly — feels organic without
+    // any JS RNG in the animation loop. Intensity class adjusts cycle
+    // duration via CSS so sparse / active / intense all use the same
+    // markup. flash-a has a double-peak keyframe (recurrence ~80 ms
+    // after the main pulse) which is what real lightning often does.
+    const intensity = lightning.intensity || 'active';
+    inner += `<div class="wx-anim wx-anim-lightning intensity-${intensity}" aria-hidden="true">
+      <i class="wx-lightning-flash flash-a"></i>
+      <i class="wx-lightning-flash flash-b"></i>
+    </div>`;
   }
   return `<div class="training-panel-wx-layer" aria-hidden="true">${inner}</div>`;
 }
