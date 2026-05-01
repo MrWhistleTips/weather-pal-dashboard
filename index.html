@@ -3053,13 +3053,15 @@ body.tv .old-weather-banner { font-size: 18px; padding: 10px; letter-spacing: 4p
 body.old-weather:not(.demo) .training-panel.stagefield,
 body.old-weather:not(.demo) .area-card,
 body.old-weather:not(.demo) .aero-card,
-body.old-weather:not(.demo) .flw-strip {
+body.old-weather:not(.demo) .flw-strip,
+body.old-weather:not(.demo) .alt-row {
   position: relative;
 }
 body.old-weather:not(.demo) .training-panel.stagefield::after,
 body.old-weather:not(.demo) .area-card::after,
 body.old-weather:not(.demo) .aero-card::after,
-body.old-weather:not(.demo) .flw-strip::after {
+body.old-weather:not(.demo) .flw-strip::after,
+body.old-weather:not(.demo) .alt-row::after {
   content: "⚠️ OLD WEATHER";
   position: absolute;
   inset: 0;
@@ -3089,9 +3091,20 @@ body.old-weather:not(.demo) .flw-strip::after {
 body.tv.old-weather:not(.demo) .training-panel.stagefield::after,
 body.tv.old-weather:not(.demo) .area-card::after,
 body.tv.old-weather:not(.demo) .aero-card::after,
-body.tv.old-weather:not(.demo) .flw-strip::after {
+body.tv.old-weather:not(.demo) .flw-strip::after,
+body.tv.old-weather:not(.demo) .alt-row::after {
   font-size: 22px;
   letter-spacing: 4px;
+}
+/* Alt cells are narrow (5 in a row) — shrink the OLD WEATHER label
+   so it actually fits inside the column without ellipsis-clipping. */
+body.old-weather:not(.demo) .alt-row::after {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+}
+body.tv.old-weather:not(.demo) .alt-row::after {
+  font-size: 14px;
+  letter-spacing: 2px;
 }
 
 /* Demo dropdown menu in navbar */
