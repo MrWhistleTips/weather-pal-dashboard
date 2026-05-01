@@ -5777,7 +5777,7 @@ function renderAlternates() {
         const cat = flightCategory(cur.ceiling, cur.vis);
         const ceilStr = cur.ceiling === null ? 'CLR' : `${cur.ceiling}ft`;
         const visStr = cur.vis === null ? '—' : `${visDisplay(cur.vis)}SM`;
-        curLine = `<span class="alt-row-cur cat-${cat}">${ceilStr} · ${visStr}</span> <span class="alt-row-stale" style="background:rgba(74,144,226,0.18); color:#7fb3f3; border-color:rgba(74,144,226,0.35)">FCST</span>`;
+        curLine = `<span class="alt-row-cur cat-${cat}">${ceilStr} · ${visStr}</span>`;
         // Subsequent entries: each becomes a compact row showing the
         // countdown, projected ceil/vis (colored by category), and
         // GO/NO-GO badge. Operator gets the full forward picture.
