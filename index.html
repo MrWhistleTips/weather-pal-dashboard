@@ -1922,6 +1922,68 @@ body.tv .alt-row-meta { font-size: 11px; }
 .alt-row-cur.cat-mvfr { color: var(--mvfr); text-shadow: 0 0 4px rgba(74,144,226,0.35); }
 .alt-row-cur.cat-ifr  { color: var(--ifr);  text-shadow: 0 0 4px rgba(214,69,69,0.35); }
 .alt-row-cur.cat-lifr { color: var(--lifr); text-shadow: 0 0 4px rgba(179,71,217,0.35); }
+/* Forecast timeline: every upcoming worst-case segment in the active
+   aerodrome forecast for this alt — countdown · ceil/vis · GO/NO-GO.
+   Stacks below the FCST line. Hidden when the brief is stable through
+   expiry (no future flips). */
+.alt-tl {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(192,168,120,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.alt-tl-row {
+  display: grid;
+  grid-template-columns: minmax(48px, auto) 1fr auto;
+  gap: 6px;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  line-height: 1.25;
+}
+.alt-tl-when {
+  color: var(--tan);
+  opacity: 0.85;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+.alt-tl-cv {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.alt-tl-cv.cat-vfr  { color: var(--vfr);  }
+.alt-tl-cv.cat-mvfr { color: var(--mvfr); }
+.alt-tl-cv.cat-ifr  { color: var(--ifr);  }
+.alt-tl-cv.cat-lifr { color: var(--lifr); }
+.alt-tl-status {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.alt-tl-status.go {
+  color: var(--go);
+  background: var(--go-bg);
+  border-color: var(--go-border);
+}
+.alt-tl-status.nogo {
+  color: var(--nogo);
+  background: var(--nogo-bg);
+  border-color: var(--nogo-border);
+}
+body.tv .alt-tl-row    { font-size: 12px; }
+body.tv .alt-tl-status { font-size: 11px; padding: 2px 7px; }
+
 /* Forward-look countdown: "GO in 1h 45m" / "NO GO in 2h 15m" — surfaces
    the next ceiling/vis flip projected by the aerodrome forecast so the
    operator sees what's coming, not just what is. */
@@ -5546,6 +5608,60 @@ function alternateStatusFromForecast(aero, nowMin, minCeil, minVis) {
 }
 
 // Walk forward from now through every period boundary in the aerodrome
+// forecast and return the FULL timeline of upcoming worst-case segments.
+// Each entry is one stable "interval" (period set unchanged) — adjacent
+// boundaries that produce identical worst-case ceil/vis are collapsed
+// so the timeline doesn't repeat.
+//
+// First entry is always "now" (deltaMin: 0) so the caller can render
+// it inline with the FCST line if desired. Subsequent entries are
+// future flips with their offset from now.
+//
+// Returns [{deltaMin, ceiling, vis, ok, periodTypes}] — empty when
+// the forecast doesn't cover now at all.
+function alternateTimeline(aero, nowMin, minCeil, minVis) {
+  if (!aero || !aero.periods) return [];
+  const meetsMins = (c, v) => {
+    const cc = c === null ? 99999 : c;
+    const vv = v === null ? 99    : v;
+    return cc >= minCeil && vv >= minVis;
+  };
+  // Distinct boundaries in offset-from-now order, plus 0 for "now".
+  const offsets = new Set([0]);
+  for (const p of aero.periods) {
+    for (const k of ['validFrom', 'validTo']) {
+      const m = zuluHHMMToMinutes(p[k]);
+      if (m === null) continue;
+      let off = m - nowMin;
+      if (off <= 0) off += 1440;
+      if (off > 0 && off < 1440) offsets.add(off);
+    }
+  }
+  const sorted = [...offsets].sort((a, b) => a - b);
+
+  const segments = [];
+  for (const off of sorted) {
+    const eventMin = (nowMin + off) % 1440;
+    const w = aerodromeWorstAt(aero, eventMin);
+    if (!w) {
+      // Brief gap or end — stop walking once we've seen the start.
+      if (segments.length > 0) break;
+      continue;
+    }
+    const last = segments[segments.length - 1];
+    // Collapse adjacent identical states (no meaningful change at this boundary).
+    if (last && last.ceiling === w.ceiling && last.vis === w.vis) continue;
+    segments.push({
+      deltaMin: off,
+      ceiling: w.ceiling,
+      vis: w.vis,
+      ok: meetsMins(w.ceiling, w.vis),
+    });
+  }
+  return segments;
+}
+
+// Walk forward from now through every period boundary in the aerodrome
 // forecast and return the first GO↔NO-GO flip vs the current status.
 // Used to render "NO GO in 2h 15m" / "GO in 45m" countdowns inside
 // each alt cell so operators see what's coming, not just what is.
@@ -5648,29 +5764,39 @@ function renderAlternates() {
     // Forecast conditions line — pulled from the worst-case active
     // group (main/FROM + any active TEMPO overlay).
     let curLine = '<span class="alt-row-cur alt-row-cur-missing">No forecast</span>';
-    let changeLine = '';
+    let timelineHTML = '';
     if (aero) {
-      const w = aerodromeWorstAt(aero, nowMin);
-      if (w) {
-        const cat = flightCategory(w.ceiling, w.vis);
-        const ceilStr = w.ceiling === null ? 'CLR' : `${w.ceiling}ft`;
-        const visStr = w.vis === null ? '—' : `${visDisplay(w.vis)}SM`;
-        // Mark with FCST tag so it's obvious this is the brief, not a METAR.
-        curLine = `<span class="alt-row-cur cat-${cat}">${ceilStr} · ${visStr}</span> <span class="alt-row-stale" style="background:rgba(74,144,226,0.18); color:#7fb3f3; border-color:rgba(74,144,226,0.35)">FCST</span>`;
-        // Look ahead for the next status flip and surface it inline
-        // (e.g. "NO GO in 2h 15m" / "GO in 45m"). Hidden when the
-        // forecast stays on the same side of mins all the way to brief
-        // expiry.
-        const change = alternateNextChange(aero, nowMin, a.minCeil, a.minVis);
-        if (change) {
-          const cls = change.newStatus === 'go' ? 'go' : 'nogo';
-          const label = change.newStatus === 'go' ? 'GO' : 'NO GO';
-          changeLine = `<div class="alt-row-change ${cls}">${label} in ${fmtAlternateDelta(change.deltaMin)}</div>`;
-        }
-      } else {
+      const tl = alternateTimeline(aero, nowMin, a.minCeil, a.minVis);
+      if (tl.length === 0) {
         // Aerodrome found but no period covers current Zulu — likely
         // we're outside the brief's valid window.
         curLine = '<span class="alt-row-cur alt-row-cur-missing">Outside brief window</span>';
+      } else {
+        // First entry is "now". Render it inline with FCST tag.
+        const cur = tl[0];
+        const cat = flightCategory(cur.ceiling, cur.vis);
+        const ceilStr = cur.ceiling === null ? 'CLR' : `${cur.ceiling}ft`;
+        const visStr = cur.vis === null ? '—' : `${visDisplay(cur.vis)}SM`;
+        curLine = `<span class="alt-row-cur cat-${cat}">${ceilStr} · ${visStr}</span> <span class="alt-row-stale" style="background:rgba(74,144,226,0.18); color:#7fb3f3; border-color:rgba(74,144,226,0.35)">FCST</span>`;
+        // Subsequent entries: each becomes a compact row showing the
+        // countdown, projected ceil/vis (colored by category), and
+        // GO/NO-GO badge. Operator gets the full forward picture.
+        const futureRows = tl.slice(1).map(seg => {
+          const segCat = flightCategory(seg.ceiling, seg.vis);
+          const segCeilStr = seg.ceiling === null ? 'CLR' : `${seg.ceiling}ft`;
+          const segVisStr = seg.vis === null ? '—' : `${visDisplay(seg.vis)}SM`;
+          const cls = seg.ok ? 'go' : 'nogo';
+          const lbl = seg.ok ? 'GO' : 'NO GO';
+          return `
+            <div class="alt-tl-row">
+              <span class="alt-tl-when">+${fmtAlternateDelta(seg.deltaMin)}</span>
+              <span class="alt-tl-cv cat-${segCat}">${segCeilStr} · ${segVisStr}</span>
+              <span class="alt-tl-status ${cls}">${lbl}</span>
+            </div>`;
+        }).join('');
+        if (futureRows) {
+          timelineHTML = `<div class="alt-tl">${futureRows}</div>`;
+        }
       }
     }
 
@@ -5687,7 +5813,7 @@ function renderAlternates() {
           <div class="alt-row-name">${a.name}</div>
           <div>${curLine}</div>
         </div>
-        ${changeLine}
+        ${timelineHTML}
       </div>
     `;
   });
