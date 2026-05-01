@@ -408,7 +408,7 @@ table.zebra tr:nth-child(even) td { background: #faf9f5; }
 every piece of weather information a Fort Rucker Instructor Pilot needs into one
 glanceable view. It replaces the workflow of opening four browser tabs (army.mil
 PDFs, aviationweather.gov METARs, FAA WAAS map, NOAA TAF text) with a single
-URL that auto-refreshes — main weather data every five minutes, lightning every minute.</p>
+URL that auto-refreshes — main weather data every five minutes, lightning every two minutes.</p>
 
 <h3>Who uses it</h3>
 <ul>
@@ -465,7 +465,7 @@ reference, not a substitute for official forecaster briefings.</em></p>
     </tr>
     <tr>
       <td><strong>aviationweather.gov</strong></td>
-      <td>Live METAR observations for KOZR + alternate airfields (KCEW, KDHN, KTOI, KMGM)</td>
+      <td>Live METAR observation for KOZR (training/IFR strip). Alternate airfields are evaluated against the active brief's aerodrome forecast, not METAR.</td>
       <td>Every 5 minutes</td>
     </tr>
     <tr>
@@ -506,7 +506,7 @@ reference, not a substitute for official forecaster briefings.</em></p>
 <p>The dashboard always tells you how fresh each piece of data is. You'll see:</p>
 <ul>
   <li><strong>Published X min ago</strong> — when the main publishing server last pushed <code>data.json</code> (runs every 5 min). Colored heartbeat dot: <span class="dot go"></span> green &lt;10 min, <span class="dot amber"></span> yellow 10–20 min, <span class="dot red"></span> red &gt;20 min</li>
-  <li><strong>⚡ Detector</strong> — separate health pip for the standalone lightning service (runs every 1 min, independent). <span class="dot go"></span> green &lt;2 min, <span class="dot amber"></span> yellow 2–5 min, <span class="dot red"></span> red &gt;5 min. Hidden until the first successful <code>lightning.json</code> fetch.</li>
+  <li><strong>⚡ Detector</strong> — separate health pip for the standalone lightning service (runs every 2 min, independent). <span class="dot go"></span> green &lt;3 min, <span class="dot amber"></span> yellow 3–7 min, <span class="dot red"></span> red &gt;7 min. Hidden until the first successful <code>lightning.json</code> fetch.</li>
   <li><strong>OLD WEATHER banner</strong> — appears if the displayed forecast is from a previous calendar day or its valid period has expired</li>
   <li><strong>USING FORECAST · METAR IS STALE badge</strong> — if the live METAR is &gt;80 min old, the dashboard synthesizes conditions from the GOLDFISH area forecast and flags the substitution prominently</li>
 </ul>
@@ -536,14 +536,14 @@ the day's plan.</p>
     <tr><td><strong>Solar/Lunar strip</strong></td><td>Sunrise · Sunset · EENT · Moonrise · Moonset · Illumination, centered</td></tr>
     <tr><td><strong>METAR strip</strong></td><td>Raw KOZR METAR text, then decoded cells (Wind / Vis / Ceil / Temp / DP / Alt) — colored by current flight category</td></tr>
     <tr><td><strong>Flight Level Winds strip</strong></td><td>1k / 3k / 6k / 9k inline winds + temps; "POSS ICE" badges where temps ≤ 4°C</td></tr>
-    <tr><td><strong>Lightning banner</strong></td><td>Three-tier strike alert (only shown when GOES-19 detects flashes within 50 NM of KOZR in the last 10 min) — see §7</td></tr>
+    <tr><td><strong>Lightning banner</strong></td><td>Collapsible three-tier strike alert (only shown when GOES-19 detects flashes within 50 NM of KOZR in the last 10 min). Default collapsed to a thin status strip; click to expand for per-ring counts, closest-strike line, and EXPERIMENTAL badge — see §7</td></tr>
     <tr><td><strong>Active Advisories</strong></td><td>Amber-bordered card (only shown when there's an active or upcoming AWA / TWA / WATCH / WARNING)</td></tr>
     <tr><td><strong>VFR Operations banner</strong></td><td>Section divider with the 7-Day Outlook dropdown centered</td></tr>
     <tr><td><strong>Training Status panels</strong></td><td>5 console-light panels: Cairns + Allen + Toth + Highbluff + Lucas. Each panel can show a top-left ⚡ lightning pill (DANGER ≤5 NM red / CAUTION ≤10 NM yellow) and a top-right ⚠️ advisory pip — see §7</td></tr>
     <tr><td><strong>Area Forecasts</strong></td><td>3-column grid: GOLDFISH, BEARCAT, VANGUARD N/C/S, HAWK</td></tr>
     <tr><td><strong>IFR Operations banner</strong></td><td>Section divider with the WAAS / GPS Coverage dropdown centered</td></tr>
     <tr><td><strong>IFR Training strip</strong></td><td>Single-row: TAXI AUTHORIZED · IFR GO/NO-GO based on KOZR ceiling/visibility</td></tr>
-    <tr><td><strong>Alternate Planning</strong></td><td>5-card row: KCEW · KOZR · KDHN · KTOI · KMGM with current METAR + GO/NO-GO vs published mins</td></tr>
+    <tr><td><strong>Alternate Planning</strong></td><td>5-card row: KCEW · KOZR · KDHN · KTOI · KMGM driven by the active brief's aerodrome forecast. Each cell renders the worst-case ceil/vis right now plus a forward timeline of upcoming segments (countdown · projected ceil/vis · Poss. Alt badge)</td></tr>
     <tr><td><strong>Aerodrome Forecasts</strong></td><td>3-col grid of TAF-style FROM/TEMPO blocks for each airfield in/around the operating area</td></tr>
     <tr><td><strong>Flight Hazards card</strong></td><td>Collapsible — turbulence, icing, thunderstorms, LLWS</td></tr>
     <tr><td><strong>ADS-B Live Traffic + Windy Map</strong></td><td>Bottom row, side-by-side, both collapsible</td></tr>
@@ -647,8 +647,12 @@ fog, icing, thunderstorms, or LLWS), the strip flashes amber and shows a corner 
 
 <h2>Alternate Planning</h2>
 <p>Five-card row showing whether each airfield meets <strong>published planning
-minimums</strong> (which already include the +400/+1 alternate buffer). Card turns
-green when current METAR ceiling AND visibility are at or above the published mins.</p>
+minimums</strong> (which already include the +400/+1 alternate buffer). Driven by
+the active brief's <strong>DD 175-1 aerodrome forecast</strong>, not the live
+METAR — real alt-planning per FAR/USAACE filed-alternate rules requires
+<em>forecast</em> conditions, not current observations. A METAR meeting mins right
+now tells you nothing about whether the field will still be usable when you'd
+actually divert to it.</p>
 
 <table class="zebra">
   <thead>
@@ -663,10 +667,49 @@ green when current METAR ceiling AND visibility are at or above the published mi
   </tbody>
 </table>
 
-<p>Each row shows the <strong>current METAR ceiling/visibility colored by flight
-category</strong>, plus a <span class="badge go">Poss. Alt</span> or
-<span class="badge nogo">No Alt</span> badge. If the METAR is &gt;80 min old, an
-"OLD" tag is appended.</p>
+<p><strong>Per-alt forecast resolution.</strong> Three-pass lookup against the active
+brief's aerodrome forecasts:</p>
+<ol>
+  <li><strong>Direct match</strong> — the airfield ICAO appears as its own aerodrome on the brief</li>
+  <li><strong>Sibling match</strong> — ICAO listed in another aerodrome's <code>sameAs</code> array (e.g. "Same as KOZR: KCEW, KDHN, KTOI, KMGM")</li>
+  <li><strong>Umbrella match</strong> — sameAs contains <code>ALL STATIONS WITHIN 100NM</code> (common on N1 briefs that list only KOZR with the umbrella flag). All five published alternates are within 100 NM of KOZR so they all ride the umbrella when present.</li>
+</ol>
+
+<p><strong>Worst-case evaluation.</strong> Each alt cell uses the most restrictive
+ceiling AND most restrictive visibility across <em>every</em> period covering the
+current Zulu time — main / predominant + any FROM that's taken effect + any
+active TEMPO overlay. Mirrors aviationweather.gov's TAF display convention: a
+TEMPO that drops below mins disqualifies the alternate even if the predominant
+group is fine.</p>
+
+<p><strong>Forward timeline.</strong> Below the current ceil/vis line each cell renders
+every upcoming worst-case segment in the active brief — countdown · projected
+ceil/vis (colored by FAA flight category) · <span class="badge go">Poss. Alt</span> /
+<span class="badge nogo">Poss. Alt</span> badge. Operator sees the full forward
+picture, including stable-but-degrading conditions:</p>
+
+<pre style="background:#f7f5ee; padding:10px; border-left:3px solid #8a7741; font-size:11px;">KCEW · ILS RWY 07 · min 600/1¼     [Poss. Alt]
+Bob Sikes · Crestview      3000ft · 5SM
+─────────────────────────────────────
++1h 30m   2000ft · 5SM   Poss. Alt (green)
++2h       1000ft · 2SM   Poss. Alt (green)
++2h 30m    500ft · 1SM   Poss. Alt (red)</pre>
+
+<p>Hidden when conditions are stable through brief expiry (only the "now" segment
+exists). Adjacent identical worst-cases collapse so the timeline doesn't repeat.</p>
+
+<p><strong>Old-weather overlay.</strong> When the active brief is operationally stale —
+issued on a previous calendar day, OR its valid period has already ended — every
+alt row gets the same yellow diagonal-stripe overlay + ⚠️ <strong>OLD WEATHER</strong>
+label as the other forecast-driven sections (training panels, area cards, aerodrome
+cards). The Cairns / METAR / IFR Training strip stay clear because they read live
+METAR.</p>
+
+<p><strong>Fallback states</strong> rendered in italic when the brief can't answer:</p>
+<ul>
+  <li><code>No forecast</code> — the airfield isn't covered by any aerodrome on this brief</li>
+  <li><code>Outside brief window</code> — the brief exists but no period covers the current Zulu time (e.g. between PM brief expiry and N1 start)</li>
+</ul>
 
 <h2>Aerodrome Forecasts (TAF-style)</h2>
 <p>3-column grid of FROM/TEMPO/PROB blocks for the operating area's airfields,
@@ -734,6 +777,13 @@ parsed from the DD 175-1's terminal-forecast section. Each card:</p>
 </table>
 
 <h2>Lightning banner tiers</h2>
+<p>The banner is <strong>collapsible</strong> — default state is a thin one-line strip
+showing only the icon + tier label + chevron. Click to expand and reveal the full
+detail (per-ring counts, closest strike line with distance/bearing/age, approach
+projection, and an <strong>EXPERIMENTAL</strong> badge that flags the feature as in
+active development). The collapsed/expanded preference persists in localStorage
+across the nightly 03:00 reload.</p>
+
 <table class="zebra">
   <thead><tr><th>Tier</th><th>Trigger</th><th>Visual</th></tr></thead>
   <tbody>
@@ -743,6 +793,13 @@ parsed from the DD 175-1's terminal-forecast section. Each card:</p>
     <tr><td><em>(hidden)</em></td><td>No activity within 50 NM in last 10 min</td><td>Banner not rendered</td></tr>
   </tbody>
 </table>
+
+<p>When expanded, the detail line shows the <strong>closest strike</strong> in the last
+10 minutes — not the most recent. Earlier behavior surfaced "newest" which could be
+49 NM away while a 7 NM strike sat hidden seconds older. The closest-strike line
+reads e.g. <code>Closest strike: 1.9 NM @ 224° (SW) · 14s ago · 0 ≤5NM · 0 ≤10NM
+· 5 ≤25NM · 47 ≤50NM (last 10 min)</code> so the operator sees both proximity and
+the per-ring distribution at a glance.</p>
 
 <h2>Heartbeat pip (navbar Published chip)</h2>
 <table>
@@ -870,7 +927,9 @@ date and hour:</p>
 
 <p>An always-on server located offsite runs a small dedicated process for lightning,
 separate from the main 5-min weather publisher. The lightning service does this
-every minute:</p>
+every two minutes (originally one minute — bumped to two after observing each run
+takes 24-28 s of S3 list + ~30 NetCDF fetches, leaving thin headroom inside a 60-s
+window):</p>
 
 <ol>
   <li><strong>List recent files.</strong> Query the S3 bucket for both the current and previous hour folders. (We span two hours so we don't miss files when the clock crosses an hour boundary.)</li>
@@ -893,9 +952,11 @@ healthy run takes 5–10 seconds end to end (most of which is downloading the
 
 <h2>What runs on the dashboard side</h2>
 
-<p>The dashboard polls the public <code>lightning.json</code> file every minute on its
-own independent schedule (no coordination with the main 5-min cycle). When new data
-arrives, the dashboard:</p>
+<p>The dashboard polls the public <code>lightning.json</code> file every 90 seconds
+on its own independent schedule (no coordination with the main 5-min cycle, and
+deliberately offset from the publisher's 120-s tick so the browser sees a fresh
+payload within ~30 s of each publish without spamming GitHub Pages). When new
+data arrives, the dashboard:</p>
 
 <ol>
   <li>Decodes the JSON.</li>
@@ -927,13 +988,13 @@ room TV breaks down like this:</p>
     <tr><td>Strike happens (real-world atmospheric event)</td><td>—</td></tr>
     <tr><td>GOES-19 GLM detects + NOAA processes the file</td><td>~20 seconds</td></tr>
     <tr><td>File lands in the public S3 bucket</td><td>~10 seconds</td></tr>
-    <tr><td>Lightning service's next 1-min tick fires</td><td>0–60 seconds (avg 30)</td></tr>
+    <tr><td>Lightning service's next 2-min tick fires</td><td>0–120 seconds (avg 60)</td></tr>
     <tr><td>Service downloads + parses + pushes</td><td>~5–10 seconds</td></tr>
     <tr><td>GitHub Pages CDN propagates the new <code>lightning.json</code></td><td>~10–30 seconds</td></tr>
-    <tr><td>Dashboard's next fetch picks it up</td><td>0–60 seconds (avg 30)</td></tr>
-    <tr><td><strong>Total worst-case</strong></td><td><strong>~3 minutes</strong></td></tr>
-    <tr><td><strong>Total typical</strong></td><td><strong>~60–90 seconds</strong></td></tr>
-    <tr><td><strong>Total best-case</strong></td><td><strong>~45 seconds</strong></td></tr>
+    <tr><td>Dashboard's next 90-s fetch picks it up</td><td>0–90 seconds (avg 45)</td></tr>
+    <tr><td><strong>Total worst-case</strong></td><td><strong>~5 minutes</strong></td></tr>
+    <tr><td><strong>Total typical</strong></td><td><strong>~2–3 minutes</strong></td></tr>
+    <tr><td><strong>Total best-case</strong></td><td><strong>~1 minute</strong></td></tr>
   </tbody>
 </table>
 

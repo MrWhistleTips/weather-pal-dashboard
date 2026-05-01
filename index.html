@@ -3897,7 +3897,9 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>⚡ Within 10 NM</b> — <span class="help-badge amber">VICINITY</span> · static amber glow. Watch carefully; conditions are deteriorating.</li>
           <li><b>⚡ Within 25–50 NM only</b> — <span class="help-badge yellow">DISTANT</span> · subtle yellow strip. Storm cells are around but not yet in the operating area.</li>
         </ul>
-        <p>Each banner shows the last strike's distance, bearing, and a <b>"X seconds/minutes ago"</b> countdown that ticks every second so you know how recently lightning was detected. Count chips on the right (e.g. <code>4 ≤5NM · 11 ≤10NM</code>) show flash totals at each radius over the publisher's lookback window.</p>
+        <p><b>Collapsible — default collapsed</b> to a thin one-line strip showing only the icon + tier label + chevron so it doesn't dominate the top of the dashboard during long stretches of distant activity. <b>Click to expand</b> for the full detail: closest strike line + per-ring count chips + EXPERIMENTAL badge. Preference persists across the nightly 03:00 reload via localStorage.</p>
+        <p>When expanded, the detail line shows the <b>closest strike</b> in the last 10 min — not the most recent — so a 49 NM newest-strike doesn't mask a closer one that's a few seconds older. Format: <code>Closest strike: 1.9 NM @ 224° (SW) · 14s ago · 0 ≤5NM · 0 ≤10NM · 5 ≤25NM · 47 ≤50NM (last 10 min)</code>. The "X seconds ago" countdown ticks every second.</p>
+        <p>The yellow <b>EXPERIMENTAL</b> badge in the expanded view flags this whole feature (counts, motion detection, per-stagefield pips) as in active development. Treat as situational awareness, not authoritative.</p>
 
         <h3>Per-stagefield ⚡ pips</h3>
         <p>The banner is KOZR-centric. But the four stagefields (Allen ~4 NM SE, Toth ~8 NM ESE, Highbluff ~7 NM S, Lucas ~17 NM W) can have lightning in <i>their</i> 5 NM ring while KOZR's is clear — especially for Lucas, since it's far enough out west that storm cells in the western training area can hit Lucas without ever entering the KOZR ring.</p>
@@ -3915,7 +3917,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <p><b>Confidence</b> badges (HIGH / MODERATE / LOW) reflect flash count, bucket coverage, and trajectory linearity (R²). Motion analysis is conservative: requires ≥10 flashes in a cell across ≥3 time buckets and R² ≥ 0.5 before reporting any prediction. Cells with motion vectors pointing away from KOZR are skipped. The dashboard caps projections at 30 minutes — beyond that, atmospheric dynamics make the prediction unreliable.</p>
         <p><b>Operational caveat:</b> This is awareness, not prediction-as-fact. Real storm cells split, merge, intensify, and dissipate in ways pure linear motion can't capture. A wrong ETA is worse than no ETA — when in doubt, the system stays silent.</p>
 
-        <p>Data source: <b>GOES-19 Geostationary Lightning Mapper</b> via NOAA's public AWS Open Data bucket. Server-side fetch every minute (independent service, separate from the main 5-min publisher) — no per-viewer downloads or browser parsing. Latency from strike to banner: typically 30–90 seconds.</p>
+        <p>Data source: <b>GOES-19 Geostationary Lightning Mapper</b> via NOAA's public AWS Open Data bucket. Server-side fetch every 2 minutes (independent service, separate from the main 5-min publisher) — no per-viewer downloads or browser parsing. The dashboard re-polls <code>lightning.json</code> every 90 s, deliberately offset from the publisher's 120 s tick so the browser sees a fresh payload within ~30 s of each publish. End-to-end strike-to-banner latency typically 2–3 min, worst case ~5 min.</p>
       </section>
 
       <section id="help-advisories">
@@ -4081,7 +4083,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <section id="help-alternate">
         <h2>Alternate Planning</h2>
-        <p>Thin sub-header under IFR Operations. Shows 5 commonly-used alternates with live METAR data:</p>
+        <p>Thin sub-header under IFR Operations. Shows 5 commonly-used alternates evaluated against the active brief's <b>DD 175-1 aerodrome forecast</b> — not live METAR. Real alt-planning per FAR/USAACE filed-alternate rules requires <i>forecast</i> conditions, not current observations.</p>
         <table class="help-table">
           <thead><tr><th>ICAO</th><th>Field</th><th>Approach</th><th>Mins (already +400/+1)</th></tr></thead>
           <tbody>
@@ -4092,12 +4094,21 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
             <tr><td>KMGM</td><td>Montgomery Regional</td><td>ILS RWY 28</td><td>600 ft / 1¼ SM</td></tr>
           </tbody>
         </table>
+        <p><b>How each alt finds its forecast</b> (3-pass lookup):</p>
+        <ol>
+          <li><b>Direct match</b> — airfield ICAO appears as its own aerodrome on the brief</li>
+          <li><b>Sibling match</b> — ICAO listed in another aerodrome's <code>sameAs</code> array (e.g. "Same as KOZR: KCEW, KDHN, KTOI, KMGM")</li>
+          <li><b>Umbrella match</b> — sameAs contains <code>ALL STATIONS WITHIN 100NM</code> (common on N1 briefs that list only KOZR with the umbrella flag — all 5 alternates are within 100 NM so they all ride it)</li>
+        </ol>
+        <p><b>Worst-case evaluation:</b> each cell uses the most restrictive ceiling AND most restrictive visibility across <i>every</i> period covering the current Zulu time — main / predominant + any FROM that's taken effect + any active TEMPO overlay. A TEMPO that drops below mins disqualifies the alt even if the predominant group is fine (matches aviationweather.gov's TAF display convention).</p>
+        <p><b>Forward timeline</b> — below the current ceil/vis line each cell renders every upcoming worst-case segment in the active brief: countdown · projected ceil/vis (colored by FAA flight category) · <span class="help-badge green">POSS. ALT</span> / <span class="help-badge red">POSS. ALT</span> badge. So you see 3000/5 GO now → 2000/5 GO in 1h 30m → 500/1 NO GO in 2h 30m at a glance. Hidden when conditions are stable through brief expiry.</p>
         <ul>
-          <li><span class="help-badge green">POSS. ALT</span> (green) — current ceiling AND visibility ≥ published alternate mins</li>
-          <li><span class="help-badge red">POSS. ALT</span> (red) — either ceiling or vis falls below</li>
-          <li><span class="help-badge yellow">UNKNOWN</span> — METAR missing or >80 min stale</li>
+          <li><span class="help-badge green">POSS. ALT</span> (green) — worst-case ceiling AND visibility ≥ published alternate mins for that segment</li>
+          <li><span class="help-badge red">POSS. ALT</span> (red) — worst case falls below</li>
+          <li><span class="help-badge yellow">UNKNOWN</span> — no aerodrome forecast covers this airfield, or the brief doesn't cover the current Zulu time</li>
         </ul>
-        <p>Each row shows ICAO, approach + mins, current conditions (colored by flight category), and the badge. Current conditions are fetched in a single batched API call every 5 minutes.</p>
+        <p>Fallback text in the cell: <code>No forecast</code> (airfield not covered) / <code>Outside brief window</code> (no period covers now — e.g. between PM brief expiry and N1 start).</p>
+        <p><b>Old-weather overlay</b> — when the active brief is operationally stale (issued previous day OR valid period expired), every alt row gets the same yellow diagonal-stripe ⚠️ OLD WEATHER overlay as the other forecast-driven sections.</p>
       </section>
 
       <section id="help-aerodromes">
