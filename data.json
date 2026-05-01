@@ -1,27 +1,30 @@
 {
   "alternateMetars" : {
     "KCEW" : {
-      "altim" : 1014.6,
+      "altim" : 1014,
       "clouds" : [
         {
           "base" : 2300,
+          "cover" : "SCT"
+        },
+        {
+          "base" : 3000,
           "cover" : "BKN"
         },
         {
-          "base" : 2900,
-          "cover" : "OVC"
+          "base" : 11000,
+          "cover" : "BKN"
         }
       ],
-      "cover" : "OVC",
+      "cover" : "BKN",
       "dewp" : 15.6,
       "fltCat" : "MVFR",
       "icaoId" : "KCEW",
-      "metarType" : "METAR",
+      "metarType" : "SPECI",
       "name" : "Crestview\/Sikes Arpt, FL, US",
-      "rawOb" : "METAR KCEW 011653Z AUTO 00000KT 10SM BKN023 OVC029 19\/16 A2996 RMK AO2 SLP143 T01940156",
-      "reportTime" : "2026-05-01T17:00:00.000Z",
-      "slp" : 1014.3,
-      "temp" : 19.4,
+      "rawOb" : "SPECI KCEW 011738Z AUTO 00000KT 10SM SCT023 BKN030 BKN110 19\/16 A2994 RMK AO2 RAB03E22 P0000 T01890156",
+      "reportTime" : "2026-05-01T17:38:00.000Z",
+      "temp" : 18.9,
       "visib" : "10+",
       "wdir" : 0,
       "wspd" : 0
@@ -78,11 +81,11 @@
       "wspd" : 3
     },
     "KOZR" : {
-      "altim" : 1014,
+      "altim" : 1013.6,
       "clouds" : [
         {
-          "base" : 900,
-          "cover" : "FEW"
+          "base" : 700,
+          "cover" : "SCT"
         },
         {
           "base" : 2800,
@@ -95,14 +98,13 @@
       "icaoId" : "KOZR",
       "metarType" : "SPECI",
       "name" : "Ozark\/Cairns AAF, AL, US",
-      "rawOb" : "SPECI KOZR 011704Z AUTO 02007KT 10SM -DZ FEW009 OVC028 16\/14 A2994 RMK AO2 DZB04 SLP140",
-      "reportTime" : "2026-05-01T17:04:00.000Z",
-      "slp" : 1014,
+      "rawOb" : "SPECI KOZR 011735Z AUTO 36006KT 10SM SCT007 OVC028 16\/14 A2993 RMK AO2 DZE1655DZB04E06RAB06E22DZB22E35 SLP136",
+      "reportTime" : "2026-05-01T17:35:00.000Z",
+      "slp" : 1013.6,
       "temp" : 16,
       "visib" : "10+",
-      "wdir" : 20,
-      "wspd" : 7,
-      "wxString" : "-DZ"
+      "wdir" : 360,
+      "wspd" : 6
     },
     "KTOI" : {
       "altim" : 1015.7,
@@ -135,20 +137,20 @@
       "wxString" : "-RA BR"
     }
   },
-  "exportedAt" : "2026-05-01T17:38:40Z",
+  "exportedAt" : "2026-05-01T17:43:43Z",
   "forecasts" : [
     {
       "amendmentNumber" : 1,
-      "fetchedAt" : "2026-05-01T17:38:34Z",
+      "fetchedAt" : "2026-05-01T17:43:41Z",
       "flightBriefing" : {
         "aerodromeForecasts" : [
           {
             "icao" : "KOZR",
-            "id" : "88CF3D74-865D-4974-A898-FC08A0F2EDBD",
+            "id" : "99DCE812-71E1-4511-8975-E6EC8F24C754",
             "periods" : [
               {
                 "altimeter" : "29.88",
-                "id" : "8F0256E5-A931-44A9-956F-BC9A9964D15A",
+                "id" : "F2142104-0EFA-441A-9678-5539967228A8",
                 "periodType" : "",
                 "skyCondition" : "SCT007 BKN020 OVC060",
                 "surfaceWind" : "04006",
@@ -158,7 +160,7 @@
               },
               {
                 "altimeter" : "29.88",
-                "id" : "B6B5BCE3-F4BD-4F07-A078-965EB8C53F8C",
+                "id" : "7B5C56A5-BD08-4CD4-A5FC-141C7C00F39F",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN007",
                 "validFrom" : "1600Z",
@@ -173,11 +175,11 @@
           },
           {
             "icao" : "KJKA",
-            "id" : "91136975-9BD4-4EE3-AF62-5D7E03F59653",
+            "id" : "FB8E9473-D978-4C57-9E5A-432AFF78E192",
             "periods" : [
               {
                 "altimeter" : "29.84",
-                "id" : "5987E20F-B716-4D14-8CF6-0AB5C85767BC",
+                "id" : "8CEA072E-FE2E-4798-84CF-B3E482807916",
                 "periodType" : "",
                 "skyCondition" : "SCT007 BKN020 OVC060",
                 "surfaceWind" : "03006",
@@ -186,7 +188,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "82A1D25A-05D9-48A4-9048-E614F4C9F527",
+                "id" : "32C23A58-399E-4845-8473-E5FBF0FA06C8",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN007",
                 "validFrom" : "1600Z",
@@ -202,11 +204,11 @@
           },
           {
             "icao" : "KTCL",
-            "id" : "EA6184C0-DA5B-47DA-9C0F-BBE73D0FE700",
+            "id" : "3CCC33AB-D927-46C1-95B8-527123BD09E6",
             "periods" : [
               {
                 "altimeter" : "29.88",
-                "id" : "81347B46-7299-4A6E-8542-92CAC0CD58BE",
+                "id" : "680CD6F0-D0C6-4F5A-BEE1-D29615DEACC8",
                 "periodType" : "",
                 "skyCondition" : "SCT007 BKN020 OVC060",
                 "surfaceWind" : "03006",
@@ -215,7 +217,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "CDA7C299-F9EB-4615-ABFC-CF04A40E21E7",
+                "id" : "DE33C384-718D-4548-A778-474CD64127C6",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN007",
                 "validFrom" : "1130Z",
@@ -225,7 +227,7 @@
               },
               {
                 "altimeter" : "29.90",
-                "id" : "909BEEBA-D7C7-44DB-87BE-F59277145B82",
+                "id" : "28C185FD-C38F-4A40-ABF0-3E381AFA46BB",
                 "periodType" : "FROM",
                 "skyCondition" : "FEW012 BKN025 OVC060",
                 "surfaceWind" : "VRB06",
@@ -240,10 +242,10 @@
           },
           {
             "icao" : "K02A",
-            "id" : "735CBDD3-89C6-4857-9F8D-5E054F1EC240",
+            "id" : "13117FB7-3E46-4A37-96C7-82F6638D3B6C",
             "periods" : [
               {
-                "id" : "08AD8100-00FF-49BF-B818-618769529F24",
+                "id" : "FA2E1BF2-06A0-4E2E-87FF-21E83188AE6C",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN012",
                 "validFrom" : "1400Z",
@@ -258,11 +260,11 @@
           },
           {
             "icao" : "KVAD",
-            "id" : "EB416AC6-ECAC-4404-B8AB-886547A9E600",
+            "id" : "60C3EFB2-D8BE-4D3F-BAEB-D9D246962380",
             "periods" : [
               {
                 "altimeter" : "29.86",
-                "id" : "880357BE-B9CF-47B2-B5B0-3EE7919CDAF9",
+                "id" : "BFEB1EB7-A882-473B-9C30-D6DEF1178DCE",
                 "periodType" : "",
                 "skyCondition" : "FEW012 BKN025 OVC060",
                 "surfaceWind" : "03006",
@@ -271,7 +273,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "53D52F16-C4DC-4EA3-BCE1-DF6DDB9AA1FB",
+                "id" : "F24BF3E1-5552-453A-8FFA-C6CE43F6EAA8",
                 "periodType" : "TEMPO",
                 "validFrom" : "1130Z",
                 "validTo" : "1800Z",
@@ -286,11 +288,11 @@
           },
           {
             "icao" : "KCKF",
-            "id" : "34FE5718-5E80-4CC0-A024-5F10EFCABBA3",
+            "id" : "C5EC14FF-7E9A-409D-A278-D0CCF4D6DE1A",
             "periods" : [
               {
                 "altimeter" : "29.86",
-                "id" : "B42BA7A5-3908-4C4E-A9CB-D6EBC4B4EEB3",
+                "id" : "17710578-CEB9-4015-818B-F57900B3CCFF",
                 "periodType" : "",
                 "skyCondition" : "SCT007 BKN020 OVC060",
                 "surfaceWind" : "03006",
@@ -299,7 +301,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "2831E121-D2F2-4260-9DB5-14C464B02AC7",
+                "id" : "9ECEC478-57E2-4AB0-8BC5-02FADF7C6770",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN007",
                 "validFrom" : "1130Z",
@@ -309,7 +311,7 @@
               },
               {
                 "altimeter" : "29.86",
-                "id" : "E9069618-F2FF-421F-B529-3578D9020640",
+                "id" : "0EB6AAB5-DCEF-41A6-881C-A08206887067",
                 "periodType" : "FROM",
                 "skyCondition" : "FEW012 BKN025 OVC060",
                 "surfaceWind" : "04006",
@@ -324,10 +326,10 @@
           },
           {
             "icao" : "KLGC",
-            "id" : "1856D585-2FD3-4839-9971-0358FC71892B",
+            "id" : "ECA9B48F-222E-4F58-9DE6-B9D9B0DF66F1",
             "periods" : [
               {
-                "id" : "7377C9FD-AF71-411B-A452-B7EBE559EFE1",
+                "id" : "4F4BD1EF-B302-4BE4-81B6-57780CC14E2B",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN012",
                 "validFrom" : "1400Z",
@@ -346,49 +348,49 @@
         "enrouteData" : {
           "flightLevelWinds" : [
             {
-              "id" : "0C3DC232-C77B-4F75-BE64-0A3564ADF8A4",
+              "id" : "0B6AAC4A-3B76-4F27-B51C-83451A1539DA",
               "level" : "010",
               "temp" : "17 °C",
               "wind" : "03010KT"
             },
             {
-              "id" : "812BB9D7-A18D-4697-89DF-BF604F06164E",
+              "id" : "8AD69D3D-E653-4603-8EE5-4DD74E779751",
               "level" : "020",
               "temp" : "15 °C",
               "wind" : "02010KT"
             },
             {
-              "id" : "A8715874-1AF8-43E8-9614-533F0BE3ECBF",
+              "id" : "81723831-9C79-49DB-B28D-D7F2B3D3D895",
               "level" : "030",
               "temp" : "13 °C",
               "wind" : "35010KT"
             },
             {
-              "id" : "BA11CB22-E1E7-42B4-B441-0673B26410F2",
+              "id" : "8C7F1D60-E39F-4E82-A111-E31FDF11A724",
               "level" : "040",
               "temp" : "12 °C",
               "wind" : "33015KT"
             },
             {
-              "id" : "8F325617-0374-4163-A1C5-26432E9139E0",
+              "id" : "986FD4D5-8A38-426E-90EA-62662622A435",
               "level" : "050",
               "temp" : "11 °C",
               "wind" : "28015KT"
             },
             {
-              "id" : "674EB6B3-1168-4F5C-A222-D35502D2745E",
+              "id" : "32ED66EF-088F-4D49-874E-473CAC34E93A",
               "level" : "060",
               "temp" : "9 °C",
               "wind" : "27020KT"
             },
             {
-              "id" : "552BAE21-FD81-4DEC-86D7-45A87DAC5B07",
+              "id" : "A5C72797-0CE8-426C-B6DF-14DB734BFE65",
               "level" : "070",
               "temp" : "7 °C",
               "wind" : "26030KT"
             },
             {
-              "id" : "8D48920B-0D5B-46A3-8069-0EBE60BE2BE8",
+              "id" : "F49E9859-D5A7-4AC9-9463-3771FDCF098E",
               "level" : "080",
               "temp" : "6 °C",
               "wind" : "26030KT"
@@ -430,7 +432,7 @@
             "severity" : "NONE"
           }
         },
-        "id" : "B0F88ED6-03A0-4BF4-B09F-B2785F774C5B",
+        "id" : "41A6322E-D57B-476A-84FD-D1F23F0DEC39",
         "rawText" : "1 ---\n\nAM\nAMENDED @\n1600\nZ\nFLIGHT WEATHER BRIEFING\nAM\nPART I - TAKEOFF DATA (VALID AT 08L)\n1. DATE\n2. ACFT TYPE \/ NO.\n3. DEP PT \/ ETD\n4. RUNWAY TEMP 5. DEWPOINT\n6. TEMP DEV\n7. PRESSURE ALT\n8. DENSITY ALT\n260501\nZ OC 19\n14\nOC OC 105\nFT 1110\nFT\n9. SURFACE WIND\n10. CLIMB WINDS\n13. WWAS\nPART II - ENROUTE & MISSION DATA (ALL HEIGHTS ARE MSL)\n14. FLT LEVEL\/WIND\/TEMP 15. SPACE WEATHER\n16. SOLAR \/ LUNAR (LOCAL)\n010\n03010KT\n17 ⁰C 050\n28015KT\n\/ \/\n11 ⁰C\nNO IMPACT\nMARGINAL\nSEVERE\nBMNT:\n0502L\nEENT:\n2019L\n% ILLUM\n020 02010KT\n15 ⁰C\n060\n27020KT\n\/ \/\n9 ⁰C\nFREQ\nX\nBMCT: 0532L\nEECT:\n1948L\n100%\n030\n35010KT\n13 ⁰C\n070\n26030KT\n\/ \/ 7 ⁰C\nGPS\nX\n0558L SR: SS:\n1922L\nAZ (21L): 117\n040\n33015KT 12 ⁰C\n080\n26030KT\n6 ⁰C\nRAD\nX\n1941L \/ \/ MR: MS:\n0535L\nEL (21L): 3\n18. OBSCURATIONS AT FLT LEVEL RESTRICTING VISIBILITY\nYES\nTYPE\nPRECIP\n19. MINIMUM CEILING\n- LOCATION\n20. LLWS\n- LOCATION\n21. MINIMUM FREEZING LVL\n- LOCATION\nMOST AREAS\n007\nFT AGL\nNONE\nFT AGL ALL AREAS\n120\nFT MSL\n22. THUNDERSTORMS\n23. TURBULENCE (CAT II)\n24. ICING\n25. PRECIPITATION\nC C NONE\nAREA LINE\nNONE\nIN CLEAR\nIN CLOUD\nNONE\nRIME\nMIXED\nCLEAR\nNONE\nDZ\nRAIN\nSNOW\nPELLET\nISOLATED 1 -2%\nLIGHT\nOCNL\nX X\nTRACE\nLIGHT\nFEW 3 - 15%\nMODERATE\nLIGHT\nMODERATE\nX\nSCATTERED 16 - 45%\nSEVERE\nMODERATE\nHEAVY\nX\nNUMEROUS > 45%\nEXTREME\nSEVERE\nSHOWERS\nX\nLEVELS\nLEVELS\nFREEZING\nHAIL, SEV TURBC & ICING, HEAVY PRECIP,\nX 070-100\nLIGHTNING & WIND SHEAR EXPECTED IN\/NEAR\nLOCATION\nTHUNDERSTORMS\nLOCATION\nLOCATION\nLOCATION\nRAIN:\nALL AREAS\nX ALL AREAS\nPART III - AERODROME FORECASTS (ALL HEIGHTS ARE AGL)\n26. AIRDROME .\n27. VALID TIME\nZ TO 28. SFC WIND\n29. VSBY\/WEA\n30. SKY CONDITION\n31. ALSTG\nDEST \/ ALTN\nZ\nINS\nSame as KOZR:\nKOZR\n1600\n1800\n04006 7\nSCT007 BKN020 OVC060\n29.88\nDEST \/ ALTN\nZ TO\nTEMPO\n1600\nZ\n1800 INS\n2\nSHRA BKN007\nDEST \/ ALTN\nZ TO\nZ\nINS\n29.88\nALL STATIONS WITHIN 100 NM\nDEST \/ ALTN Z TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN Z TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN Z TO\nZ\nINS\nPART IV - CONTACT INFORMATION\nPMSV KOZR: 134.1\nWIF: 348.8\nOZR WX: 334-255-8385\n334-255-8397\nFACEBOOK: \/FTRUCKERWX\nX: @FTRUCKERWX\nhttps:\/\/www.army.mil\/rucker#org-weather\nKOZR MAXIMUMS: MAX PA:\nMAX TEMP:\n20⁰C\n340 FT\nMAX DA:\n1250 FT\n35.\nREMARKS:\nAM AMD T0 MAKE ALL STATIONS WITHIN 100NM TEMPO IFR UNTIL END OF AM PERIOD TO INCLUDE KJKA ON\nCONTINUATION SHEET.\nPART V - BRIEFING RECORD\n36. WX BRIEFED TIME\n37. FLIMSY BRIEFING #\n38. FORECASTER'S INITIALS\n40. VOID TIME\n41. EXTENDED TO\/INITIALS\n42. WX REBRIEF TIME\/INITIALS\n10:00\nAM 1130Z-1800Z\nJK\n11:30\nE Z Z Z Z\nDD Form 175-1 (LOCAL)\n\nDATE:\n1-May-26 AMD 1 @\n16:00\nZ\nFORECASTER:\nJK\nAM FLIGHT WEATHER BRIEFING CONTINUATION SHEET\nAM\nPART III - ATTACHMENT FOR TERMINAL FORECASTS OUTSIDE 100NM\n26. AIRDROME . 27. VALID TIME DEST \/ ALTN Z TO\nKJKA 1600 Z\n1800\n28. SFC WIND\n29. VSBY\/WEA 30. SKY CONDITION 31. ALSTG\nSame as KJKA:\nINS\n03006\n7 SCT007 BKN020 OVC060 29.84\nDEST \/ ALTN TEMPO Z TO\n1600 1800\nZ\nINS\n2 SHRA\nBKN007\nDEST \/ ALTN Z TO\nZ\nINS\nK1R8, K5R4\nDEST \/ ALTN Z TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN Z TO\nZ\nINS\nSame as KTCL:\nKTCL 1130 1400\n03006\n7 SCT007 BKN020 OVC060 29.88\nDEST \/ ALTN\nZ TO\nZ\nINS\nTEMPO 1130 1400\n4 SHRA BKN007\nDEST \/ ALTN Z TO\nZ\nINS\nFROM 1400 1800\nVRB06 7 FEW012 BKN025 OVC060 29.90\nDEST \/ ALTN Z TO\nZ\nINS\nK02A\nTEMPO\n1400 1800\n4 SHRA BKN012\nDEST \/ ALTN Z TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nKVAD\n1130 1800\n03006 INS\n7 FEW012 BKN025 OVC060\n29.86\nSame as KVAD:\nDEST \/ ALTN TEMPO Z TO\n1130\nZ\n1800 INS\n6 -SHRA\nDEST \/ ALTN Z TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nKVLD,KTMA\nDEST \/ ALTN Z TO\nZ\nINS\nDEST \/ ALTN Z TO\nZ\nINS\nSame as KCKF:\nKCKF 1130 1400\n03006 7\nSCT007 BKN020 OVC060\n29.86\nDEST \/ ALTN Z TO\nZ\nINS\nTEMPO 1130 1400\n4 SHRA BKN007\nDEST \/ ALTN\nZ TO\nZ\nINS\nFROM 1400 1800\n04006 7\nFEW012 BKN025 OVC060\n29.86\nKLGC\nDEST \/ ALTN Z TO\nZ\nINS\nTEMPO 1400 1800\n4\nSHRA\nBKN012\nDEST \/ ALTN\nZ TO\nZ\nINS\nREMARKS:\nON THE WEB: https:\/\/www.army.mil\/rucker#org-weather\nIMPORTANT NOTE: THIS IS AN ATTACHMENT TO THE MEF\/DD 175-1 FOR FLIGHTS OUTSIDE\n100NM ONLY. FOR TAKEOFF, ENROUTE DATA, AND WWAS, USE THE MEF\/DD 175-1. PLEASE\nCALL 334-255-8385\/8397 FOR UPDATES.\n\n--- PAGE 1 ---\n\n",
         "remarks" : "AM AMD T0 MAKE ALL STATIONS WITHIN 100NM TEMPO IFR UNTIL END OF AM PERIOD TO INCLUDE KJKA ON CONTINUATION SHEET.",
         "takeoffData" : {
@@ -458,7 +460,7 @@
             "amendmentNumber" : "AMD 1",
             "amendmentTime" : "1600Z",
             "forecast" : "04006KT 7SM SCT007 BKN020 OVC060 ISOLD 1600-1800Z: 2SM SHRA BKN007",
-            "id" : "57B97749-3B35-4DCF-A71E-43F7349C54F6",
+            "id" : "EC2A2667-2426-444F-AE33-DA2A61ABD952",
             "name" : "GOLDFISH",
             "tsCoverage" : "NONE"
           },
@@ -467,7 +469,7 @@
             "amendmentText" : "04006KT 7SM SCT007 BKN020 OVC060 ISOLD 1600-1800Z: 2SM SHRA BKN007",
             "amendmentTime" : "1600Z",
             "forecast" : "",
-            "id" : "CBC5981A-408E-4554-B8C7-BF128208BEE8",
+            "id" : "A43815CF-96A8-476C-8FB1-A5032311CC5D",
             "name" : "VANGUARD N",
             "tsCoverage" : "NONE"
           },
@@ -476,7 +478,7 @@
             "amendmentText" : "04006KT 7SM SCT007 BKN020 OVC060 ISOLD 1600-1800Z: 2SM SHRA BKN007",
             "amendmentTime" : "1600Z",
             "forecast" : "",
-            "id" : "C3619131-9D5C-4D39-897C-C3AA40756BEE",
+            "id" : "9D5A12AD-620D-4451-AFBE-2AEBA07959CD",
             "name" : "VANGUARD C",
             "tsCoverage" : "NONE"
           },
@@ -485,7 +487,7 @@
             "amendmentText" : "04006KT 7SM SCT007 BKN020 OVC060 ISOLD 1600-1800Z: 2SM SHRA BKN007",
             "amendmentTime" : "1600Z",
             "forecast" : "",
-            "id" : "0042B27E-13F2-47C7-AD5E-8B0AA8DC3918",
+            "id" : "9872F6B6-A405-4DFD-A34F-872F2C7D791E",
             "name" : "VANGUARD S",
             "tsCoverage" : "NONE"
           },
@@ -494,7 +496,7 @@
             "amendmentText" : "04006KT 7SM SCT007 BKN020 OVC060 ISOLD 1600-1800Z: 2SM SHRA BKN007",
             "amendmentTime" : "1600Z",
             "forecast" : "",
-            "id" : "6D0B6A42-1C2D-4D93-B4C9-FDF1FE71EF06",
+            "id" : "93BFBEAF-5EC4-4C2D-90D6-052A5FB44942",
             "name" : "HAWK",
             "tsCoverage" : "NONE"
           },
@@ -503,7 +505,7 @@
             "amendmentText" : "04006KT 7SM SCT007 BKN020 OVC060 ISOLD 1600-1800Z: 2SM SHRA BKN007",
             "amendmentTime" : "1600Z",
             "forecast" : "",
-            "id" : "F59FC037-3A42-4BC5-A92C-70CA83C882FA",
+            "id" : "3CDF14AD-D976-4EAE-B41C-2667C326A931",
             "name" : "BEARCAT",
             "tsCoverage" : "NONE"
           }
@@ -517,56 +519,56 @@
         },
         "flightLevelWinds" : [
           {
-            "id" : "F07DAA45-995A-4D0C-AF26-E346101FED3D",
+            "id" : "B599AFCA-3FEC-4EC0-B1C3-B2C3514C0667",
             "level" : "010",
             "temp" : "17 °C",
             "wind" : "03010 KT"
           },
           {
-            "id" : "DAEC54A9-5D2E-48DE-AAF1-AE20103F2C0D",
+            "id" : "2DC3EB14-D4E2-4D78-B4F1-1A3DD5F9ADF9",
             "level" : "020",
             "temp" : "15 °C",
             "wind" : "02010 KT"
           },
           {
-            "id" : "F1BEAFEC-91B6-4459-8FC4-252DDACCE311",
+            "id" : "105BF8C4-A631-4B12-BAE1-FD2FD7B2F4F6",
             "level" : "030",
             "temp" : "13 °C",
             "wind" : "35010 KT"
           },
           {
-            "id" : "851E5F70-2FBF-4ED6-BF43-74CB297757C4",
+            "id" : "FCA16404-D245-4345-A9AA-10231B2FC3C6",
             "level" : "040",
             "temp" : "12 °C",
             "wind" : "33015 KT"
           },
           {
-            "id" : "59CD23BE-A6CD-4553-892E-7DD5AD3A5772",
+            "id" : "9BCCF7AA-FC03-441E-B9B0-6F4C957ADE4A",
             "level" : "050",
             "temp" : "11 °C",
             "wind" : "28015 KT"
           },
           {
-            "id" : "0246A25A-B1CB-44E8-B761-D54B23A872E8",
+            "id" : "7F13D174-FE35-42D1-8632-33170984BE31",
             "level" : "060",
             "temp" : "9 °C",
             "wind" : "27020 KT"
           },
           {
-            "id" : "CEB3BB3A-2D81-44C9-A40A-1D7C03087516",
+            "id" : "435DC3BE-7EBF-498E-AC66-47F08F2FF8A2",
             "level" : "070",
             "temp" : "7 °C",
             "wind" : "26030 KT"
           },
           {
-            "id" : "907DCEDC-7FEA-4D17-A8E0-103F2BCCD06A",
+            "id" : "FA578000-5789-4C1C-A4AC-3BB1561E3EA0",
             "level" : "080",
             "temp" : "6 °C",
             "wind" : "26030 KT"
           }
         ],
         "forecasterInitials" : "JK",
-        "id" : "0D9AFC97-0641-4004-854E-B29F38433367",
+        "id" : "D42125E3-4856-4D34-8C77-218B77450A6A",
         "maxDensityAlt" : {
           "area" : "1810",
           "kozr" : "1250"
@@ -659,16 +661,16 @@
       "type" : "AM"
     },
     {
-      "fetchedAt" : "2026-05-01T17:38:34Z",
+      "fetchedAt" : "2026-05-01T17:43:41Z",
       "flightBriefing" : {
         "aerodromeForecasts" : [
           {
             "icao" : "KOZR",
-            "id" : "57AFFF50-2821-4438-9DE9-FB9E61943C86",
+            "id" : "034961A0-4085-462B-8853-347B6B253768",
             "periods" : [
               {
                 "altimeter" : "29.84",
-                "id" : "EE2B553D-D169-4385-93A6-7A741EEDA8F5",
+                "id" : "4E38BCA0-5E2C-4DA3-8F3C-90865161F5ED",
                 "periodType" : "",
                 "skyCondition" : "FEW007 SCT012 OVC020",
                 "surfaceWind" : "03008",
@@ -677,7 +679,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "CB205B8D-835A-46A6-9FC3-81236E55AAA6",
+                "id" : "8A333458-9801-4B9D-BE22-BDE61AEBE153",
                 "periodType" : "TEMPO",
                 "skyCondition" : "SCT007 OVC012",
                 "validFrom" : "1800Z",
@@ -687,7 +689,7 @@
               },
               {
                 "altimeter" : "29.80",
-                "id" : "30261DE1-EEA1-44E5-8CB2-5ECE9CAFCA02",
+                "id" : "6972591C-2EA6-4B99-9C53-0D5CCF7728D9",
                 "periodType" : "FROM",
                 "skyCondition" : "SCT007 BKN012 OVC020",
                 "surfaceWind" : "03010G15",
@@ -697,7 +699,7 @@
                 "weather" : "VCTS"
               },
               {
-                "id" : "BEE8E0FB-EEF7-4191-87F0-74FC5B95DFFE",
+                "id" : "0CA69C67-BC6E-4A93-BEE3-31C3E0BD55D6",
                 "periodType" : "TEMPO",
                 "skyCondition" : "OVC007",
                 "validFrom" : "2300Z",
@@ -733,11 +735,11 @@
           },
           {
             "icao" : "KCEW",
-            "id" : "343EA2F4-B019-4652-9197-53BEB0325E2C",
+            "id" : "591989B3-6431-4DB7-A304-881EF4026160",
             "periods" : [
               {
                 "altimeter" : "29.82",
-                "id" : "7540CC12-C60C-41C0-A44A-03CD189DE56D",
+                "id" : "2D441116-DD3E-43F8-BB35-AF349CF1F370",
                 "periodType" : "",
                 "skyCondition" : "FEW007 SCT012 OVC020",
                 "surfaceWind" : "02008",
@@ -746,7 +748,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "D700C4DA-281F-451A-8140-E96CBD483BF0",
+                "id" : "DCA9EED8-320C-4963-96E0-51D4FF7B717D",
                 "periodType" : "TEMPO",
                 "skyCondition" : "SCT007 OVC012",
                 "validFrom" : "1800Z",
@@ -756,7 +758,7 @@
               },
               {
                 "altimeter" : "29.79",
-                "id" : "C260E4AA-DB0A-4E82-A560-73A9F0A0BAA8",
+                "id" : "7ED66A38-B804-4CFC-9627-E6996B8D9928",
                 "periodType" : "FROM",
                 "skyCondition" : "SCT007 BKN012 OVC020",
                 "surfaceWind" : "02010G15",
@@ -766,7 +768,7 @@
                 "weather" : "VCTS"
               },
               {
-                "id" : "BBE4EC68-C6D8-4F98-9EC4-18EB6AE59BB4",
+                "id" : "80FA1F16-AF90-4279-AE05-110115738034",
                 "periodType" : "TEMPO",
                 "skyCondition" : "SCT004 OVC007",
                 "surfaceWind" : "VRB20G25",
@@ -792,11 +794,11 @@
           },
           {
             "icao" : "KJKA",
-            "id" : "087ED9AD-0347-42F1-96AF-8E3910E0582F",
+            "id" : "1C6A4274-5B33-44A5-BEC4-3BE77B045640",
             "periods" : [
               {
                 "altimeter" : "29.82",
-                "id" : "1CA21269-F818-41B3-8210-5684A2D1A2A3",
+                "id" : "380CA138-6C80-428B-8D78-710ED5778822",
                 "periodType" : "",
                 "skyCondition" : "SCT007 BKN012 OVC025",
                 "surfaceWind" : "03010G15",
@@ -806,7 +808,7 @@
                 "weather" : "VCTS"
               },
               {
-                "id" : "2A2B4836-3899-4C23-9E2D-C500B2E3CA69",
+                "id" : "7AF5B986-81DD-4D55-82F0-FCCDEAF63146",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN007 OVC012",
                 "validFrom" : "1800Z",
@@ -816,7 +818,7 @@
               },
               {
                 "altimeter" : "29.78",
-                "id" : "DD90B44E-9B5E-4474-961F-E99C08C91178",
+                "id" : "A2ACA8C3-D523-474B-9004-B724ABA4079F",
                 "periodType" : "FROM",
                 "skyCondition" : "SCT007 OVC012",
                 "surfaceWind" : "02015G20",
@@ -832,10 +834,10 @@
           },
           {
             "icao" : "K5R4",
-            "id" : "A951203A-E84E-4875-9454-5965C09B40B1",
+            "id" : "2A2A292B-C372-4318-AE98-B74E421B4086",
             "periods" : [
               {
-                "id" : "4635D971-1099-41F3-A363-CBBDCA5556C4",
+                "id" : "E448EF18-21CF-4032-9E7E-F9C2EC0023B4",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN007 OVC012",
                 "surfaceWind" : "VRB20G25",
@@ -851,11 +853,11 @@
           },
           {
             "icao" : "KVAD",
-            "id" : "FC4677A2-06F7-4C68-B984-D245EFBD43E9",
+            "id" : "9BEB362A-F02E-49F3-8AAE-03E9AB396BF1",
             "periods" : [
               {
                 "altimeter" : "29.82",
-                "id" : "70D91713-AA01-4735-AE41-0E82CCF899F3",
+                "id" : "5A7C5FF5-1A14-4A42-88D0-EBDC366DC88A",
                 "periodType" : "",
                 "skyCondition" : "SCT012 BKN025 OVC040",
                 "surfaceWind" : "35010G15",
@@ -864,7 +866,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "046126F4-2C9B-4547-8513-A4B0C8D2D050",
+                "id" : "AF86AD4A-60AA-449E-8C6F-C492907EBD80",
                 "periodType" : "TEMPO",
                 "skyCondition" : "SCT007 BKN012 OVC025",
                 "validFrom" : "1800Z",
@@ -874,7 +876,7 @@
               },
               {
                 "altimeter" : "29.78",
-                "id" : "442C62B6-8A14-4215-B31A-374A02119660",
+                "id" : "CC647FDB-D452-4477-97FA-EA37DB8B9BE5",
                 "periodType" : "FROM",
                 "skyCondition" : "SCT007 BKN012 OVC025",
                 "surfaceWind" : "35010G15",
@@ -884,7 +886,7 @@
                 "weather" : "-SHRA"
               },
               {
-                "id" : "8C165753-88FE-46B1-AE2C-D1A716953829",
+                "id" : "4FDB3353-5D9F-47A1-B38E-AF6280A04780",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN007 OVC012",
                 "validFrom" : "2200Z",
@@ -900,11 +902,11 @@
           },
           {
             "icao" : "KTCL",
-            "id" : "8271D2A8-A451-47F5-A717-4BCEACB7CC8F",
+            "id" : "AA590C3D-0876-4EA4-B968-C942BE156E23",
             "periods" : [
               {
                 "altimeter" : "29.86",
-                "id" : "0BD9960C-C071-4F09-828B-359CF6811EEC",
+                "id" : "ECABF5A6-D68E-4156-8E40-DC925CCCAC64",
                 "periodType" : "",
                 "skyCondition" : "SCT040 BKN120",
                 "surfaceWind" : "35010G15",
@@ -913,7 +915,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "1AA10EB0-4169-47A2-B8E6-2D4351B67887",
+                "id" : "9B205796-87FD-4A76-B106-6D261E4DD8A2",
                 "periodType" : "TEMPO",
                 "skyCondition" : "SCT015 BKN030 OVC080",
                 "validFrom" : "2100Z",
@@ -928,11 +930,11 @@
           },
           {
             "icao" : "KLGC",
-            "id" : "FD38ACE4-A7A6-446E-9BB3-F8D48F667B87",
+            "id" : "18FF6FBE-A5FF-4971-B3A8-2279728DAA13",
             "periods" : [
               {
                 "altimeter" : "29.84",
-                "id" : "401B661B-DF54-46B5-91D9-BA663D7DD963",
+                "id" : "75A7C047-16E9-4ED2-8DEA-AC91C57300DB",
                 "periodType" : "",
                 "skyCondition" : "FEW020 BKN030 OVC050",
                 "surfaceWind" : "32008",
@@ -941,7 +943,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "03123B2C-1FFB-4974-AD30-6047F83CB63C",
+                "id" : "BF0655BC-00CF-4151-A5BB-A22BB94DD7B3",
                 "periodType" : "TEMPO",
                 "skyCondition" : "SCT012 BKN020 OVC030",
                 "validFrom" : "1900Z",
@@ -951,7 +953,7 @@
               },
               {
                 "altimeter" : "29.82",
-                "id" : "D53159EC-8C1B-4DA0-A8C0-619B85AD9C6F",
+                "id" : "8CB4CC5B-D4F7-412B-A209-2E4737663375",
                 "periodType" : "FROM",
                 "skyCondition" : "SCT012 BKN018 OVC025",
                 "surfaceWind" : "32008",
@@ -967,10 +969,10 @@
           },
           {
             "icao" : "KCKF",
-            "id" : "7F8EECC8-6267-4D50-B6AD-0F672E2707D2",
+            "id" : "F7456E98-2A2D-4340-8A44-9939E8456DEE",
             "periods" : [
               {
-                "id" : "945DF05A-AF37-4AD6-96F7-FB6BFFE3D81B",
+                "id" : "D293C6AC-028E-420E-9BC7-A6E31AF3ACE8",
                 "periodType" : "TEMPO",
                 "skyCondition" : "SCT007 BKN012 OVC018",
                 "validFrom" : "2200Z",
@@ -988,49 +990,49 @@
         "enrouteData" : {
           "flightLevelWinds" : [
             {
-              "id" : "E61593C7-2572-4D0E-AADE-0FFD2C66D6E7",
+              "id" : "080BAE6A-51CD-4CE8-BA88-1C2F4D932B81",
               "level" : "010",
               "temp" : "50 °C",
               "wind" : "03005KT"
             },
             {
-              "id" : "118001B3-89E3-4BCB-9A5B-36E09AC5CCD2",
+              "id" : "FE65853B-2450-41E3-95E3-A446480D99DB",
               "level" : "020",
               "temp" : "15 °C",
               "wind" : "04005KT"
             },
             {
-              "id" : "E1CFFCA1-6CF1-4CC2-A5B6-0B196863F3CC",
+              "id" : "CAFA144D-14AB-462E-A05B-1510E085E12F",
               "level" : "030",
               "temp" : "13 °C",
               "wind" : "02005KT"
             },
             {
-              "id" : "23356979-7C16-4037-A93D-17824C555995",
+              "id" : "D3A665D1-6910-4FB9-BBC2-1D209FB93226",
               "level" : "040",
               "temp" : "13 °C",
               "wind" : "33010KT"
             },
             {
-              "id" : "9B6C9B87-5ED9-4A33-9444-7F9B1890691A",
+              "id" : "B46FD148-6155-47F6-9985-68CD3F0B783E",
               "level" : "050",
               "temp" : "12 °C",
               "wind" : "29020KT"
             },
             {
-              "id" : "BB30C2F5-1131-4DE9-98A0-C5FDB2D868EB",
+              "id" : "3F6D167D-8152-4496-BD63-7DC2289CAF29",
               "level" : "060",
               "temp" : "10 °C",
               "wind" : "28030KT"
             },
             {
-              "id" : "78BE47FA-AD3C-4316-8EC3-97032CEFA656",
+              "id" : "30C91A9F-6C38-41CD-AB33-425447DA048B",
               "level" : "070",
               "temp" : "9 °C",
               "wind" : "26020KT"
             },
             {
-              "id" : "37D32251-F4F4-4926-936F-63936E4F8D40",
+              "id" : "A771E944-72C4-43AA-9D91-1E2A0E72B777",
               "level" : "080",
               "temp" : "7 °C",
               "wind" : "26030KT"
@@ -1075,7 +1077,7 @@
             "severity" : "LIGHT"
           }
         },
-        "id" : "E920E9D9-FE6D-41FE-A795-11BA5D0AB8FF",
+        "id" : "B4883DB7-7B12-4BDD-AF69-DFCFC68D2216",
         "rawText" : "1 ---\n\nPM\nFLIGHT WEATHER BRIEFING\nPM\nPART I - TAKEOFF DATA (VALID AT 14L)\n1. DATE\n2. ACFT TYPE \/ NO. 3. DEP PT \/ ETD\n4. RUNWAY TEMP\n5. DEWPOINT\n6. TEMP DEV\n7. PRESSURE ALT\n8. DENSITY ALT\n260501\nZ OC 20\n14\nOC OC 330\nFT 1214\nFT\n9. SURFACE WIND\n10. CLIMB WINDS\n13. WWAS\nWATCH 05-001 LIGHTNING POTENTIAL W\/IN 15NM VT: 2100Z TIL 0730Z\nPART II - ENROUTE & MISSION DATA (ALL HEIGHTS ARE MSL)\n14. FLT LEVEL\/WIND\/TEMP 15. SPACE WEATHER\n16. SOLAR \/ LUNAR (LOCAL)\n010 18 ⁰C 03005KT\n050\n\/ \/\n29020KT 12 ⁰C NO IMPACT\nMARGINAL\nSEVERE BMNT: 0502L EENT:\n2019L\n% ILLUM\n020 04005KT\n15 ⁰C 060\n28030KT\n\/ \/\n10 ⁰C\nFREQ\nX\nBMCT:\n0532L EECT:\n1948L 100%\n030\n02005KT\n13 ⁰C\n070\n26020KT\n\/ \/ 9 ⁰C\nGPS\nX\nSR: SS:\n0558L 1922L AZ (21L): 117\n040\n33010KT\n13 ⁰C\n080\n26030KT\n7 ⁰C\nRAD\nX\n1941L \/ \/ MR: MS:\n0535L\nEL (21L): 3\n18. OBSCURATIONS AT FLT LEVEL RESTRICTING VISIBILITY\nYES\nTYPE\nPRECIP\n19. MINIMUM CEILING\n- LOCATION\n20. LLWS\n- LOCATION\n21. MINIMUM FREEZING LVL\n- LOCATION\nISOLD MOST AREAS\n007\nFT AGL\nNONE\nFT AGL\nALL AREAS\n118\nFT MSL\n22. THUNDERSTORMS\n23. TURBULENCE (CAT II)\n24. ICING\n25. PRECIPITATION\nNONE\nAREA LINE NONE\nIN CLEAR\nIN CLOUD\nX C NONE\nRIME\nMIXED\nCLEAR\nNONE\nDZ\nRAIN\nSNOW\nPELLET\nK\nISOLATED 1 -2%\nMT 420\nLIGHT\nOCNL\nOCNL\nTRACE\nLIGHT\nX\nL\nFEW 3 - 15%\nMT 450\nMODERATE\nLIGHT\nMODERATE X\nSCATTERED 16 - 45%\nSEVERE\nMODERATE\nHEAVY\nX\nNUMEROUS > 45%\nEXTREME\nSEVERE\nSHOWERS\nX\nLEVELS\nLEVELS\nFREEZING\nHAIL, SEV TURBC & ICING, HEAVY PRECIP,\nLIGHTNING & WIND SHEAR EXPECTED IN\/NEAR\nX 050-100\nLOCATION\nTHUNDERSTORMS\nLOCATION\nLOCATION\nLOCATION\nRAIN:\nALL AREAS\nK\nX ALL AREAS\nMOST AREAS\nL WEST AREAS\nPART III - AERODROME FORECASTS (ALL HEIGHTS ARE AGL)\n26. AIRDROME .\n27. VALID TIME\n28. SFC WIND\n29. VSBY\/WEA\n30. SKY CONDITION\n31. ALSTG\nSame as KOZR:\nDEST \/ ALTN\nZ TO\nZ\nINS\nKOZR\n1800 2100\n03008\n7\nFEW007 SCT012 OVC020\n29.84\nDEST \/ ALTN\nZ TO\nZ\nINS\nTEMPO\n1800 2100\n2\nSHRA\nSCT007 OVC012\nDEST \/ ALTN\nZ TO\nZ\nINS\nFROM\n2100\n0030\n03010G15\n6\n-SHRA VCTS\nSCT007 BKN012 OVC020\n29.80\nDEST \/ ALTN\nZ TO\nZ\nINS\nTEMPO\n2300\n0030\n2\nSHRA\nOVC007\nKOZR,KLOR,KHEY,KSXS,KFHK,\nKDHN,KEDN,KBIJ,KBGE,KABY,\nKMGR,K17J,KMGM,\nKSEM,KPAM,KECP,KMAI,KBCR,\nKTLH,KEUF,KLSF,KCSG,KAUO\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nKCEW Z TO\n1800\nZ\n2000\nINS\nSame as KCEW:\n02008\n7\nFEW007 SCT012 OVC020\n29.82\nDEST \/ ALTN\nTEMPO\nZ TO\n1800\nZ\n2000\nINS\n2\nSHRA\nSCT007 OVC012\nDEST \/ ALTN\nFROM\nZ TO\n2000\nZ\n0030 INS\n02010G15\n6\n-SHRA VCTS\nSCT007 BKN012 OVC020\n29.79\nDEST \/ ALTN\nTEMPO\nZ TO\nZ\n2100 2300\nINS\nVRB20G25\n2\nTSRA\nSCT004 OVC007\nKDTS,KHRT,KVPS,KNPA,K0J4,\nKCEW,KEGI,KPRN,KTOI,KMVC,\nK79J,KGZH\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN Z TO\nZ\nINS\nPART IV - CONTACT INFORMATION\nPMSV KOZR: 134.1\nWIF: 348.8\nKOZR WX: 334-255-8385\n334-255-8397\nFACEBOOK: \/FTRUCKERWX\nX: @FTRUCKERWX https:\/\/www.army.mil\/rucker#org-weather\nKOZR MAXIMUMS: MAX TEMP:\n21⁰C\nMAX PA:\n410 FT\nMAX DA:\n1440 FT\n35.\nREMARKS:\nPART V - BRIEFING RECORD\n36. WX BRIEFED TIME\n37. FLIMSY BRIEFING #\n38. FORECASTER'S INITIALS\n40. VOID TIME\n41. EXTENDED TO\/INITIALS\n42. WX REBRIEF TIME\/INITIALS\n15:45\nPM 1800Z-0030Z\nJK\n17:15\nE Z Z Z Z\nDD Form 175-1 (LOCAL)\n\nDATE:\n1-May-26\nFORECASTER:\nJK\nPM FLIGHT WEATHER BRIEFING CONTINUATION SHEET\nPM\nPART III - ATTACHMENT FOR TERMINAL FORECASTS OUTSIDE 100NM\n26. AIRDROME . 27. VALID TIME DEST \/ ALTN Z TO\nKJKA 1800 2100 Z\n28. SFC WIND\n29. VSBY\/WEA\n30. SKY CONDITION 31. ALSTG\nSame as KJKA:\nINS\n03010G15\n7 VCTS SCT007 BKN012 OVC025 29.82\nDEST \/ ALTN TEMPO Z TO\n1800 2100\nZ\nINS\n3 SHRA\nBKN007 OVC012\nDEST \/ ALTN FROM\nZ TO\nZ\n2100\n0030\nINS\n02015G20 5\n-SHRA VCTS SCT007 OVC012\n29.78\nK1R8, K5R4\nDEST \/ ALTN TEMPO Z TO\n2100 0030\nZ\nINS\nVRB20G25\n2 TSRA BKN007 OVC012\nDEST \/ ALTN Z TO\nZ\nINS\nDEST \/ ALTN Z TO\nZ\nINS\nSame as KVAD:\nKVAD 1800\n2100\n35010G15\n7 SCT012 BKN025 OVC040 29.82\nDEST \/ ALTN\nZ TO\nZ\nINS\nTEMPO 1800 2100\n5 -SHRA SCT007 BKN012 OVC025\nDEST \/ ALTN Z TO\nZ\nINS\nFROM 2100 0030\n35010G15 6 -SHRA SCT007 BKN012 OVC025\n29.78\nDEST \/ ALTN\nZ TO\nZ\nINS\nKVAD,KVLD,KTMA\nTEMPO 2200 0030\n3 SHRA BKN007 OVC012\nDEST \/ ALTN Z TO\nZ\nINS\nDEST \/ ALTN\nZ TO\nZ\nINS\nSame as KTCL:\nKTCL\n1800 0030\n35010G15\n7 SCT040 BKN120\n29.86\nDEST \/ ALTN\nTEMPO Z TO\n2100\nZ\n0030 5\nINS\n-SHRA\nSCT015 BKN030 OVC080\nDEST \/ ALTN Z TO\nZ\nINS\nK02A\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN Z TO\nZ\nINS\nDEST \/ ALTN Z TO\nZ\nINS Same as KLGC:\nKLGC 1800 2100\n32008 7\nFEW020 BKN030 OVC050\n29.84\nDEST \/ ALTN\nZ TO\nZ\nINS\nTEMPO 1900 2100\n5 -SHRA SCT012 BKN020 OVC030\nDEST \/ ALTN Z TO\nZ\nINS\nFROM 2100 0030\n32008 6\n-SHRA\nSCT012 BKN018 OVC025 29.82\nKCKF\nDEST \/ ALTN Z TO\nZ\nINS\nTEMPO 2200 0030\n3 SHRA SCT007 BKN012 OVC018\nDEST \/ ALTN\nZ TO\nZ\nINS\nREMARKS:\nON THE WEB: https:\/\/www.army.mil\/rucker#org-weather\nIMPORTANT NOTE: THIS IS AN ATTACHMENT TO THE MEF\/DD 175-1 FOR FLIGHTS OUTSIDE\n100NM ONLY. FOR TAKEOFF, ENROUTE DATA, AND WWAS, USE THE MEF\/DD 175-1. PLEASE\nCALL 334-255-8385\/8397 FOR UPDATES.\n\n--- PAGE 1 ---\n\n",
         "takeoffData" : {
           "date" : "260501",
@@ -1099,37 +1101,37 @@
         "areaForecasts" : [
           {
             "forecast" : "03008KT 7SM FEW007 SCT012 OVC020 ISOLD 1800-2100Z: 2SM SHRA SCT007 OVC012 AFT 2100Z: 03010G15KT 6SM -SHRA VCTS SCT007 BKN012 OVC020 ISOLD 2300-0030Z: 2SM SHRA OVC007",
-            "id" : "FF2ABE82-EDFC-44AD-B6C5-A0C6A21050A8",
+            "id" : "C0797E74-0774-41DD-8D75-826AEDE0305C",
             "name" : "GOLDFISH",
             "tsCoverage" : "ISOLATED (1-10%)"
           },
           {
             "forecast" : "02008KT 7SM FEW007 SCT012 OVC020 ISOLD 1800-2000Z: 2SM SHRA SCT007 OVC012 AFT 2000Z: 02010G15KT 6SM -SHRA VCTS SCT007 BKN012 OVC020 ISOLD 2100-2300Z: VRB20G25KT 2SM TSRA SCT004 OVC007",
-            "id" : "5D455E63-45C5-445E-8453-E71F04DE5B62",
+            "id" : "2A01EC9D-DEF7-4329-A70A-3161D98FA03A",
             "name" : "VANGUARD N",
             "tsCoverage" : "FEW (11-25%)"
           },
           {
             "forecast" : "02008KT 7SM FEW007 SCT012 OVC020 ISOLD 1800-2000Z: 2SM SHRA SCT007 OVC012 AFT 2000Z: 02010G15KT 6SM -SHRA VCTS SCT007 BKN012 OVC020 ISOLD 2100-2300Z: VRB20G25KT 2SM TSRA SCT004 OVC007",
-            "id" : "E731245E-6A8A-49CC-9CFB-7940D9CD1B94",
+            "id" : "30B0E951-4B62-4D49-A558-F3447C5F79DF",
             "name" : "VANGUARD C",
             "tsCoverage" : "FEW (11-25%)"
           },
           {
             "forecast" : "02008KT 7SM FEW007 SCT012 OVC020 ISOLD 1800-2000Z: 2SM SHRA SCT007 OVC012 AFT 2000Z: 02010G15KT 6SM -SHRA VCTS SCT007 BKN012 OVC020 ISOLD 2100-2300Z: VRB20G25KT 2SM TSRA SCT004 OVC007",
-            "id" : "03CDA200-0296-4AE6-BB4C-006E8705C063",
+            "id" : "C48893BA-979A-430E-A6ED-B8E9F7E9688E",
             "name" : "VANGUARD S",
             "tsCoverage" : "FEW (11-25%)"
           },
           {
             "forecast" : "03008KT 7SM FEW007 SCT012 OVC020 ISOLD 1800-2100Z: 2SM SHRA SCT007 OVC012 AFT 2100Z: 03010G15KT 6SM -SHRA VCTS SCT007 BKN012 OVC020 ISOLD 2300-0030Z: 2SM SHRA OVC007",
-            "id" : "4E020A8E-0AE4-40AA-A3F8-27F33D847F3B",
+            "id" : "549E7907-543E-40D9-8C42-AE90C833CDF4",
             "name" : "HAWK",
             "tsCoverage" : "ISOLATED (1-10%)"
           },
           {
             "forecast" : "03008KT 7SM FEW007 SCT012 OVC020 ISOLD 1800-2100Z: 2SM SHRA SCT007 OVC012 AFT 2100Z: 03010G15KT 6SM -SHRA VCTS SCT007 BKN012 OVC020 ISOLD 2300-0030Z: 2SM SHRA OVC007",
-            "id" : "81940CFB-C358-440B-8E8C-B5CE2FEC87C5",
+            "id" : "71AA4B41-432E-4D12-8A6B-1A4FF40EDCFC",
             "name" : "BEARCAT",
             "tsCoverage" : "ISOLATED (1-10%)"
           }
@@ -1143,56 +1145,56 @@
         },
         "flightLevelWinds" : [
           {
-            "id" : "2D364C9C-21AD-4D51-BEDB-21AF9A606FE2",
+            "id" : "D84B98A6-5618-42E0-8A57-75D9E5640164",
             "level" : "010",
             "temp" : "18 °C",
             "wind" : "03005 KT"
           },
           {
-            "id" : "1825AD47-1CEC-4375-A2B9-6666122B5E3E",
+            "id" : "5158C051-2598-4A08-9256-7AB46700BFA5",
             "level" : "020",
             "temp" : "15 °C",
             "wind" : "04005 KT"
           },
           {
-            "id" : "2531F2BB-68AB-4926-BC10-8CB717437889",
+            "id" : "869DBBCD-973E-4522-89A3-8B4EB75B74B5",
             "level" : "030",
             "temp" : "13 °C",
             "wind" : "02005 KT"
           },
           {
-            "id" : "23557BF7-3084-46EC-8835-E698EABB7BD7",
+            "id" : "90E566A8-9C18-4F24-A5E1-BAC162949AFE",
             "level" : "040",
             "temp" : "13 °C",
             "wind" : "33010 KT"
           },
           {
-            "id" : "45FE9532-9975-406B-B7E1-148BC3DFC50B",
+            "id" : "330B778D-56F2-4FF7-BECB-B06348B019B3",
             "level" : "050",
             "temp" : "12 °C",
             "wind" : "29020 KT"
           },
           {
-            "id" : "07EAF941-4853-420B-B380-98C59D5F6BBC",
+            "id" : "574DD4BD-DE43-4D30-8CA0-EE6EE3146EA0",
             "level" : "060",
             "temp" : "10 °C",
             "wind" : "28030 KT"
           },
           {
-            "id" : "2E0DFC2B-822D-4BDB-9473-1075E2D37B10",
+            "id" : "9ECC66F8-DA47-4E2D-BDE3-744D450E57CC",
             "level" : "070",
             "temp" : "9 °C",
             "wind" : "26020 KT"
           },
           {
-            "id" : "F3EC69DB-E236-4E1F-BF61-60B6DBF31E77",
+            "id" : "71324DE5-9C78-4A12-A5E0-3746DD1B8FF5",
             "level" : "080",
             "temp" : "7 °C",
             "wind" : "26030 KT"
           }
         ],
         "forecasterInitials" : "JK",
-        "id" : "03EE215F-69E7-4FD1-A49C-C8BE2B09D7F7",
+        "id" : "1A809C60-93BD-4C76-B064-7BA278699B0B",
         "maxDensityAlt" : {
           "area" : "1880",
           "kozr" : "1440"
@@ -1247,7 +1249,7 @@
         "weatherAdvisories" : [
           {
             "criteria" : "LIGHTNING POTENTIAL W\/IN 15NM",
-            "id" : "0D4F6FA6-A4A4-4408-92BE-EA1CF9B72D6B",
+            "id" : "1C4758C2-0D2C-436A-9C64-7A9279272A15",
             "number" : "05-001",
             "type" : "WATCH",
             "validFrom" : "2100Z",
@@ -1282,16 +1284,16 @@
       "type" : "PM"
     },
     {
-      "fetchedAt" : "2026-05-01T17:38:34Z",
+      "fetchedAt" : "2026-05-01T17:43:41Z",
       "flightBriefing" : {
         "aerodromeForecasts" : [
           {
             "icao" : "KOZR",
-            "id" : "7E8A7C4C-C238-4216-BCA3-A99FCC36D392",
+            "id" : "76873D86-4008-4DCE-83A0-E807F8587577",
             "periods" : [
               {
                 "altimeter" : "29.83",
-                "id" : "A1C653FB-C062-4E0D-83AC-938435ACB3FF",
+                "id" : "D72DFCFD-0C8C-4840-8A44-6B9CCC6091B6",
                 "periodType" : "",
                 "skyCondition" : "FEW030 BKN075 OVC100",
                 "surfaceWind" : "VRB06",
@@ -1301,7 +1303,7 @@
               },
               {
                 "altimeter" : "29.87",
-                "id" : "C8FFA76E-4059-4B81-ADBC-31D2E605B8B4",
+                "id" : "FA28D909-B569-4C76-A356-A183624ACE6B",
                 "periodType" : "FROM",
                 "skyCondition" : "SCT020 OVC075",
                 "surfaceWind" : "VRB06",
@@ -1310,7 +1312,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "3256D8C6-2CAC-4CBA-9482-5A9D0A4AFC59",
+                "id" : "011805CB-DD1B-4B7A-B586-23A9B00F8004",
                 "periodType" : "TEMPO",
                 "skyCondition" : "FEW012 BKN020 OVC075",
                 "validFrom" : "0600Z",
@@ -1341,11 +1343,11 @@
           },
           {
             "icao" : "K79J",
-            "id" : "B54851EA-BA65-4EBF-BBFD-584DC1B30FCF",
+            "id" : "0C355599-60D7-471F-ACEC-F1CB6B17258A",
             "periods" : [
               {
                 "altimeter" : "29.83",
-                "id" : "43EDFBC3-D0C7-417F-B623-D3708AAC530E",
+                "id" : "8C57FC8F-4327-40D0-BFDA-323CADF36E99",
                 "periodType" : "",
                 "skyCondition" : "FEW030 BKN075 OVC100",
                 "surfaceWind" : "VRB06",
@@ -1355,7 +1357,7 @@
               },
               {
                 "altimeter" : "29.86",
-                "id" : "B6D227BC-589B-45CB-8BFB-E00F8D4CC714",
+                "id" : "472ED6F7-FC9A-4278-8978-6E8A8B1A45CA",
                 "periodType" : "FROM",
                 "skyCondition" : "SCT020 OVC075",
                 "surfaceWind" : "VRB06",
@@ -1364,7 +1366,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "DA1D8F2D-9BFF-44CE-9EFA-D3A09E50A51F",
+                "id" : "EE51B36D-D9C9-4423-9D4E-596D397D0980",
                 "periodType" : "TEMPO",
                 "skyCondition" : "BKN020 OVC075",
                 "validFrom" : "0400Z",
@@ -1372,7 +1374,7 @@
               },
               {
                 "altimeter" : "29.89",
-                "id" : "7AA1D269-0C28-46D7-A421-6663E838C23F",
+                "id" : "6D4E83C2-8371-4FE8-B4BA-A4D7BFF7A695",
                 "periodType" : "FROM",
                 "skyCondition" : "SCT012 BKN020 OVC075",
                 "surfaceWind" : "VRB06",
@@ -1381,7 +1383,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "537AA6A5-0138-4F28-B48E-2A22BAE0017D",
+                "id" : "E30B5654-4761-442A-AA76-546D3C2E05D9",
                 "periodType" : "TEMPO",
                 "validFrom" : "0600Z",
                 "validTo" : "0730Z",
@@ -1400,11 +1402,11 @@
           },
           {
             "icao" : "KTOI",
-            "id" : "84FD3475-1208-4A0D-AE7C-8C20B2F267B1",
+            "id" : "B2C5D4DE-B4A4-44F7-91B2-A61EC5B957E7",
             "periods" : [
               {
                 "altimeter" : "29.83",
-                "id" : "EB8B027D-17FD-4D40-BAA4-82696AE94447",
+                "id" : "8177E5F5-DFF8-4BC0-B446-DB8809881BFA",
                 "periodType" : "",
                 "skyCondition" : "FEW030 BKN075 OVC100",
                 "surfaceWind" : "35006",
@@ -1413,7 +1415,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "8013FF2E-3A2D-41AE-A16E-799CE819C3D8",
+                "id" : "3E1C651B-395D-4AC9-82BA-D97ED2E6E9AC",
                 "periodType" : "TEMPO",
                 "skyCondition" : "FEW020 BKN030 OVC075",
                 "validFrom" : "0100Z",
@@ -1423,7 +1425,7 @@
               },
               {
                 "altimeter" : "29.85",
-                "id" : "50D4DD44-366C-4DED-8398-2FB8423CD96E",
+                "id" : "4D5DB25C-98E4-4A10-A1DC-432F69081A60",
                 "periodType" : "FROM",
                 "skyCondition" : "SCT012 BKN020 OVC075",
                 "surfaceWind" : "VRB06",
@@ -1432,7 +1434,7 @@
                 "visibility" : "7"
               },
               {
-                "id" : "A1B31187-0122-40B1-8385-1AD42B150E9F",
+                "id" : "606830DA-2FBA-4DB7-A880-1F722380FB71",
                 "periodType" : "TEMPO",
                 "validFrom" : "0500Z",
                 "validTo" : "0730Z",
@@ -1457,43 +1459,43 @@
         "enrouteData" : {
           "flightLevelWinds" : [
             {
-              "id" : "C400CBE8-F28D-4941-A2A4-5797ADF19639",
+              "id" : "30E4DF1E-526D-4BC0-9266-2E49295A0195",
               "level" : "010",
               "temp" : "18 °C",
               "wind" : "33010KT"
             },
             {
-              "id" : "1D2B2E6E-83B7-446C-89A0-F8A0632CA01D",
+              "id" : "CC8A1EDC-3DCA-40FF-A610-190AB3ED3F20",
               "level" : "020",
               "temp" : "17 °C",
               "wind" : "36005KT"
             },
             {
-              "id" : "1BD4A4F5-757B-426D-92FD-1FAD4B3025BE",
+              "id" : "457BB311-5BBA-4F42-A82C-89726E63344D",
               "level" : "030",
               "temp" : "10 °C",
               "wind" : "26020KT"
             },
             {
-              "id" : "3B16B376-D4C9-4288-95F9-9FF18BF67523",
+              "id" : "349D9279-DD5B-47C2-9D2E-3D5F32D8CB11",
               "level" : "040",
               "temp" : "13 °C",
               "wind" : "29010KT"
             },
             {
-              "id" : "BDF2CA6D-80FD-44CC-9A7E-FAAE0A7D85D8",
+              "id" : "171E7366-5550-4166-827C-F9D1D4A5A510",
               "level" : "060",
               "temp" : "11 °C",
               "wind" : "26020KT"
             },
             {
-              "id" : "F035DCBE-54D7-49AC-BD54-01966964C905",
+              "id" : "477F9A6F-70DC-4908-B6AA-E8EF1789BD9F",
               "level" : "070",
               "temp" : "10 °C",
               "wind" : "26020KT"
             },
             {
-              "id" : "28792655-7351-4A27-ACFD-A283733396F3",
+              "id" : "67C27B22-956B-4DE2-8BE0-4387ABD082D8",
               "level" : "080",
               "temp" : "7 °C",
               "wind" : "26020KT"
@@ -1537,7 +1539,7 @@
             "severity" : "NONE"
           }
         },
-        "id" : "6F4AF184-8CE0-4D8F-AE76-4E916BB5F55F",
+        "id" : "E5AEC9AC-864A-4D04-BD55-C11CE691CF53",
         "rawText" : "1 ---\n\nN1\nAMENDED @\n0040\nZ\nFLIGHT WEATHER BRIEFING\nN1\nPART I - TAKEOFF DATA (VALID AT 20L)\n1. DATE\n2. ACFT TYPE \/ NO.\n3. DEP PT \/ ETD\n4. RUNWAY TEMP 5. DEWPOINT\n6. TEMP DEV\n7. PRESSURE ALT\n8. DENSITY ALT\n260501\nZ OC 23\n18\nOC OC 375\nFT 1640\nFT\n9. SURFACE WIND\n10. CLIMB WINDS\n13. WWAS\nPART II - ENROUTE & MISSION DATA (ALL HEIGHTS ARE MSL)\n14. FLT LEVEL\/WIND\/TEMP\n15. SPACE WEATHER\n16. SOLAR \/ LUNAR (LOCAL)\n010\n33010KT\n\/ \/\n18 ⁰C 13 ⁰C\n050\n27015KT\nNO IMPACT\nMARGINAL\nSEVERE\nBMNT: 0503L\nEENT:\n2018L % ILLUM\n020\n36005KT\n17 ⁰C\n060\n26020KT\n\/ \/\n11 ⁰C\nFREQ\nX\nBMCT: 0533L EECT:\n1947L 99%\n030\nVRB05\n15 ⁰C 070\n26020KT\n\/ \/ 10 ⁰C\nGPS\nX\nSR: SS:\n0558L 1922L AZ (21L): 120\n040\n29010KT 13 ⁰C\n080\n26020KT\n7 ⁰C\nRAD\nX\n\/ \/ MR: MS:\n1843L 0504L EL (21L):\n14\n18. OBSCURATIONS AT FLT LEVEL RESTRICTING VISIBILITY\nYES\nTYPE\nPRECIP\nMIST\n19. MINIMUM CEILING\n- LOCATION\n20. LLWS - LOCATION\n21. MINIMUM FREEZING LVL\n- LOCATION\nALL AREAS\n020\nFT AGL\nNONE\nFT AGL\nALL AREAS\n125\nFT MSL\n22. THUNDERSTORMS\n23. TURBULENCE (CAT II)\n24. ICING\n25. PRECIPITATION\nC C NONE\nAREA LINE\nNONE\nIN CLEAR\nIN CLOUD\nC DZ\nNONE\nRIME\nMIXED\nCLEAR\nNONE\nRAIN\nSNOW\nPELLET\nISOLATED 1 -2%\nLIGHT\nTRACE\nLIGHT\nX\nFEW 3 - 15%\nMODERATE\nLIGHT\nMODERATE\nX\nSCATTERED 16 - 45%\nSEVERE\nMODERATE\nHEAVY\nNUMEROUS > 45%\nEXTREME\nSEVERE\nSHOWERS\nX\nLEVELS\nLEVELS\nFREEZING\nHAIL, SEV TURBC & ICING, HEAVY PRECIP,\nLIGHTNING & WIND SHEAR EXPECTED IN\/NEAR\nLOCATION\nTHUNDERSTORMS\nLOCATION\nLOCATION\nLOCATION\nRAIN:\nALL AREAS\nPART III - AERODROME FORECASTS (ALL HEIGHTS ARE AGL)\n26. AIRDROME .\n27. VALID TIME\n28. SFC WIND\n29. VSBY\/WEA\n30. SKY CONDITION\n31. ALSTG\nSame as KOZR:\nDEST \/ ALTN\nZ TO\nZ\nINS\nKOZR\n0030\n0400\nVRB06\n7\nFEW030 BKN075 OVC100\n29.83\nDEST \/ ALTN\nZ TO\nZ\nINS\nFROM\n0400 0730\nVRB06\n7\nSCT020 OVC075\n29.87\nDEST \/ ALTN\nZ TO\nZ\nINS\nTEMPO\n0600 0730\n5\n-SHRA\nFEW012 BKN020 OVC075\nDEST \/ ALTN Z TO\nZ\nINS\nKLOR,KHEY,KSXS,KFHK,KDHN,\nKEDN,KPAM,KECP,KMAI,KBCR,\nKTLH,KEUF,KBIJ,KBGE,KABY,\nKMGR,K17J\nDEST \/ ALTN\nZ TO\nZ\nINS\nDEST \/ ALTN\nK79J\nZ TO\n0030\nZ\n0300\nINS\nSame as K79J:\nVRB06 7\nFEW030 BKN075 OVC100\n29.83\nDEST \/ ALTN\nFROM\nZ TO\nZ\n0300 0500\nINS\nVRB06\n7\nSCT020 OVC075\n29.86\nDEST \/ ALTN\nTEMPO\nZ TO\n0400\nZ\n0500\nINS\nBKN020 OVC075\nDEST \/ ALTN\nFROM\nZ TO\n0500\nZ\n0730\nINS\nK0J4,KCEW,KEGI,KDTS,KHRT,KV\nPS,KNPA\nVRB06 7\nSCT012 BKN020 OVC075\n29.89\nDEST \/ ALTN\nTEMPO\nZ TO\n0600\nZ\n0730\nINS\n5\n-SHRA\nDEST \/ ALTN\nZ TO\nKTOI\n0030\nZ\n35006\n0300 7\nINS\nSame as KTOI:\nFEW030 BKN075 OVC100 29.83\nDEST \/ ALTN\nZ TO\nZ\nINS\nTEMPO\n0100 0300\n6\n-SHRA FEW020 BKN030 OVC075\nDEST \/ ALTN\nZ TO\nZ\nINS\nFROM 0300\n0730\nVRB06\n7\nSCT012 BKN020 OVC075\n29.85\nDEST \/ ALTN\nZ TO\nZ\nINS\nKPRN,KMVC,KGZH,KMGM,KSEM,\nKLSF,KCSG,KAUO\nTEMPO\n0500\n0730\n4\n-SHRA\nDEST \/ ALTN Z TO\nZ\nINS\nPART IV - CONTACT INFORMATION\nPMSV: 134.1 (V)\nWIF: 348.8 (U)\nPHONE: 334-255-8385\n334-255-8397\nFACEBOOK: \/FTRUCKERWX\nX: @FTRUCKERWX\nhttps:\/\/www.army.mil\/rucker#org-weather\nKOZR MAXIMUMS:\nMAX TEMP:\n24⁰C\nMAX PA:\n390 FT\nMAX DA:\n1750 FT\n35.\nREMARKS:\nAMD 1 TO DELAY SHOWERS IN ALL AREAS AND REMOVE SCT007\nPART V - BRIEFING RECORD\n36. WX BRIEFED TIME\n37. FLIMSY BRIEFING #\n38. FORECASTER'S INITIALS\n40. VOID TIME\n41. EXTENDED TO\/INITIALS\n42. WX REBRIEF TIME\/INITIALS\n22:15\nN1 0030Z-0730Z\nAB\n23:45\nE Z Z Z Z\nDD Form 175-1 (LOCAL)",
         "remarks" : "AMD 1 TO DELAY SHOWERS IN ALL AREAS AND REMOVE SCT007",
         "takeoffData" : {
@@ -1565,7 +1567,7 @@
             "amendmentNumber" : "AMD 1",
             "amendmentTime" : "0040Z",
             "forecast" : "VRB06KT 7SM FEW030 BKN075 OVC100 AFT 0400Z: VRB06KT 7SM SCT020 OVC075 ISOLD 0600-0730Z: 5SM -SHRA FEW012 BKN020 OVC075 NONE",
-            "id" : "F802F450-F24B-44B5-B365-32DCDBCD54BD",
+            "id" : "AAC832A4-F4BB-4B54-9B23-27499006434D",
             "name" : "GOLDFISH",
             "tsCoverage" : "NONE"
           },
@@ -1574,7 +1576,7 @@
             "amendmentText" : "35006KT 7SM FEW030 BKN075 OVC100 ISOLD 0100-0300Z: 6SM -SHRA FEW020 BKN030 OVC075 AFT 0300Z: VRB06KT 7SM SCT012 BKN020 OVC075 ISOLD 0500-0730Z: 4SM -SHRA",
             "amendmentTime" : "0040Z",
             "forecast" : "",
-            "id" : "2F938E46-99BA-421F-B5F0-1A39F4032FE1",
+            "id" : "AC98F959-3BDE-4AFC-AED8-60A8E8B1198F",
             "name" : "VANGUARD N",
             "tsCoverage" : "NONE"
           },
@@ -1583,7 +1585,7 @@
             "amendmentText" : "VRB06KT 7SM FEW030 BKN075 OVC100 AFT 0300Z: VRB06KT 7SM SCT020 OVC075 ISOLD 0400-0500Z: BKN020 OVC075 AFT 0500Z: VRB06KT 7SM SCT012 BKN020 OVC075 ISOLD 0600-0730Z: 5SM -SHRA",
             "amendmentTime" : "0040Z",
             "forecast" : "",
-            "id" : "510DA717-AE73-49AE-9B93-93931CB9ABB3",
+            "id" : "08FB9B5A-A594-4E62-9D44-DF079742605E",
             "name" : "VANGUARD C",
             "tsCoverage" : "NONE"
           },
@@ -1592,7 +1594,7 @@
             "amendmentText" : "VRB06KT 7SM FEW030 BKN075 OVC100 AFT 0300Z: VRB06KT 7SM SCT020 OVC075 ISOLD 0400-0500Z: BKN020 OVC075 AFT 0500Z: VRB06KT 7SM SCT012 BKN020 OVC075 ISOLD 0600-0730Z: 5SM -SHRA",
             "amendmentTime" : "0040Z",
             "forecast" : "",
-            "id" : "DC837364-72D1-4761-9AC2-8B6E50B17C5E",
+            "id" : "E5EA944A-4651-4897-AB00-33BB032A2C20",
             "name" : "VANGUARD S",
             "tsCoverage" : "NONE"
           },
@@ -1601,7 +1603,7 @@
             "amendmentText" : "VRB06KT 7SM FEW030 BKN075 OVC100 AFT 0400Z: VRB06KT 7SM SCT020 OVC075 ISOLD 0600-0730Z: 5SM -SHRA FEW012 BKN020 OVC075",
             "amendmentTime" : "0040Z",
             "forecast" : "",
-            "id" : "B238E19A-9ED4-452F-BB5B-69E771667964",
+            "id" : "C57E946F-ED67-4051-AA5B-F8EFDF0CE38E",
             "name" : "HAWK",
             "tsCoverage" : "NONE"
           },
@@ -1610,7 +1612,7 @@
             "amendmentText" : "VRB06KT 7SM FEW030 BKN075 OVC100 AFT 0400Z: VRB06KT 7SM SCT020 OVC075 ISOLD 0600-0730Z: 5SM -SHRA FEW012 BKN020 OVC075",
             "amendmentTime" : "0040Z",
             "forecast" : "",
-            "id" : "F73269C4-6F94-4EA6-8CDD-1169B5FCBD3C",
+            "id" : "DBCE6FED-21B7-4F19-9EB6-CD2F9D063A1D",
             "name" : "BEARCAT",
             "tsCoverage" : "NONE"
           }
@@ -1624,56 +1626,56 @@
         },
         "flightLevelWinds" : [
           {
-            "id" : "F96DC1F9-CB15-4989-83E5-9AB5C99AC7A5",
+            "id" : "66E31370-1FF0-4DAA-9AC0-91A6958406C2",
             "level" : "010",
             "temp" : "18 °C",
             "wind" : "33010 KT"
           },
           {
-            "id" : "850F772C-51F3-472A-9807-06E0B907DB08",
+            "id" : "A4BDE930-8589-406B-9727-952BFB992BEA",
             "level" : "020",
             "temp" : "17 °C",
             "wind" : "36005 KT"
           },
           {
-            "id" : "839C7C8C-6FF8-4685-9A38-81FC47C73056",
+            "id" : "EB2ECDB6-055C-42CA-85A2-388A5F64E933",
             "level" : "030",
             "temp" : "15 °C",
             "wind" : "VRB05 KT"
           },
           {
-            "id" : "AF467022-55F4-4213-A7A7-20A66526194A",
+            "id" : "C9D4434D-A74A-4F56-B927-832F6FE38C76",
             "level" : "040",
             "temp" : "13 °C",
             "wind" : "29010 KT"
           },
           {
-            "id" : "DCA81C05-0438-4856-B8E4-D31F25734D66",
+            "id" : "F3EBED0C-C723-404A-8E37-9EC5CC47B060",
             "level" : "050",
             "temp" : "13 °C",
             "wind" : "27015 KT"
           },
           {
-            "id" : "57240BDD-314B-4103-A14D-D987BC432047",
+            "id" : "E2880262-5641-4B46-A2AF-2F6F082C80AF",
             "level" : "060",
             "temp" : "11 °C",
             "wind" : "26020 KT"
           },
           {
-            "id" : "C1A8F062-87D2-4194-B220-47DFAC522218",
+            "id" : "93462554-9B30-4C95-AEC8-52C6873E1780",
             "level" : "070",
             "temp" : "10 °C",
             "wind" : "26020 KT"
           },
           {
-            "id" : "68DAD93D-9B5B-4557-B9D4-05F7346F354A",
+            "id" : "B2761774-9C8C-41EC-8664-57C7266DFE42",
             "level" : "080",
             "temp" : "7 °C",
             "wind" : "26020 KT"
           }
         ],
         "forecasterInitials" : "AB",
-        "id" : "42AA8325-3DB1-451D-8623-D0D95EB6921F",
+        "id" : "7F18C4EB-7781-42FB-9EBC-12D2AB1665A3",
         "maxDensityAlt" : {
           "area" : "2270",
           "kozr" : "1750"
@@ -1754,11 +1756,11 @@
     }
   ],
   "metar" : {
-    "altim" : 1014,
+    "altim" : 1013.6,
     "clouds" : [
       {
-        "base" : 900,
-        "cover" : "FEW"
+        "base" : 700,
+        "cover" : "SCT"
       },
       {
         "base" : 2800,
@@ -1771,22 +1773,15 @@
     "icaoId" : "KOZR",
     "metarType" : "SPECI",
     "name" : "Ozark\/Cairns AAF, AL, US",
-    "rawOb" : "SPECI KOZR 011704Z AUTO 02007KT 10SM -DZ FEW009 OVC028 16\/14 A2994 RMK AO2 DZB04 SLP140",
-    "reportTime" : "2026-05-01T17:04:00.000Z",
-    "slp" : 1014,
+    "rawOb" : "SPECI KOZR 011735Z AUTO 36006KT 10SM SCT007 OVC028 16\/14 A2993 RMK AO2 DZE1655DZB04E06RAB06E22DZB22E35 SLP136",
+    "reportTime" : "2026-05-01T17:35:00.000Z",
+    "slp" : 1013.6,
     "temp" : 16,
     "visib" : "10+",
-    "wdir" : 20,
-    "wspd" : 7,
-    "wxString" : "-DZ"
+    "wdir" : 360,
+    "wspd" : 6
   },
   "publishLog" : [
-    {
-      "durationMs" : 4736,
-      "message" : "Published 4 forecasts (AM\/PM\/N1\/7-Day) + KOZR METAR · TAF, 5 alts, WAAS=Full LPV200",
-      "ok" : true,
-      "timestamp" : "2026-05-01 08:23:48-05:00"
-    },
     {
       "durationMs" : 3266,
       "message" : "Published 4 forecasts (AM\/PM\/N1\/7-Day) + KOZR METAR · TAF, 5 alts, WAAS=Full LPV200",
@@ -2080,12 +2075,18 @@
       "message" : "Published 4 forecasts (AM\/PM\/N1\/7-Day) + KOZR METAR · TAF, 5 alts, WAAS=Full LPV200",
       "ok" : true,
       "timestamp" : "2026-05-01 12:33:34-05:00"
+    },
+    {
+      "durationMs" : 6552,
+      "message" : "Published 4 forecasts (AM\/PM\/N1\/7-Day) + KOZR METAR · TAF, 5 alts, WAAS=Full LPV200",
+      "ok" : true,
+      "timestamp" : "2026-05-01 12:38:41-05:00"
     }
   ],
   "sevenDay" : {
     "categories" : [
       {
-        "id" : "1CFC840F-E710-4A10-B19D-2AA4396B6982",
+        "id" : "6F457416-9E97-4DAB-9C3A-3138170B213B",
         "name" : "Ceiling",
         "shortName" : "CIG",
         "statuses" : [
@@ -2107,7 +2108,7 @@
         ]
       },
       {
-        "id" : "15744315-DD13-4E4A-B4C6-55177AAEA7CE",
+        "id" : "C21D3E87-F695-411F-BFAC-74F504EC1484",
         "name" : "Visibility",
         "shortName" : "VIS",
         "statuses" : [
@@ -2129,7 +2130,7 @@
         ]
       },
       {
-        "id" : "AC02BCE9-E2ED-4E0D-8275-792230EDB2A8",
+        "id" : "83E9FCF0-2B51-4067-88B4-6548D3B69D05",
         "name" : "Surface Wind",
         "shortName" : "WIND",
         "statuses" : [
@@ -2151,7 +2152,7 @@
         ]
       },
       {
-        "id" : "BF76E091-1FDF-4660-9514-B73678DB6CB3",
+        "id" : "23A437FC-E683-462B-8793-F573B9D03AA5",
         "name" : "Turbulence",
         "shortName" : "TURB",
         "statuses" : [
@@ -2173,7 +2174,7 @@
         ]
       },
       {
-        "id" : "CC897DBA-4D5A-4B2F-9C22-CA1E30548925",
+        "id" : "19188EAC-F944-491A-BD86-FBB86686591A",
         "name" : "Icing",
         "shortName" : "ICE",
         "statuses" : [
@@ -2195,7 +2196,7 @@
         ]
       },
       {
-        "id" : "4985EB86-19ED-4488-A6F8-DB0522D47C94",
+        "id" : "ED2A9333-C5BE-432B-A691-422986C7BB6E",
         "name" : "Thunderstorms",
         "shortName" : "TS",
         "statuses" : [
@@ -2217,7 +2218,7 @@
         ]
       },
       {
-        "id" : "4D5EA7B1-95D2-49E2-81BB-1CF6CD57F9B8",
+        "id" : "9A593969-2358-46D7-B83D-52ACEBBE74CC",
         "name" : "UAS Winds",
         "shortName" : "UAS",
         "statuses" : [
@@ -2429,5 +2430,5 @@
     "category" : "Full LPV200",
     "sampleCount" : 207
   },
-  "waasFetchedAt" : "2026-05-01T17:38:39Z"
+  "waasFetchedAt" : "2026-05-01T17:43:42Z"
 }
