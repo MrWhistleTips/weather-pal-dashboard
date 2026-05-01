@@ -4578,6 +4578,20 @@ const DEMO_SCENARIOS = {
     areaText: '20008KT 2SM -RA BR OVC006\nAFT 1500Z: 21010KT 3SM -RA BR OVC008',
     advisory: false,
   },
+  'rain-stagefields': {
+    name: '🌧️ Rain · across stagefields',
+    desc: 'Rain in every area forecast — Cairns + all 4 stagefields show falling drops',
+    metarOpts: ({ flt: 'IFR', wdir: 200, wspd: 12, visib: '2', clouds: [{cover:'OVC',base:700}], wxString: 'RA' }),
+    areaText: '20012KT 2SM RA OVC007\nAFT 1500Z: 21014KT 2SM RA OVC006',
+    advisory: false,
+  },
+  'fog-stagefields': {
+    name: '🌫️ Fog · across stagefields',
+    desc: 'Fog in every area forecast — Cairns + all 4 stagefields show drifting wisps',
+    metarOpts: ({ flt: 'LIFR', wdir: 0, wspd: 0, visib: '1/4', clouds: [{cover:'OVC',base:200}], wxString: 'FG' }),
+    areaText: 'VRB02KT 1/4SM FG OVC002\nAFT 1500Z: VRB02KT 1SM BR OVC004',
+    advisory: false,
+  },
 };
 
 function addHoursToZuluString(hoursAhead) {
@@ -6185,6 +6199,7 @@ function renderTraining(metar, forecast) {
     let status = 'unknown', label = 'UNKNOWN';
     let solo = null;
     let areaSubtitle = sf.area;
+    let sfWx = [];
     if (forecast && forecast.mef && forecast.mef.areaForecasts) {
       const area = forecast.mef.areaForecasts.find(a =>
         (a.name || '').toUpperCase() === sf.area);
@@ -6199,6 +6214,10 @@ function renderTraining(metar, forecast) {
         if (info.label.includes(' in ')) {
           areaSubtitle = `${sf.area} · ${info.label}`;
         }
+        // Drive the same rain/fog animation off the area's current
+        // segment text (plus any active TEMPO overlay) so a stagefield
+        // that's forecast to be rainy or foggy looks the part.
+        sfWx = wxCodesFromAreaForecast(area.forecast);
       }
     }
     // Advisory pip — true if any active advisory affects this area
@@ -6214,7 +6233,7 @@ function renderTraining(metar, forecast) {
           closest_strike: LIGHTNING_DATA.stagefields[sfKey].closest_strike,
         }
       : null;
-    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, null, false, sfLightning);
+    cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, null, false, sfLightning, sfWx);
   }
 
   body.innerHTML = `<div class="training-grid">${cells}</div>`;
@@ -6257,6 +6276,38 @@ function computeSVFRRecovery(metar) {
 // Recognized fog family: FG, BR (mist), MIFG, BCFG, PRFG, VCFG, FZFG.
 // We strip remarks (everything after RMK) before matching so e.g.
 // "RMK ... PRESRR" can't false-match.
+// Area-forecast variant: scans a MEF area forecast text block (the
+// segments inside e.g. forecast.mef.areaForecasts[].forecast) for
+// rain / fog tokens active right now. Includes the active main
+// segment AND any ISOLD/TEMPO/BECMG temporary segment whose time
+// window covers the current Zulu minute, so a current-temporary
+// shower drives the animation just like the predominant flow does.
+function wxCodesFromAreaForecast(text) {
+  if (!text) return [];
+  const segs = splitSegments(text);
+  if (!segs.length) return [];
+  const idx = currentSegmentIndex(segs);
+  const now = zuluMinutes();
+  const texts = [];
+  if (segs[idx]) texts.push(segs[idx].text);
+  for (const s of segs) {
+    if (!s.isTemporary) continue;
+    // Pull the time window straight off the marker header at the start
+    // of the segment text (splitSegments leaves it inline).
+    const m = s.text.match(/^(?:ISOLD|TEMPO|BECMG)\s+(\d{4})-(\d{4})Z/i);
+    if (!m) continue;
+    let from = parseInt(m[1].slice(0,2),10) * 60 + parseInt(m[1].slice(2,4),10);
+    let to   = parseInt(m[2].slice(0,2),10) * 60 + parseInt(m[2].slice(2,4),10);
+    if (to <= from) to += 1440;
+    if ((now >= from && now < to) || (now + 1440 >= from && now + 1440 < to)) {
+      texts.push(s.text);
+    }
+  }
+  // Reuse the metar detector by pretending the area text is the rawOb.
+  // Area forecasts don't have RMK blocks so the strip is harmless.
+  return metarWxCodes({ rawOb: texts.join(' '), wxString: '' });
+}
+
 function metarWxCodes(metar) {
   if (!metar) return [];
   // Check rawOb (which is canonical for live METARs) AND wxString
