@@ -4707,6 +4707,14 @@ const DEMO_SCENARIOS = {
     areaText: 'VRB02KT 1/4SM FG OVC002\nAFT 1500Z: VRB02KT 1SM BR OVC004',
     advisory: false,
   },
+  'all-anims': {
+    name: '🌩️🌧️🌫️ Storm overhead — all animations',
+    desc: 'Showcase: heavy rain (+RA), drifting fog, intense lightning flashes + bolts on every panel',
+    metarOpts: ({ flt: 'LIFR', wdir: 200, wspd: 18, wgst: 28, visib: '1', clouds: [{cover:'OVC',base:300}], wxString: '+TSRA BR' }),
+    areaText: '20018G28KT 1SM +TSRA BR OVC003\nAFT 1500Z: 21020G30KT 1SM +TSRA FG OVC002',
+    advisory: false,
+    lightning: 'showcase',
+  },
 };
 
 function addHoursToZuluString(hoursAhead) {
@@ -5118,6 +5126,26 @@ function buildDemoData(key) {
             minutes_to_field: 21,
             confidence: 'moderate',
           },
+        },
+      };
+    } else if (s.lightning === 'showcase') {
+      // Storm directly over the operating area — every station inside
+      // the 25 NM ring with intense activity. Used by the all-anims
+      // showcase demo so each of the 5 training panels lights up with
+      // the lightning effect.
+      const counts = { within_5nm: 4, within_10nm: 11, within_25nm: 38, within_50nm: 72 };
+      const last = { time_iso: nowIso, distance_nm: 2.1, bearing_deg: 270 };
+      lightning = {
+        fetched_at: new Date().toISOString(),
+        lookback_min: 10,
+        files_scanned: 30,
+        counts,
+        last_strike: last,
+        stagefields: {
+          allen:     { counts, last_strike: last },
+          toth:      { counts, last_strike: last },
+          highbluff: { counts, last_strike: last },
+          lucas:     { counts, last_strike: last },
         },
       };
     }
