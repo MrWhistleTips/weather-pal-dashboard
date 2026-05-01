@@ -1073,7 +1073,8 @@ body.tv .wx-anim-rain .wx-rain-drop {
   position: absolute;
   left: -65%;
   width: 65%;
-  height: 28%;
+  /* height is set inline per wisp (22-40%) so the layers vary in
+     thickness instead of looking like clean stripes. */
   background: radial-gradient(ellipse at center,
     rgba(220, 230, 240, 0.55) 0%,
     rgba(220, 230, 240, 0.30) 35%,
@@ -6313,17 +6314,26 @@ function wxAnimationHTML(codes) {
     inner += `<div class="wx-anim wx-anim-rain intensity-${intensity}" aria-hidden="true">${drops.join('')}</div>`;
   }
   if (codes.find(c => c && c.kind === 'fog')) {
-    // 3 wide horizontal wisps at different vertical positions, drift
-    // speeds, and opacities so they parallax across the panel without
-    // looking lockstep. Each wisp is a wide soft horizontal gradient
-    // pill that slides L→R across the panel over 14-26 s.
+    // Six wide horizontal wisps at different vertical bands, drift
+    // speeds, opacities, and heights — gives the panel a denser sense
+    // of fog than three wisps could, with enough randomization that
+    // the layers parallax independently instead of marching in lockstep.
+    // Each wisp is a soft horizontal gradient pill sliding L→R over
+    // 12-28 s. Negative animation-delay phases each wisp into a
+    // different point in its cycle so they're spread across the panel
+    // from frame 0.
     const wisps = [];
-    for (let i = 0; i < 3; i++) {
-      const top   = (12 + i * 28 + Math.random() * 14).toFixed(0); // 12-78%
-      const dur   = (14 + Math.random() * 12).toFixed(1);          // 14-26s
-      const delay = (Math.random() * dur).toFixed(1);              // randomize phase so they don't all start at the left edge
-      const op    = (0.30 + Math.random() * 0.30).toFixed(2);      // 0.30-0.60
-      wisps.push(`<i class="wx-fog-wisp" style="top:${top}%;animation-duration:${dur}s;animation-delay:-${delay}s;opacity:${op}"></i>`);
+    const rows = 6;
+    for (let i = 0; i < rows; i++) {
+      // Distribute vertically across the panel with a small jitter so
+      // wisps overlap and blend instead of forming six clean stripes.
+      const band = (i / rows) * 92;                                // 0-92%
+      const top   = (band + Math.random() * 18 - 4).toFixed(0);    // ±jitter
+      const dur   = (12 + Math.random() * 16).toFixed(1);          // 12-28s
+      const delay = (Math.random() * dur).toFixed(1);
+      const op    = (0.25 + Math.random() * 0.35).toFixed(2);      // 0.25-0.60
+      const height = (22 + Math.random() * 18).toFixed(0);         // 22-40%
+      wisps.push(`<i class="wx-fog-wisp" style="top:${top}%;height:${height}%;animation-duration:${dur}s;animation-delay:-${delay}s;opacity:${op}"></i>`);
     }
     inner += `<div class="wx-anim wx-anim-fog" aria-hidden="true">${wisps.join('')}</div>`;
   }
