@@ -1922,6 +1922,32 @@ body.tv .alt-row-meta { font-size: 11px; }
 .alt-row-cur.cat-mvfr { color: var(--mvfr); text-shadow: 0 0 4px rgba(74,144,226,0.35); }
 .alt-row-cur.cat-ifr  { color: var(--ifr);  text-shadow: 0 0 4px rgba(214,69,69,0.35); }
 .alt-row-cur.cat-lifr { color: var(--lifr); text-shadow: 0 0 4px rgba(179,71,217,0.35); }
+/* Forward-look countdown: "GO in 1h 45m" / "NO GO in 2h 15m" — surfaces
+   the next ceiling/vis flip projected by the aerodrome forecast so the
+   operator sees what's coming, not just what is. */
+.alt-row-change {
+  margin-top: 2px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.alt-row-change.go {
+  color: var(--go);
+  background: var(--go-bg);
+  border-color: var(--go-border);
+}
+.alt-row-change.nogo {
+  color: var(--nogo);
+  background: var(--nogo-bg);
+  border-color: var(--nogo-border);
+}
+body.tv .alt-row-change { font-size: 12px; padding: 2px 8px; }
 /* Inline (field name + ceil/vis on same line) */
 .alt-row-nameline {
   display: flex;
@@ -5519,6 +5545,68 @@ function alternateStatusFromForecast(aero, nowMin, minCeil, minVis) {
   return (ceil >= minCeil && vis >= minVis) ? 'go' : 'nogo';
 }
 
+// Walk forward from now through every period boundary in the aerodrome
+// forecast and return the first GO↔NO-GO flip vs the current status.
+// Used to render "NO GO in 2h 15m" / "GO in 45m" countdowns inside
+// each alt cell so operators see what's coming, not just what is.
+//
+// Returns { newStatus: 'go'|'nogo', deltaMin } or null if no change is
+// projected within the brief's validity window.
+function alternateNextChange(aero, nowMin, minCeil, minVis) {
+  if (!aero || !aero.periods) return null;
+  const curWorst = aerodromeWorstAt(aero, nowMin);
+  if (!curWorst) return null;
+  const meetsMins = (w) => {
+    const c = w.ceiling === null ? 99999 : w.ceiling;
+    const v = w.vis     === null ? 99    : w.vis;
+    return c >= minCeil && v >= minVis;
+  };
+  const curOk = meetsMins(curWorst);
+
+  // Collect distinct future event minutes — every validFrom / validTo
+  // boundary across all periods. Anything ≤ now slides into "tomorrow"
+  // (+1440 min offset) so we walk strictly forward in time.
+  const events = [];
+  for (const p of aero.periods) {
+    for (const k of ['validFrom', 'validTo']) {
+      const m = zuluHHMMToMinutes(p[k]);
+      if (m === null) continue;
+      let off = m - nowMin;
+      if (off <= 0) off += 1440;
+      if (off > 0 && off < 1440) events.push({off, eventMin: m});
+    }
+  }
+  // Dedupe + sort by offset; eventMin stays in [0,1440) for the
+  // periodCoversZulu evaluator (which already handles cross-midnight).
+  const seen = new Set();
+  const uniq = [];
+  for (const e of events.sort((a, b) => a.off - b.off)) {
+    if (seen.has(e.off)) continue;
+    seen.add(e.off);
+    uniq.push(e);
+  }
+
+  for (const {off, eventMin} of uniq) {
+    const w = aerodromeWorstAt(aero, eventMin);
+    if (!w) continue;  // outside the brief — keep walking, brief may have a gap
+    const ok = meetsMins(w);
+    if (ok !== curOk) {
+      return { newStatus: ok ? 'go' : 'nogo', deltaMin: off };
+    }
+  }
+  return null;
+}
+
+// "Xh Ym" — drops the leading "Xh" when zero hours, drops " Ym" when
+// minutes are zero. "0m" only when the change is genuinely imminent.
+function fmtAlternateDelta(min) {
+  const h = Math.floor(min / 60);
+  const m = Math.round(min % 60);
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
 // Format a visibility number back to a display string (keeps fractions readable)
 function visMinDisplay(vis) {
   // Known alternate-planning fractions
@@ -5560,6 +5648,7 @@ function renderAlternates() {
     // Forecast conditions line — pulled from the worst-case active
     // group (main/FROM + any active TEMPO overlay).
     let curLine = '<span class="alt-row-cur alt-row-cur-missing">No forecast</span>';
+    let changeLine = '';
     if (aero) {
       const w = aerodromeWorstAt(aero, nowMin);
       if (w) {
@@ -5568,6 +5657,16 @@ function renderAlternates() {
         const visStr = w.vis === null ? '—' : `${visDisplay(w.vis)}SM`;
         // Mark with FCST tag so it's obvious this is the brief, not a METAR.
         curLine = `<span class="alt-row-cur cat-${cat}">${ceilStr} · ${visStr}</span> <span class="alt-row-stale" style="background:rgba(74,144,226,0.18); color:#7fb3f3; border-color:rgba(74,144,226,0.35)">FCST</span>`;
+        // Look ahead for the next status flip and surface it inline
+        // (e.g. "NO GO in 2h 15m" / "GO in 45m"). Hidden when the
+        // forecast stays on the same side of mins all the way to brief
+        // expiry.
+        const change = alternateNextChange(aero, nowMin, a.minCeil, a.minVis);
+        if (change) {
+          const cls = change.newStatus === 'go' ? 'go' : 'nogo';
+          const label = change.newStatus === 'go' ? 'GO' : 'NO GO';
+          changeLine = `<div class="alt-row-change ${cls}">${label} in ${fmtAlternateDelta(change.deltaMin)}</div>`;
+        }
       } else {
         // Aerodrome found but no period covers current Zulu — likely
         // we're outside the brief's valid window.
@@ -5588,6 +5687,7 @@ function renderAlternates() {
           <div class="alt-row-name">${a.name}</div>
           <div>${curLine}</div>
         </div>
+        ${changeLine}
       </div>
     `;
   });
