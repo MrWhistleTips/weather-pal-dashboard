@@ -1115,7 +1115,10 @@ body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
     rgba(255, 250, 220, 0.05) 70%,
     transparent 85%);
   opacity: 0;
-  mix-blend-mode: screen;
+  /* No mix-blend-mode — the wx-layer creates its own stacking context
+     via z-index:1, so screen blending can't reach the panel background.
+     Direct opacity overlay on a warm-white gradient reads correctly
+     against any panel color and is what actually renders visibly. */
   will-change: opacity;
 }
 /* flash-a — main pulse + quick recurrence ~30 ms later */
