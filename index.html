@@ -5785,8 +5785,11 @@ function renderAlternates() {
           const segCat = flightCategory(seg.ceiling, seg.vis);
           const segCeilStr = seg.ceiling === null ? 'CLR' : `${seg.ceiling}ft`;
           const segVisStr = seg.vis === null ? '—' : `${visDisplay(seg.vis)}SM`;
+          // Match the parent badge convention — both GO and NO-GO show
+          // "Poss. Alt" with the color carrying the status (green = at
+          // or above mins, red = below).
           const cls = seg.ok ? 'go' : 'nogo';
-          const lbl = seg.ok ? 'GO' : 'NO GO';
+          const lbl = 'Poss. Alt';
           return `
             <div class="alt-tl-row">
               <span class="alt-tl-when">+${fmtAlternateDelta(seg.deltaMin)}</span>
