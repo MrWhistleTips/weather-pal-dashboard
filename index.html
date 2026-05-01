@@ -1047,8 +1047,15 @@ body.tv .metar-hazards-pill { font-size: 13px; padding: 5px 13px; left: 14px; }
   0%   { transform: translate3d(0, 0, 0) rotate(8deg); }
   100% { transform: translate3d(8px, 220px, 0) rotate(8deg); }
 }
+/* Intensity tuning — light/heavy variants tweak drop visual size on
+   top of the drop-count / fall-speed differences set in JS. Moderate
+   keeps the baseline 1.5×16 from above. */
+.wx-anim-rain.intensity-light  .wx-rain-drop { width: 1.2px; height: 14px; }
+.wx-anim-rain.intensity-heavy  .wx-rain-drop { width: 2px;   height: 20px; }
 /* TV mode — slightly bigger drops for the larger panels. */
 body.tv .wx-anim-rain .wx-rain-drop { width: 2px; height: 22px; }
+body.tv .wx-anim-rain.intensity-light .wx-rain-drop { width: 1.5px; height: 18px; }
+body.tv .wx-anim-rain.intensity-heavy .wx-rain-drop { width: 2.5px; height: 28px; }
 body.tv .wx-anim-rain .wx-rain-drop {
   animation-name: wx-rain-fall-tv;
 }
@@ -4536,10 +4543,24 @@ const DEMO_SCENARIOS = {
     lightning: 'stagefield',
   },
   'rain-anim': {
-    name: '🌧️ Rain · animation demo',
-    desc: 'Light rain at KOZR — Cairns panel shows falling raindrops',
+    name: '🌧️ Rain · light (-RA)',
+    desc: 'Light rain at KOZR — sparser, thinner drops',
     metarOpts: ({ flt: 'IFR', wdir: 180, wspd: 10, visib: '3', clouds: [{cover:'OVC',base:900}], wxString: '-RA' }),
     areaText: '18010KT 3SM -RA OVC009\nAFT 1500Z: 19012KT 3SM -RA OVC008',
+    advisory: false,
+  },
+  'rain-anim-mod': {
+    name: '🌧️ Rain · moderate (RA)',
+    desc: 'Moderate rain at KOZR — baseline drop density',
+    metarOpts: ({ flt: 'IFR', wdir: 200, wspd: 12, visib: '2', clouds: [{cover:'OVC',base:700}], wxString: 'RA' }),
+    areaText: '20012KT 2SM RA OVC007\nAFT 1500Z: 22014KT 2SM RA OVC006',
+    advisory: false,
+  },
+  'rain-anim-heavy': {
+    name: '🌧️ Rain · heavy (+RA)',
+    desc: 'Heavy rain at KOZR — dense, fast, thicker drops',
+    metarOpts: ({ flt: 'LIFR', wdir: 220, wspd: 18, visib: '1', clouds: [{cover:'OVC',base:400}], wxString: '+RA' }),
+    areaText: '22018KT 1SM +RA OVC004\nAFT 1500Z: 23020KT 1SM +RA OVC005',
     advisory: false,
   },
   'fog-anim': {
@@ -6244,8 +6265,20 @@ function metarWxCodes(metar) {
   const wxStr   = String(metar.wxString || '').toUpperCase();
   const haystack = raw + ' ' + wxStr;
   const codes = [];
-  if (/\b[+-]?(?:VC|MI|BC|PR|SH|BL|DR|TS|FZ)?(?:RA|DZ)\b/.test(haystack)) codes.push('rain');
-  if (/\b(?:VC|MI|BC|PR|FZ)?(?:FG|BR)\b/.test(haystack)) codes.push('fog');
+  // Rain — capture the intensity prefix so the renderer can vary
+  // drop count / fall speed / drop size to match -RA / RA / +RA.
+  // Match a leading whole-token boundary so "PRESRR" inside RMK
+  // (already stripped) or "PRA" (mid-word) can't false-match.
+  const rainRe = /(?:^|\s)([+-])?(?:VC|MI|BC|PR|SH|BL|DR|TS|FZ)?(?:RA|DZ)\b/;
+  const rainMatch = haystack.match(rainRe);
+  if (rainMatch) {
+    const sign = rainMatch[1];
+    const intensity = sign === '+' ? 'heavy' : sign === '-' ? 'light' : 'moderate';
+    codes.push({ kind: 'rain', intensity });
+  }
+  if (/\b(?:VC|MI|BC|PR|FZ)?(?:FG|BR)\b/.test(haystack)) {
+    codes.push({ kind: 'fog' });
+  }
   return codes;
 }
 
@@ -6255,21 +6288,31 @@ function metarWxCodes(metar) {
 // per-frame loop, so the cost is minimal.
 function wxAnimationHTML(codes) {
   let inner = '';
-  if (codes.includes('rain')) {
-    // ~22 raindrops with randomized horizontal position, fall duration,
-    // and starting delay so the rain looks naturally distributed
-    // instead of marching in lockstep.
+  const rain = codes.find(c => c && c.kind === 'rain');
+  if (rain) {
+    // Drop count / fall speed scale with intensity so the panel reads
+    // qualitatively different for -RA / RA / +RA. CSS .intensity-{x}
+    // classes also bump drop width + opacity.
+    //   light   : 12 drops, slow      (0.75-1.30 s)
+    //   moderate: 22 drops, baseline  (0.55-1.10 s)
+    //   heavy   : 38 drops, fast      (0.40-0.80 s)
+    const intensity = rain.intensity || 'moderate';
+    const cfg = intensity === 'heavy'
+      ? { count: 38, minDur: 0.40, maxDur: 0.80, minOp: 0.50, maxOp: 0.95 }
+      : intensity === 'light'
+      ? { count: 12, minDur: 0.75, maxDur: 1.30, minOp: 0.30, maxOp: 0.65 }
+      : { count: 22, minDur: 0.55, maxDur: 1.10, minOp: 0.35, maxOp: 0.80 };
     const drops = [];
-    for (let i = 0; i < 22; i++) {
-      const left  = Math.floor(Math.random() * 100);          // 0-99 %
-      const dur   = (0.55 + Math.random() * 0.55).toFixed(2); // 0.55-1.10 s
-      const delay = (Math.random() * 1.4).toFixed(2);         // 0-1.4 s
-      const op    = (0.35 + Math.random() * 0.45).toFixed(2); // 0.35-0.80
+    for (let i = 0; i < cfg.count; i++) {
+      const left  = Math.floor(Math.random() * 100);
+      const dur   = (cfg.minDur + Math.random() * (cfg.maxDur - cfg.minDur)).toFixed(2);
+      const delay = (Math.random() * cfg.maxDur * 1.4).toFixed(2);
+      const op    = (cfg.minOp + Math.random() * (cfg.maxOp - cfg.minOp)).toFixed(2);
       drops.push(`<i class="wx-rain-drop" style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s;opacity:${op}"></i>`);
     }
-    inner += `<div class="wx-anim wx-anim-rain" aria-hidden="true">${drops.join('')}</div>`;
+    inner += `<div class="wx-anim wx-anim-rain intensity-${intensity}" aria-hidden="true">${drops.join('')}</div>`;
   }
-  if (codes.includes('fog')) {
+  if (codes.find(c => c && c.kind === 'fog')) {
     // 3 wide horizontal wisps at different vertical positions, drift
     // speeds, and opacities so they parallax across the panel without
     // looking lockstep. Each wisp is a wide soft horizontal gradient
@@ -6377,7 +6420,12 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
   // Weather animation layer — sits behind the panel content via z-index.
   // Currently rain only (RA in METAR); structured to extend later.
   const wxLayer = (wxCodes && wxCodes.length) ? wxAnimationHTML(wxCodes) : '';
-  const wxClass = (wxCodes && wxCodes.length) ? ' has-wx-anim ' + wxCodes.map(c => 'wx-' + c).join(' ') : '';
+  const wxClass = (wxCodes && wxCodes.length)
+    ? ' has-wx-anim ' + wxCodes.map(c => {
+        const base = 'wx-' + c.kind;
+        return c.intensity ? base + ' ' + base + '-' + c.intensity : base;
+      }).join(' ')
+    : '';
   return `
     <div class="training-panel ${status}${stagefieldClass}${wxClass}">
       ${wxLayer}
