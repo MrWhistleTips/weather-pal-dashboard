@@ -1156,6 +1156,54 @@ body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
     rgba(255, 250, 220, 0.08) 70%,
     transparent 90%);
 }
+/* Fractal bolt — hand-crafted SVG path with yellow-white stroke +
+   glow drop-shadow + brief opacity pulse. One of four paths picked
+   at render time. Width/height kept narrow so the bolt doesn't
+   dominate the small panel (~30% of width). Timing is its own slow
+   cycle independent of the flashes — sometimes a flash and a bolt
+   coincide (looks like a CG strike), sometimes the bolt fires alone,
+   sometimes a flash fires alone (cloud-internal). All natural. */
+.wx-lightning-bolt {
+  position: absolute;
+  top: 0;
+  width: 30%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  filter:
+    drop-shadow(0 0 2px rgba(255, 240, 180, 0.95))
+    drop-shadow(0 0 6px rgba(255, 220, 120, 0.65))
+    drop-shadow(0 0 14px rgba(255, 200, 80, 0.35));
+  animation: wx-lightning-bolt 7.3s linear infinite;
+  will-change: opacity;
+}
+.wx-lightning-bolt path {
+  fill: none;
+  stroke: rgba(255, 252, 240, 1);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@keyframes wx-lightning-bolt {
+  0%, 78.5%   { opacity: 0; }
+  79%         { opacity: 0.95; }
+  80.2%       { opacity: 0.10; }
+  81%         { opacity: 0.85; }
+  84%         { opacity: 0; }
+  100%        { opacity: 0; }
+}
+/* Intensity scaling — sparse stretches so bolts are infrequent,
+   intense compresses so they fire often. */
+.wx-anim-lightning.intensity-sparse  .wx-lightning-bolt { animation-duration: 16s; }
+.wx-anim-lightning.intensity-intense .wx-lightning-bolt {
+  animation-duration: 4.1s;
+  /* Heavier glow on the intense tier — closer storm = brighter bolts */
+  filter:
+    drop-shadow(0 0 3px rgba(255, 240, 180, 1))
+    drop-shadow(0 0 8px rgba(255, 220, 120, 0.85))
+    drop-shadow(0 0 20px rgba(255, 200, 80, 0.5));
+}
+body.tv .wx-lightning-bolt path { stroke-width: 2.2; }
 
 /* IFR ONLY (intermediate) — color matches actual METAR flight category */
 .training-panel.cat-mvfr {
@@ -6493,9 +6541,29 @@ function wxAnimationHTML(codes) {
     // markup. flash-a has a double-peak keyframe (recurrence ~80 ms
     // after the main pulse) which is what real lightning often does.
     const intensity = lightning.intensity || 'active';
+    // Hand-crafted SVG bolt paths — picked at random per panel for
+    // visual variety. Each viewBox is 0 0 60 100. Main bolt + 1-2
+    // branches. Stroke + drop-shadow does the glow; opacity animation
+    // makes it appear briefly. Position horizontally randomized so
+    // adjacent panels don't all show their bolts in the same spot.
+    const paths = [
+      // A — single zigzag, slight starboard drift, one short branch
+      'M30,2 L24,22 L34,32 L22,52 L36,62 L26,90 M34,32 L46,42',
+      // B — opposite drift, two branches, sharper kinks
+      'M30,3 L38,20 L26,30 L40,46 L24,58 L34,76 L28,98 M26,30 L14,38 M40,46 L52,52',
+      // C — straighter trunk with prominent fork mid-bolt
+      'M30,2 L28,24 L34,40 L30,58 L36,80 L32,98 M34,40 L20,52 L24,68',
+      // D — three small zigzags, three branches, busy
+      'M30,2 L36,18 L24,28 L38,40 L26,52 L34,64 L24,80 L30,96 M38,40 L48,46 M26,52 L18,58 M34,64 L44,72',
+    ];
+    const path = paths[Math.floor(Math.random() * paths.length)];
+    const leftPct = (15 + Math.random() * 55).toFixed(0); // 15-70 %
     inner += `<div class="wx-anim wx-anim-lightning intensity-${intensity}" aria-hidden="true">
       <i class="wx-lightning-flash flash-a"></i>
       <i class="wx-lightning-flash flash-b"></i>
+      <svg class="wx-lightning-bolt" viewBox="0 0 60 100" preserveAspectRatio="xMidYMid meet" style="left:${leftPct}%">
+        <path d="${path}"/>
+      </svg>
     </div>`;
   }
   return `<div class="training-panel-wx-layer" aria-hidden="true">${inner}</div>`;
