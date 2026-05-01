@@ -3875,7 +3875,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>Raw METAR</b> text — the full observation as delivered by aviationweather.gov. Colored by FAA flight category (<span class="help-cat vfr">VFR</span> <span class="help-cat mvfr">MVFR</span> <span class="help-cat ifr">IFR</span> <span class="help-cat lifr">LIFR</span>).</li>
           <li><b>Decoded cells</b> — Wind, Visibility, Ceiling, Temp, Dew Point, Altimeter.</li>
         </ol>
-        <p>Inline <span class="help-badge yellow">OLD DATA</span> badge next to the raw text when the observation is more than <b>80 minutes</b> old.</p>
+        <p>Inline <span class="help-badge yellow">OLD DATA</span> badge next to the raw text when the observation is more than <b>90 minutes</b> old.</p>
         <p>When the live METAR is stale or missing (e.g. aviationweather.gov is having issues for this station), the dashboard automatically falls back to <b>synthesized conditions from the current GOLDFISH area-forecast segment</b> and shows a cyan <span class="help-badge blue">USING FORECAST · METAR IS STALE</span> badge in place of OLD DATA. GOLDFISH is the correct fallback source because <b>Cairns Army Airfield sits inside the GOLDFISH training area</b> — its forecast already describes conditions over Cairns. In fallback mode the Cairns training panel and IFR training strip both read against the forecast rather than going UNKNOWN — the raw text line is prefixed <code>FCST</code> so it's obviously not an observation. The dashboard auto-switches back to the live METAR as soon as a fresh one is published.</p>
       </section>
 
@@ -5847,11 +5847,15 @@ function renderAlternates() {
   body.innerHTML = parts.join('');
 }
 
+// 90 min stale threshold — raised from 80 min after observing KOZR's
+// public ASOS feed sometimes has gaps that briefly stretch past 80 min
+// without truly being stale. 90 min lets the live observation ride a
+// little longer before falling back to the GOLDFISH-segment forecast.
 function isMetarStale(metar) {
   if (!metar || !metar.reportTime) return true;
   const rep = new Date(metar.reportTime);
   if (isNaN(rep)) return true;
-  return (Date.now() - rep.getTime()) >= 80 * 60 * 1000;
+  return (Date.now() - rep.getTime()) >= 90 * 60 * 1000;
 }
 
 function metarCeiling(metar) {

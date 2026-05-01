@@ -508,7 +508,7 @@ reference, not a substitute for official forecaster briefings.</em></p>
   <li><strong>Published X min ago</strong> — when the main publishing server last pushed <code>data.json</code> (runs every 5 min). Colored heartbeat dot: <span class="dot go"></span> green &lt;10 min, <span class="dot amber"></span> yellow 10–20 min, <span class="dot red"></span> red &gt;20 min</li>
   <li><strong>⚡ Detector</strong> — separate health pip for the standalone lightning service (runs every 2 min, independent). <span class="dot go"></span> green &lt;3 min, <span class="dot amber"></span> yellow 3–7 min, <span class="dot red"></span> red &gt;7 min. Hidden until the first successful <code>lightning.json</code> fetch.</li>
   <li><strong>OLD WEATHER banner</strong> — appears if the displayed forecast is from a previous calendar day or its valid period has expired</li>
-  <li><strong>USING FORECAST · METAR IS STALE badge</strong> — if the live METAR is &gt;80 min old, the dashboard synthesizes conditions from the GOLDFISH area forecast and flags the substitution prominently</li>
+  <li><strong>USING FORECAST · METAR IS STALE badge</strong> — if the live METAR is &gt;90 min old, the dashboard synthesizes conditions from the GOLDFISH area forecast and flags the substitution prominently</li>
 </ul>
 <p>The design principle: <strong>stale data is always labeled, never silently shown as fresh.</strong></p>
 </div>
@@ -747,7 +747,7 @@ parsed from the DD 175-1's terminal-forecast section. Each card:</p>
 <table class="zebra">
   <tr><td><span class="badge go">VFR GO</span></td><td>Meets training minimums right now</td></tr>
   <tr><td><span class="badge nogo">NO GO</span></td><td>Below minimums, no improvement in current segment</td></tr>
-  <tr><td><span class="badge unk">UNKNOWN</span></td><td>METAR is missing or &gt;80 min old (Cairns only)</td></tr>
+  <tr><td><span class="badge unk">UNKNOWN</span></td><td>METAR is missing or &gt;90 min old (Cairns only)</td></tr>
   <tr><td><span class="badge solo">SOLO GO</span></td><td>Stagefield meets all four solo gates</td></tr>
   <tr><td><span class="badge solnogo">NO SOLO</span></td><td>One or more solo gates failed (reason shown next to badge)</td></tr>
   <tr><td><span class="badge mvfr">POSS ICE</span></td><td>Flight level temp ≤ 4°C — possible icing</td></tr>
@@ -1302,7 +1302,7 @@ indicator. Here's how to read them:</p>
 <h2>USING FORECAST · METAR IS STALE (cyan badge)</h2>
 <div class="callout warn">
   <div class="callout-title">What it means</div>
-  The live KOZR METAR is &gt; 80 minutes old. The dashboard has switched to
+  The live KOZR METAR is &gt; 90 minutes old. The dashboard has switched to
   synthesizing conditions from the GOLDFISH area-forecast segment (because Cairns
   AAF sits inside the GOLDFISH training area). The pseudo-METAR is prefixed
   <code>FCST</code> so it's obviously not a real observation.
