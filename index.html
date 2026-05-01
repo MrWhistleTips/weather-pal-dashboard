@@ -1057,6 +1057,31 @@ body.tv .wx-anim-rain .wx-rain-drop {
   100% { transform: translate3d(12px, 320px, 0) rotate(8deg); }
 }
 
+/* FOG — slow horizontal drift of soft semi-transparent gradient pills
+   layered over the panel. Three at different y positions / speeds /
+   phases give a sense of depth and slow parallax. Negative animation-
+   delay value pushes each wisp into a different point in its cycle so
+   they're spread across the panel from frame 0. */
+.wx-anim-fog .wx-fog-wisp {
+  position: absolute;
+  left: -65%;
+  width: 65%;
+  height: 28%;
+  background: radial-gradient(ellipse at center,
+    rgba(220, 230, 240, 0.55) 0%,
+    rgba(220, 230, 240, 0.30) 35%,
+    rgba(220, 230, 240, 0.10) 65%,
+    rgba(220, 230, 240, 0)    100%);
+  filter: blur(4px);
+  animation: wx-fog-drift linear infinite;
+  will-change: transform;
+}
+@keyframes wx-fog-drift {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(260%, 0, 0); }
+}
+body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
+
 /* IFR ONLY (intermediate) — color matches actual METAR flight category */
 .training-panel.cat-mvfr {
   border-color: rgba(74,144,226,0.5);
@@ -6185,14 +6210,16 @@ function computeSVFRRecovery(metar) {
 // touching the consumer.
 //
 // Recognized RA family: RA, -RA, +RA, SHRA, +SHRA, -SHRA, TSRA, FZRA,
-// VCSH (vicinity showers), DZ (drizzle — close enough for the rain
-// effect). We strip remarks (everything after RMK) before matching so
-// e.g. "RMK ... PRESRR" can't false-match.
+// DZ (drizzle — close enough for the rain effect).
+// Recognized fog family: FG, BR (mist), MIFG, BCFG, PRFG, VCFG, FZFG.
+// We strip remarks (everything after RMK) before matching so e.g.
+// "RMK ... PRESRR" can't false-match.
 function metarWxCodes(metar) {
   if (!metar || !metar.rawOb) return [];
   const raw = String(metar.rawOb).toUpperCase().split(' RMK ')[0];
   const codes = [];
   if (/\b[+-]?(?:VC|MI|BC|PR|SH|BL|DR|TS|FZ)?(?:RA|DZ)\b/.test(raw)) codes.push('rain');
+  if (/\b(?:VC|MI|BC|PR|FZ)?(?:FG|BR)\b/.test(raw)) codes.push('fog');
   return codes;
 }
 
@@ -6215,6 +6242,21 @@ function wxAnimationHTML(codes) {
       drops.push(`<i class="wx-rain-drop" style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s;opacity:${op}"></i>`);
     }
     inner += `<div class="wx-anim wx-anim-rain" aria-hidden="true">${drops.join('')}</div>`;
+  }
+  if (codes.includes('fog')) {
+    // 3 wide horizontal wisps at different vertical positions, drift
+    // speeds, and opacities so they parallax across the panel without
+    // looking lockstep. Each wisp is a wide soft horizontal gradient
+    // pill that slides L→R across the panel over 14-26 s.
+    const wisps = [];
+    for (let i = 0; i < 3; i++) {
+      const top   = (12 + i * 28 + Math.random() * 14).toFixed(0); // 12-78%
+      const dur   = (14 + Math.random() * 12).toFixed(1);          // 14-26s
+      const delay = (Math.random() * dur).toFixed(1);              // randomize phase so they don't all start at the left edge
+      const op    = (0.30 + Math.random() * 0.30).toFixed(2);      // 0.30-0.60
+      wisps.push(`<i class="wx-fog-wisp" style="top:${top}%;animation-duration:${dur}s;animation-delay:-${delay}s;opacity:${op}"></i>`);
+    }
+    inner += `<div class="wx-anim wx-anim-fog" aria-hidden="true">${wisps.join('')}</div>`;
   }
   return `<div class="training-panel-wx-layer" aria-hidden="true">${inner}</div>`;
 }
