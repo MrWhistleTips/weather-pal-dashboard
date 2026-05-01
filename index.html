@@ -4535,6 +4535,27 @@ const DEMO_SCENARIOS = {
     advisory: false,
     lightning: 'stagefield',
   },
+  'rain-anim': {
+    name: '🌧️ Rain · animation demo',
+    desc: 'Light rain at KOZR — Cairns panel shows falling raindrops',
+    metarOpts: ({ flt: 'IFR', wdir: 180, wspd: 10, visib: '3', clouds: [{cover:'OVC',base:900}], wxString: '-RA' }),
+    areaText: '18010KT 3SM -RA OVC009\nAFT 1500Z: 19012KT 3SM -RA OVC008',
+    advisory: false,
+  },
+  'fog-anim': {
+    name: '🌫️ Fog · animation demo',
+    desc: 'Fog at KOZR — Cairns panel shows drifting fog wisps',
+    metarOpts: ({ flt: 'LIFR', wdir: 0, wspd: 0, visib: '1/4', clouds: [{cover:'OVC',base:200}], wxString: 'FG' }),
+    areaText: 'VRB02KT 1/4SM FG OVC002\nAFT 1500Z: VRB03KT 1SM BR OVC004',
+    advisory: false,
+  },
+  'rain-fog-anim': {
+    name: '🌧️🌫️ Rain + Fog · combined demo',
+    desc: 'Light rain in mist — both animations layered (rain falling through fog wisps)',
+    metarOpts: ({ flt: 'IFR', wdir: 200, wspd: 8, visib: '2', clouds: [{cover:'OVC',base:600}], wxString: '-RA BR' }),
+    areaText: '20008KT 2SM -RA BR OVC006\nAFT 1500Z: 21010KT 3SM -RA BR OVC008',
+    advisory: false,
+  },
 };
 
 function addHoursToZuluString(hoursAhead) {
@@ -6215,11 +6236,16 @@ function computeSVFRRecovery(metar) {
 // We strip remarks (everything after RMK) before matching so e.g.
 // "RMK ... PRESRR" can't false-match.
 function metarWxCodes(metar) {
-  if (!metar || !metar.rawOb) return [];
-  const raw = String(metar.rawOb).toUpperCase().split(' RMK ')[0];
+  if (!metar) return [];
+  // Check rawOb (which is canonical for live METARs) AND wxString
+  // (which is the only place demo scenarios store the wx tokens —
+  // their rawOb is just a placeholder like "METAR KOZR DEMO [VFR]").
+  const raw     = String(metar.rawOb || '').toUpperCase().split(' RMK ')[0];
+  const wxStr   = String(metar.wxString || '').toUpperCase();
+  const haystack = raw + ' ' + wxStr;
   const codes = [];
-  if (/\b[+-]?(?:VC|MI|BC|PR|SH|BL|DR|TS|FZ)?(?:RA|DZ)\b/.test(raw)) codes.push('rain');
-  if (/\b(?:VC|MI|BC|PR|FZ)?(?:FG|BR)\b/.test(raw)) codes.push('fog');
+  if (/\b[+-]?(?:VC|MI|BC|PR|SH|BL|DR|TS|FZ)?(?:RA|DZ)\b/.test(haystack)) codes.push('rain');
+  if (/\b(?:VC|MI|BC|PR|FZ)?(?:FG|BR)\b/.test(haystack)) codes.push('fog');
   return codes;
 }
 
