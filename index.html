@@ -5771,12 +5771,47 @@ function visDisplay(vis) {
   return vis.toFixed(2).replace(/\.?0+$/, '');
 }
 
+// Returns the forecast whose aerodrome-forecast periods actually cover
+// the current Zulu time. Tries the dashboard's selected forecast first
+// (so explicit user choice wins when valid), then any sibling. Returns
+// the selected one as a last resort even if it doesn't cover — the alt
+// section will show "Outside brief window" in that case, which is the
+// right signal.
+function forecastForAlternates(nowMin) {
+  const selected = activeForecast();
+  const all = (DATA && DATA.forecasts) || [];
+  const covers = (f) => {
+    const aeros = (f && f.flightBriefing && f.flightBriefing.aerodromeForecasts) || [];
+    for (const a of aeros) {
+      for (const p of (a.periods || [])) {
+        if (periodCoversZulu(p, nowMin)) return true;
+      }
+    }
+    return false;
+  };
+  if (covers(selected)) return selected;
+  // Fall back to any other forecast whose periods cover now.
+  for (const f of all) {
+    if (f === selected) continue;
+    if (covers(f)) return f;
+  }
+  return selected;
+}
+
 function renderAlternates() {
   const body = document.getElementById('alt-body');
   if (!body) return;
-  const forecast = activeForecast();
-  const aerodromes = (forecast && forecast.flightBriefing && forecast.flightBriefing.aerodromeForecasts) || [];
   const nowMin = zuluMinutes();
+  // The alt section must show what's actually flyable NOW. The dashboard's
+  // selected forecast is "what the operator is briefing for next" — which
+  // can be a future brief during the awkward window between auto-period
+  // local-time flips and the brief's actual Zulu validity (e.g. selected
+  // = N1 at 17:15L but N1's 0030Z-0730Z window doesn't start until
+  // 19:30L). Pick whichever brief's aerodrome forecasts actually cover
+  // the current Zulu time, falling back from the selected one to its
+  // siblings.
+  const forecast = forecastForAlternates(nowMin);
+  const aerodromes = (forecast && forecast.flightBriefing && forecast.flightBriefing.aerodromeForecasts) || [];
   const parts = ALTERNATES.map(a => {
     // ──── Aerodrome-forecast path (the operationally correct one for
     // alt planning). Falls back to nothing when the forecast doesn't
