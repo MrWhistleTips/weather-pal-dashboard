@@ -3562,7 +3562,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div class="section-subheader alt-section-subheader">
     <span class="section-subheader-icon">🛬</span>
     <span class="section-subheader-title">Alternate Planning</span>
-    <span class="section-subheader-detail">Airfield is green if wx is &gt;400/1 above approach mins. Uses live METAR · current regardless of forecast age.</span>
+    <span class="section-subheader-detail">Airfield is green if forecast wx is &gt;400/1 above approach mins (worst-case across active main / FROM / TEMPO groups in the DD 175-1 aerodrome forecast).</span>
   </div>
 
  <div class="card" style="margin-bottom: 4px;">
@@ -5413,6 +5413,112 @@ function alternateStatus(metar, minCeil, minVis) {
   return (ceil >= minCeil && vis >= minVis) ? 'go' : 'nogo';
 }
 
+// ── Aerodrome-forecast based alternate planning ─────────────────────
+// Real alt-planning rule: filed alternates must have FORECAST conditions
+// at or above the published planning mins, not "current METAR." Below
+// helpers find the matching aerodrome forecast for each of the 5 alt
+// fields and pull worst-case ceiling/vis across the active main/FROM
+// group plus any active TEMPO overlay.
+
+// Find the AerodromeForecast that covers the given ICAO. Either an
+// exact match on icao, or the icao appears in some other forecast's
+// sameAs[] list (the "Same as KOZR: …" wrap on DD 175-1 — most of the
+// PM brief's alternates ride on KOZR's forecast).
+function findAerodromeFor(icao, aerodromes) {
+  if (!aerodromes || !aerodromes.length) return null;
+  const target = (icao || '').toUpperCase();
+  const direct = aerodromes.find(a => (a.icao || '').toUpperCase() === target);
+  if (direct) return direct;
+  // Explicit sameAs membership.
+  const sibling = aerodromes.find(a => (a.sameAs || []).some(s => (s || '').toUpperCase() === target));
+  if (sibling) return sibling;
+  // Umbrella case: some briefs (commonly N1) emit a single aerodrome
+  // whose sameAs contains the literal string 'ALL STATIONS WITHIN
+  // 100NM' instead of enumerating each ICAO. All five published
+  // alternates (KCEW, KOZR, KDHN, KTOI, KMGM) are within 100 NM of
+  // KOZR so they all ride that umbrella.
+  // Matches: 'ALL STATIONS WITHIN 100NM' (N1 brief), 'ALL STATIONS W/IN 100NM',
+  // 'ALL STATIONS WIN 100 NM' — accepts the WITHIN / W/IN / WIN spellings
+  // I've seen on briefs.
+  const umbrella = aerodromes.find(a => (a.sameAs || []).some(s =>
+    /\bALL\s+STATIONS\s+W(?:ITH)?\/?IN\s+100\s*NM\b/i.test((s || '').replace(/\s+/g, ' '))
+  ));
+  return umbrella || null;
+}
+
+// "1800" → 1080 minutes. Returns null on garbage.
+function zuluHHMMToMinutes(hhmm) {
+  if (!hhmm) return null;
+  const m = String(hhmm).match(/^(\d{2})(\d{2})Z?$/);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+
+// Aerodrome visibility field is a bare string like "7", "6", "1 1/2", "P6".
+// Different from METAR visib which is already a number.
+function parseAerodromeVisRaw(s) {
+  if (s == null) return null;
+  const txt = String(s).trim();
+  if (!txt) return null;
+  if (/^P\d/i.test(txt)) return parseFloat(txt.replace(/^P/i, '')); // P6 → 6 (treat 6+ as 6)
+  const mixed = txt.match(/^(\d+)\s+(\d+)\/(\d+)/);
+  if (mixed) return parseInt(mixed[1]) + parseInt(mixed[2]) / parseInt(mixed[3]);
+  const frac = txt.match(/^(\d+)\/(\d+)/);
+  if (frac) return parseInt(frac[1]) / parseInt(frac[2]);
+  const num = parseFloat(txt);
+  return isNaN(num) ? null : num;
+}
+
+// Returns true if the period's [validFrom, validTo) covers nowMin.
+// Cross-midnight handled by adding 1440 to the end when end ≤ start.
+function periodCoversZulu(period, nowMin) {
+  const a = zuluHHMMToMinutes(period.validFrom);
+  let b = zuluHHMMToMinutes(period.validTo);
+  if (a === null || b === null) return false;
+  if (b <= a) b += 1440;
+  // Allow nowMin shifted by +1440 to handle the cross-midnight wrap on
+  // the consumer side — try both anchors so we accept the period
+  // regardless of which side of midnight "now" is on.
+  return (nowMin >= a && nowMin < b) || (nowMin + 1440 >= a && nowMin + 1440 < b);
+}
+
+// Most-restrictive (ceiling, vis) across all active periods at nowMin.
+// "Active" = period covers nowMin AND it's a main/FROM/TEMPO group.
+// Mirrors aviationweather.gov's TAF display: if a TEMPO is in effect,
+// you're planning against the worst case.
+function aerodromeWorstAt(aero, nowMin) {
+  if (!aero || !aero.periods) return null;
+  let bestCeil = 99999, bestVis = 99, sawAny = false;
+  for (const p of aero.periods) {
+    if (!periodCoversZulu(p, nowMin)) continue;
+    sawAny = true;
+    const c = parseCeiling(p.skyCondition || '');
+    const v = parseAerodromeVisRaw(p.visibility);
+    const ceil = (c === null) ? 99999 : c;
+    const vis  = (v === null) ? 99 : v;
+    if (ceil < bestCeil) bestCeil = ceil;
+    if (vis  < bestVis)  bestVis  = vis;
+  }
+  if (!sawAny) return null;
+  return {
+    ceiling: bestCeil === 99999 ? null : bestCeil,
+    vis:     bestVis  === 99    ? null : bestVis,
+  };
+}
+
+// Returns "go" | "nogo" | "unknown" for an alt using its aerodrome
+// forecast. Mirrors alternateStatus(metar) shape so the caller stays
+// simple. Unknown when no aerodrome forecast covers this ICAO at all,
+// or when the brief doesn't cover the current Zulu time.
+function alternateStatusFromForecast(aero, nowMin, minCeil, minVis) {
+  if (!aero) return 'unknown';
+  const w = aerodromeWorstAt(aero, nowMin);
+  if (!w) return 'unknown';
+  const ceil = w.ceiling === null ? 99999 : w.ceiling;
+  const vis  = w.vis     === null ? 99    : w.vis;
+  return (ceil >= minCeil && vis >= minVis) ? 'go' : 'nogo';
+}
+
 // Format a visibility number back to a display string (keeps fractions readable)
 function visMinDisplay(vis) {
   // Known alternate-planning fractions
@@ -5440,23 +5546,33 @@ function visDisplay(vis) {
 function renderAlternates() {
   const body = document.getElementById('alt-body');
   if (!body) return;
+  const forecast = activeForecast();
+  const aerodromes = (forecast && forecast.flightBriefing && forecast.flightBriefing.aerodromeForecasts) || [];
+  const nowMin = zuluMinutes();
   const parts = ALTERNATES.map(a => {
-    const metar = ALTERNATE_METARS[a.id] || null;
-    const status = alternateStatus(metar, a.minCeil, a.minVis);
-    const stale = metar ? isMetarStale(metar) : true;
+    // ──── Aerodrome-forecast path (the operationally correct one for
+    // alt planning). Falls back to nothing when the forecast doesn't
+    // cover this ICAO — UI handles that as "Unknown".
+    const aero = findAerodromeFor(a.id, aerodromes);
+    const status = alternateStatusFromForecast(aero, nowMin, a.minCeil, a.minVis);
     const badgeLabel = status === 'unknown' ? 'Unknown' : 'Poss. Alt';
 
-    // Current conditions line — show "CLR" when no BKN/OVC layer.
-    // Color the whole ceil/vis chunk by the FAA flight category.
-    let curLine = '<span class="alt-row-cur alt-row-cur-missing">No METAR</span>';
-    if (metar) {
-      const c = metarCeiling(metar);
-      const vis = parseMetarVis(metar.visib);
-      const cat = flightCategory(c, vis);  // 'vfr' | 'mvfr' | 'ifr' | 'lifr'
-      const ceilStr = c === null ? 'CLR' : `${c}ft`;
-      const visStr = vis === null ? '—' : `${visDisplay(vis)}SM`;
-      const staleTag = stale ? ' <span class="alt-row-stale">OLD</span>' : '';
-      curLine = `<span class="alt-row-cur cat-${cat}">${ceilStr} · ${visStr}</span>${staleTag}`;
+    // Forecast conditions line — pulled from the worst-case active
+    // group (main/FROM + any active TEMPO overlay).
+    let curLine = '<span class="alt-row-cur alt-row-cur-missing">No forecast</span>';
+    if (aero) {
+      const w = aerodromeWorstAt(aero, nowMin);
+      if (w) {
+        const cat = flightCategory(w.ceiling, w.vis);
+        const ceilStr = w.ceiling === null ? 'CLR' : `${w.ceiling}ft`;
+        const visStr = w.vis === null ? '—' : `${visDisplay(w.vis)}SM`;
+        // Mark with FCST tag so it's obvious this is the brief, not a METAR.
+        curLine = `<span class="alt-row-cur cat-${cat}">${ceilStr} · ${visStr}</span> <span class="alt-row-stale" style="background:rgba(74,144,226,0.18); color:#7fb3f3; border-color:rgba(74,144,226,0.35)">FCST</span>`;
+      } else {
+        // Aerodrome found but no period covers current Zulu — likely
+        // we're outside the brief's valid window.
+        curLine = '<span class="alt-row-cur alt-row-cur-missing">Outside brief window</span>';
+      }
     }
 
     return `
