@@ -1007,6 +1007,56 @@ body.tv .metar-hazards-pill { font-size: 13px; padding: 5px 13px; left: 14px; }
   color: var(--unknown);
   text-shadow: 0 0 12px rgba(230,165,58,0.7), 0 0 24px rgba(230,165,58,0.3);
 }
+/* ── Weather animation layer (rain etc.) ─────────────────────────────
+   Paints above the panel background, beneath/atop content depending
+   on z-index. Each effect is a child of .training-panel-wx-layer so
+   we can stack snow + rain + lightning if a METAR has multiple. */
+.training-panel-wx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  z-index: 1;
+}
+.wx-anim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* RAIN — thin vertical strokes falling top → bottom with a slight
+   diagonal lean. Drops are inline <i> elements with randomized
+   left/duration/delay/opacity computed in wxAnimationHTML(). */
+.wx-anim-rain .wx-rain-drop {
+  position: absolute;
+  top: -16px;
+  width: 1.5px;
+  height: 16px;
+  background: linear-gradient(to bottom,
+    rgba(180, 210, 240, 0)  0%,
+    rgba(180, 210, 240, 0.55) 60%,
+    rgba(180, 210, 240, 0.85) 100%);
+  border-radius: 1px;
+  /* Diagonal lean so it looks wind-driven, not a uniform shower. */
+  transform: rotate(8deg);
+  animation: wx-rain-fall linear infinite;
+  will-change: transform, top;
+}
+@keyframes wx-rain-fall {
+  0%   { transform: translate3d(0, 0, 0) rotate(8deg); }
+  100% { transform: translate3d(8px, 220px, 0) rotate(8deg); }
+}
+/* TV mode — slightly bigger drops for the larger panels. */
+body.tv .wx-anim-rain .wx-rain-drop { width: 2px; height: 22px; }
+body.tv .wx-anim-rain .wx-rain-drop {
+  animation-name: wx-rain-fall-tv;
+}
+@keyframes wx-rain-fall-tv {
+  0%   { transform: translate3d(0, 0, 0) rotate(8deg); }
+  100% { transform: translate3d(12px, 320px, 0) rotate(8deg); }
+}
+
 /* IFR ONLY (intermediate) — color matches actual METAR flight category */
 .training-panel.cat-mvfr {
   border-color: rgba(74,144,226,0.5);
@@ -6045,6 +6095,10 @@ function renderTraining(metar, forecast) {
 
   const cairnsLanding = landingHTML('Cairns', forecast);
   const isFallback = !!(metar && metar._isForecastFallback);
+  // Weather animations — only fire for the live KOZR METAR (not the
+  // GOLDFISH forecast fallback). Currently just rain; structured so
+  // we can extend to snow / TS / fog.
+  const cairnsWx = (metar && !isFallback) ? metarWxCodes(metar) : [];
   // Per-station lightning lookups for the panel ⚡ pip — all read from
   // LIGHTNING_DATA which is populated by the standalone lightning service.
   // Cairns reads from the top-level counts/last_strike (KOZR-centric);
@@ -6057,7 +6111,7 @@ function renderTraining(metar, forecast) {
         closest_strike: LIGHTNING_DATA.closest_strike,
       }
     : null;
-  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus, isFallback, cairnsLightning);
+  let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus, isFallback, cairnsLightning, cairnsWx);
 
   for (const sf of stagefields) {
     let status = 'unknown', label = 'UNKNOWN';
@@ -6124,7 +6178,48 @@ function computeSVFRRecovery(metar) {
   return { status: anyMet ? 'go' : 'nogo', tiers };
 }
 
-function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svfr, isFallback, lightningInRange) {
+// ── Weather animation detection ─────────────────────────────────────
+// Returns an array of weather-effect codes derived from a METAR's raw
+// observation string. Currently emits only 'rain' (RA family) but is
+// shaped so we can add 'snow' / 'thunder' / 'fog' later without
+// touching the consumer.
+//
+// Recognized RA family: RA, -RA, +RA, SHRA, +SHRA, -SHRA, TSRA, FZRA,
+// VCSH (vicinity showers), DZ (drizzle — close enough for the rain
+// effect). We strip remarks (everything after RMK) before matching so
+// e.g. "RMK ... PRESRR" can't false-match.
+function metarWxCodes(metar) {
+  if (!metar || !metar.rawOb) return [];
+  const raw = String(metar.rawOb).toUpperCase().split(' RMK ')[0];
+  const codes = [];
+  if (/\b[+-]?(?:VC|MI|BC|PR|SH|BL|DR|TS|FZ)?(?:RA|DZ)\b/.test(raw)) codes.push('rain');
+  return codes;
+}
+
+// Build the weather-animation layer markup. Each effect is a sibling
+// child of .training-panel-wx-layer; CSS keyframes do all the motion.
+// Drops/flakes are generated once at render time — JS doesn't tick a
+// per-frame loop, so the cost is minimal.
+function wxAnimationHTML(codes) {
+  let inner = '';
+  if (codes.includes('rain')) {
+    // ~22 raindrops with randomized horizontal position, fall duration,
+    // and starting delay so the rain looks naturally distributed
+    // instead of marching in lockstep.
+    const drops = [];
+    for (let i = 0; i < 22; i++) {
+      const left  = Math.floor(Math.random() * 100);          // 0-99 %
+      const dur   = (0.55 + Math.random() * 0.55).toFixed(2); // 0.55-1.10 s
+      const delay = (Math.random() * 1.4).toFixed(2);         // 0-1.4 s
+      const op    = (0.35 + Math.random() * 0.45).toFixed(2); // 0.35-0.80
+      drops.push(`<i class="wx-rain-drop" style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s;opacity:${op}"></i>`);
+    }
+    inner += `<div class="wx-anim wx-anim-rain" aria-hidden="true">${drops.join('')}</div>`;
+  }
+  return `<div class="training-panel-wx-layer" aria-hidden="true">${inner}</div>`;
+}
+
+function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svfr, isFallback, lightningInRange, wxCodes) {
   // SVFR Recovery tier gauge — three segments showing which of ≥700/1,
   // ≥600/2, ≥500/3 are currently satisfied by the live KOZR METAR.
   let svfrHTML = '';
@@ -6211,8 +6306,13 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
   // so they get the OLD WEATHER overlay when the displayed brief is
   // from a previous day. Cairns is METAR-driven and stays clear.
   const stagefieldClass = (name && name.toUpperCase() !== 'CAIRNS') ? ' stagefield' : '';
+  // Weather animation layer — sits behind the panel content via z-index.
+  // Currently rain only (RA in METAR); structured to extend later.
+  const wxLayer = (wxCodes && wxCodes.length) ? wxAnimationHTML(wxCodes) : '';
+  const wxClass = (wxCodes && wxCodes.length) ? ' has-wx-anim ' + wxCodes.map(c => 'wx-' + c).join(' ') : '';
   return `
-    <div class="training-panel ${status}${stagefieldClass}">
+    <div class="training-panel ${status}${stagefieldClass}${wxClass}">
+      ${wxLayer}
       ${lightningPipHTML}
       ${pipHTML}
       <div class="training-panel-name">${name}</div>
