@@ -6586,10 +6586,18 @@ function wxAnimationHTML(codes) {
     ];
     const path = paths[Math.floor(Math.random() * paths.length)];
     const leftPct = (15 + Math.random() * 55).toFixed(0); // 15-70 %
+    // Negative animation-delay shifts each panel into a different
+    // point in its cycle from frame 0 — without this, all 5 panels
+    // share the same start time and flash/bolt in lockstep. Range
+    // covers the longest sparse-tier cycle (16s) so every intensity
+    // is fully desynced.
+    const flashADelay = (-Math.random() * 14).toFixed(2);
+    const flashBDelay = (-Math.random() * 14).toFixed(2);
+    const boltDelay   = (-Math.random() * 16).toFixed(2);
     inner += `<div class="wx-anim wx-anim-lightning intensity-${intensity}" aria-hidden="true">
-      <i class="wx-lightning-flash flash-a"></i>
-      <i class="wx-lightning-flash flash-b"></i>
-      <svg class="wx-lightning-bolt" viewBox="0 0 60 100" preserveAspectRatio="xMidYMid meet" style="left:${leftPct}%">
+      <i class="wx-lightning-flash flash-a" style="animation-delay:${flashADelay}s"></i>
+      <i class="wx-lightning-flash flash-b" style="animation-delay:${flashBDelay}s"></i>
+      <svg class="wx-lightning-bolt" viewBox="0 0 60 100" preserveAspectRatio="xMidYMid meet" style="left:${leftPct}%;animation-delay:${boltDelay}s">
         <path d="${path}"/>
       </svg>
     </div>`;
