@@ -4672,7 +4672,8 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <nav class="help-toc">
         <a href="#help-top-bar">Top Bar · Navbar</a>
         <a href="#help-pipeline">Heartbeat Pips — Published &amp; ⚡ Detector</a>
-        <a href="#help-period">Period Selector · AM / PM / N1</a>
+        <a href="#help-period">Period Selector · AM / PM / N1 / WKND</a>
+        <a href="#help-weekend">Weekend View · WKND</a>
         <a href="#help-solar">Solar / Lunar Strip</a>
         <a href="#help-metar">METAR Strip</a>
         <a href="#help-flw">Flight Level Winds</a>
@@ -4761,14 +4762,35 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       </section>
 
       <section id="help-period">
-        <h2>Period Selector · AM / PM / N1</h2>
-        <p>Three buttons below the navbar pick which forecast to display. The active period is auto-selected by local time and re-checks every minute:</p>
+        <h2>Period Selector · AM / PM / N1 / WKND</h2>
+        <p>Four buttons below the navbar pick which forecast to display. The active period is auto-selected by local time + day of week and re-checks every minute:</p>
         <ul>
-          <li><b>04:00 – 10:49 local</b> → <b>AM</b> forecast</li>
-          <li><b>10:50 – 17:14 local</b> → <b>PM</b> forecast</li>
-          <li><b>17:15 – 03:59 local</b> → <b>N1</b> (Night) forecast</li>
+          <li><b>Mon 04:00 – 10:49 local</b> → <b>AM</b> forecast</li>
+          <li><b>Mon 10:50 – 17:14 local</b> → <b>PM</b> forecast</li>
+          <li><b>Mon 17:15 – Tue 03:59 local</b> → <b>N1</b> (Night) forecast</li>
+          <li><b>Sat 00:00 – Mon 04:00 local</b> → <b>WKND</b> (Weekend View) — see below</li>
         </ul>
         <p>You can tap any period to override; the selection sticks until the next auto-snap.</p>
+      </section>
+
+      <section id="help-weekend">
+        <h2>Weekend View · WKND</h2>
+        <p>Cairns Weather doesn't publish AM/PM/N1 briefs on Sat/Sun, so the brief-driven layout (training panels, area forecasts, advisories, alternate planning, IFR strip, aerodromes, hazards, FLW) goes stale. Weekend View replaces the middle of the dashboard with a <b>3×3 grid of the 9 reporting METAR stations within ~35 NM of KOZR</b>:</p>
+        <table class="help-table">
+          <tr><th>Row</th><th>Stations</th></tr>
+          <tr><td>1</td><td>KOZR (Cairns) · KHEY (Hanchey) · KLOR (Lowe)</td></tr>
+          <tr><td>2</td><td>KSXS (Shell) · KEDN (Enterprise) · KDHN (Dothan)</td></tr>
+          <tr><td>3</td><td>KBCR (Bonifay) · K0J4 (Florala) · K79J (Andalusia)</td></tr>
+        </table>
+        <p>Each tile shows:</p>
+        <ul>
+          <li><b>FAA category coloring</b> — VFR green, MVFR blue, IFR red, LIFR magenta. Tile background, ICAO header glow, and category badge in the top-right all match the live METAR's flight category.</li>
+          <li><b>Raw METAR + decoded cells</b> (Wind / Vis / Ceil / Temp / DP / Alt) — same data the regular METAR strip shows for KOZR, just per-station.</li>
+          <li><b>Recommended landing direction</b> — for the 6 fixed-wing fields (KOZR · KHEY · KEDN · KDHN · KBCR · K0J4 · K79J): "RWY 24 ↓ HW 12kt ← 5kt" computed from the station's own surface wind, picking the runway with the most headwind. KLOR + KSXS are heliport-only (no fixed runway, no recommendation line).</li>
+          <li><b>Inline lightning pip</b> — same three-tier convention as stagefield panels (≤5 NM red pulsing · ≤10 NM yellow · ≤25 NM blue). Driven by the per-station GLM ring counts, so Lucas can pip while KOZR stays calm.</li>
+          <li><b>Weather animations</b> — rain / fog / wind / sun / moon / lightning all reuse the existing primitives, driven by each station's own METAR.</li>
+        </ul>
+        <p>Hidden in Weekend mode (since they need a fresh brief): FLW strip, advisories card, training panels, area forecasts, IFR section + WAAS toggle, alternate planning, aerodrome forecasts, flight hazards, ADS-B + Windy iframes. Kept: navbar, period selector, lightning banner, solar/lunar, 7-Day Outlook dropdown.</p>
       </section>
 
       <section id="help-solar">
@@ -5092,7 +5114,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
       <section id="help-wx-anim">
         <h2>Weather Animations</h2>
-        <p>Three CSS-driven effects render inside each training panel when the weather warrants. They're decorative — the GO/NO-GO logic and minimums checks don't depend on them — but they make the operational picture readable at a glance from across the briefing room.</p>
+        <p>Several CSS-driven effects render inside each training panel + Weekend tile when the weather warrants — rain, fog, wind, sun, moon, and lightning. They're decorative (the GO/NO-GO logic and minimums checks don't depend on them) but they make the operational picture readable at a glance from across the briefing room.</p>
         <h3>🌧️ Rain</h3>
         <p>Falling drops with a slight wind-driven diagonal lean. Detected from <code>RA</code>/<code>DZ</code> family tokens (<code>RA</code>, <code>-RA</code>, <code>+RA</code>, <code>SHRA</code>, <code>TSRA</code>, <code>FZRA</code>, <code>DZ</code>). Density and fall speed scale with intensity:</p>
         <ul>
@@ -5103,6 +5125,14 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <p>Cairns reads from the live KOZR METAR. Each stagefield reads from its mapped area forecast (Allen/Toth → GOLDFISH, Highbluff → BEARCAT, Lucas → VANGUARD C), including any active TEMPO/ISOLD/BECMG window — so a current temporary shower in the area forecast drives the animation just like the predominant flow does.</p>
         <h3>🌫️ Fog</h3>
         <p>Six soft horizontal wisps drifting slowly L→R across the panel over 12-28 seconds. Detected from <code>FG</code>/<code>BR</code> family (also MIFG, BCFG, PRFG, VCFG, FZFG). Each wisp has its own random height, opacity, drift duration, and starting phase so the layers parallax independently rather than marching in lockstep.</p>
+        <h3>💨 Wind</h3>
+        <p>Speed-line streaks sweep across the panel when METAR wind (or area-forecast wind for stagefield/weekend tiles) is ≥15 kt. Intensity tiers:</p>
+        <ul>
+          <li><b>15–20 kt</b> sparse — 11 streaks, slow sweep</li>
+          <li><b>21–25 kt</b> active — 18 streaks, medium sweep</li>
+          <li><b>26+ kt</b> intense — 28 streaks, fast sweep, slightly thicker</li>
+        </ul>
+        <p>The whole streak layer is <b>rotated to match the reported wind direction</b> so streaks travel WITH the wind. Wind FROM 270° (west) → streaks travel east, default L→R. Wind FROM 0° (north) → streaks travel south, top→bottom. Wind FROM 180° (south) → streaks travel north, bottom→top. Wind FROM 90° (east) → streaks travel west, R→L. VRB / missing direction falls back to default L→R. <code>max(wspd, wgst)</code> is what's compared against the threshold so a gusting wind drives the animation even if the sustained value is below.</p>
         <h3>⚡ Lightning</h3>
         <p>Two-layer effect, both driven by <b>GLM strike data</b> (not METAR text — the satellite sees strikes whether or not the airfield METAR mentions thunderstorms). Triggers on per-station <code>within_25nm</code>:</p>
         <ul>

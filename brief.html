@@ -389,7 +389,7 @@ table.zebra tr:nth-child(even) td { background: #faf9f5; }
   <div class="toc-row"><span class="toc-num">5</span><span class="toc-title">IFR Operations section</span></div>
   <div class="toc-row"><span class="toc-num">6</span><span class="toc-title">Color &amp; symbol reference</span></div>
   <div class="toc-row"><span class="toc-num">7</span><span class="toc-title">Lightning Detection (5 NM ops-halt rule)</span></div>
-  <div class="toc-row"><span class="toc-num">8</span><span class="toc-title">Special features</span></div>
+  <div class="toc-row"><span class="toc-num">8</span><span class="toc-title">Special features (incl. Weekend View)</span></div>
   <div class="toc-row"><span class="toc-num">9</span><span class="toc-title">Status &amp; failure indicators</span></div>
   <div class="toc-row"><span class="toc-num">10</span><span class="toc-title">TV / kiosk mode</span></div>
   <div class="toc-row"><span class="toc-num">11</span><span class="toc-title">Quick reference card (tear-out)</span></div>
@@ -532,7 +532,7 @@ the day's plan.</p>
   <tbody>
     <tr><td><strong>Pilot Reference Disclaimer</strong></td><td>Always-on muted gold strip reminding readers this is for reference, not authoritative GO/NO-GO</td></tr>
     <tr><td><strong>Navbar</strong></td><td>Logo + title, datum chips (Forecast Date, Zulu, Local, Published with heartbeat pip, ⚡ Detector with lightning health pip), Demo · Publish Log · Help · Refresh · Source buttons</td></tr>
-    <tr><td><strong>Period Selector</strong></td><td>AM / PM / N1 buttons; auto-snaps by local time (04:00L → AM, 10:50L → PM, 17:15L → N1)</td></tr>
+    <tr><td><strong>Period Selector</strong></td><td>AM / PM / N1 / WKND buttons; auto-snaps by local time + day of week (04:00L → AM, 10:50L → PM, 17:15L → N1, Sat 00:00L through Mon 04:00L → Weekend View — see §11)</td></tr>
     <tr><td><strong>Solar/Lunar strip</strong></td><td>Sunrise · Sunset · EENT · Moonrise · Moonset · Illumination, centered</td></tr>
     <tr><td><strong>METAR strip</strong></td><td>Raw KOZR METAR text, then decoded cells (Wind / Vis / Ceil / Temp / DP / Alt) — colored by current flight category</td></tr>
     <tr><td><strong>Flight Level Winds strip</strong></td><td>1k / 3k / 6k / 9k inline winds + temps; "POSS ICE" badges where temps ≤ 4°C</td></tr>
@@ -1223,10 +1223,10 @@ ramp. Result is one of:</p>
 </ul>
 
 <h2>Weather animations (Cairns + stagefields)</h2>
-<p>Each training panel renders three CSS-driven effects when the weather warrants
-— decorative, but they make the operational picture readable from across the
-briefing room. All three coexist; a single panel can stack rain + fog + lightning
-at once.</p>
+<p>Each training panel + Weekend tile renders several CSS-driven effects when the
+weather warrants — decorative, but they make the operational picture readable
+from across the briefing room. All effects coexist; a single panel can stack
+rain + fog + wind + sun/moon + lightning at once.</p>
 
 <table class="zebra">
   <thead><tr><th>Effect</th><th>Trigger</th><th>What you see</th></tr></thead>
@@ -1248,6 +1248,27 @@ at once.</p>
           and starting phase.</td>
     </tr>
     <tr>
+      <td>💨 <b>Wind</b></td>
+      <td>METAR <code>max(wspd, wgst) ≥ 15 kt</code>, or area-forecast wind
+          token in the active segment for stagefields/weekend tiles.</td>
+      <td>Speed-line streaks sweeping across the panel. Tiers: <b>15–20 kt</b>
+          sparse (11 streaks, slow) · <b>21–25 kt</b> active (18, medium) ·
+          <b>26+ kt</b> intense (28, fast). The whole streak layer is rotated
+          to match the reported wind direction so streaks travel WITH the wind
+          (wind from W → L→R; wind from N → top→bottom; etc.). VRB / missing
+          dir falls back to default L→R.</td>
+    </tr>
+    <tr>
+      <td>☀️ <b>Sun</b> / 🌙 <b>Moon</b></td>
+      <td>No BKN/OVC/VV/OVX layer in METAR + no active rain/fog. Sun on
+          local hour 6–19, moon outside that range.</td>
+      <td>Top-right corner: warm radial-gradient sun disk with subtle pulse +
+          slowly-rotating SVG ray cluster, OR crescent moon SVG with halo +
+          5 randomized twinkling stars. Inside Weekend tiles, the glyph
+          relocates to top-center so it doesn't overlap the FAA category
+          badge in the head row.</td>
+    </tr>
+    <tr>
       <td>⚡ <b>Lightning</b></td>
       <td>GLM strike data (NOT METAR text). Triggers on per-station
           <code>within_25nm</code> count from the standalone lightning service
@@ -1257,7 +1278,7 @@ at once.</p>
             <li>Cloud-flash overlay — warm-white radial pulse from the panel top, mimicking cloud-internal illumination. Two flash elements with co-prime cycle durations so the visible pattern drifts and never repeats.</li>
             <li>Fractal SVG bolt — branched zigzag path with warm yellow-amber glow halo. One of four shapes picked randomly per panel, positioned at a random horizontal offset.</li>
           </ul>
-          Frequency scales with strike count: 1-3 → sparse · 4-15 → active · 16+ → intense (brighter, ~every 2.5 s). Per-panel desync via random animation-delays so the 5 panels don't flash in unison.</td>
+          Frequency scales with strike count: 1-3 → sparse · 4-15 → active · 16+ → intense (brighter, ~every 2.5 s). Per-panel desync via random animation-delays so the panels don't flash in unison.</td>
     </tr>
   </tbody>
 </table>
@@ -1267,7 +1288,54 @@ area forecast (Allen/Toth → GOLDFISH, Highbluff → BEARCAT, Lucas → VANGUAR
 including any active TEMPO/ISOLD/BECMG window — so a current temporary shower in
 the area forecast drives the animation just like the predominant flow does.
 Lightning triggers regardless of METAR fallback state because the satellite still
-sees strikes when aviationweather.gov is silent for KOZR.</p>
+sees strikes when aviationweather.gov is silent for KOZR. Weekend tiles read from
+each station's own live METAR.</p>
+
+<h2>Weekend View (4th period button)</h2>
+<p>Cairns Weather doesn't publish AM/PM/N1 briefs on Sat/Sun, so the brief-driven
+layout (training panels, area forecasts, advisories, alternate planning, IFR
+strip, aerodromes, hazards, FLW) goes stale. Weekend View replaces the middle of
+the dashboard with a <b>3×3 grid of the 9 reporting METAR stations within ~35 NM
+of KOZR</b>:</p>
+
+<table class="zebra">
+  <thead><tr><th>Row</th><th>Stations</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>KOZR (Cairns) · KHEY (Hanchey) · KLOR (Lowe)</td></tr>
+    <tr><td>2</td><td>KSXS (Shell) · KEDN (Enterprise) · KDHN (Dothan)</td></tr>
+    <tr><td>3</td><td>KBCR (Bonifay) · K0J4 (Florala) · K79J (Andalusia)</td></tr>
+  </tbody>
+</table>
+
+<p><b>Auto-select:</b> Saturday 00:00 local through Monday 04:00 local snaps to
+the WKND button automatically. Manual click on AM/PM/N1 still overrides at any
+time.</p>
+
+<p><b>Each tile shows:</b></p>
+<ul>
+  <li><b>FAA category coloring</b> — VFR green / MVFR blue / IFR red / LIFR
+      magenta. Tile background, ICAO header glow, and category badge in the
+      top-right all match the live METAR's flight category.</li>
+  <li><b>Raw METAR + decoded cells</b> (Wind / Vis / Ceil / Temp / DP / Alt) —
+      same data the regular METAR strip shows for KOZR, just per-station.</li>
+  <li><b>Recommended landing direction</b> for the 6 fixed-wing fields (KOZR ·
+      KHEY · KEDN · KDHN · KBCR · K0J4 · K79J): "RWY 24 ↓ HW 12kt ← 5kt"
+      computed from the station's own surface wind, picking the runway with
+      the most headwind. KLOR + KSXS are heliport-only and skip the line.</li>
+  <li><b>Inline ⚡ lightning pip</b> next to the FAA category badge — same three
+      tiers as stagefield panels (≤5 NM red pulsing · ≤10 NM yellow · ≤25 NM
+      blue). Pulled from per-station GLM ring counts so a cell over Lucas pips
+      Lucas without lighting up KOZR.</li>
+  <li><b>Weather animations</b> — rain / fog / wind (direction-rotated) / sun
+      / moon / lightning all reuse the existing primitives, driven by each
+      station's own METAR.</li>
+</ul>
+
+<p><b>Hidden in Weekend mode:</b> FLW strip, advisories card, training panels,
+area forecasts, IFR section + WAAS toggle + IFR training strip + alternate
+planning + aerodrome forecasts, flight hazards card, ADS-B + Windy iframes.
+<b>Kept:</b> navbar, period selector, lightning banner, solar/lunar, 7-Day
+Outlook dropdown, the 9-tile grid.</p>
 
 <h2>Demo mode (~25 scenarios)</h2>
 <p>The 🧪 Demo dropdown replaces live data with synthetic conditions for layout
