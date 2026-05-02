@@ -933,15 +933,19 @@ body.tv .metar-hazards-pill { font-size: 13px; padding: 5px 13px; left: 14px; }
 /* TRAINING STATUS — console panel lights */
 .training-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* minmax(0, 1fr) lets columns shrink past their intrinsic content
+     width so one panel's content can't blow out the others. Without
+     this any wide unbreakable content (e.g. a wx-anim element with
+     bad sizing) can starve sibling panels of space. */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
   padding: 4px 6px;
 }
 @media (max-width: 900px) {
-  .training-grid { grid-template-columns: repeat(2, 1fr); }
+  .training-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 500px) {
-  .training-grid { grid-template-columns: 1fr; }
+  .training-grid { grid-template-columns: minmax(0, 1fr); }
 }
 .training-panel {
   position: relative;
@@ -955,6 +959,10 @@ body.tv .metar-hazards-pill { font-size: 13px; padding: 5px 13px; left: 14px; }
   background: var(--bg-2);
   text-align: center;
   overflow: hidden;
+  /* min-width: 0 lets the panel actually accept its 1fr column width
+     even if a child wants to be wider — pairs with the grid's
+     minmax(0, 1fr) to keep all five panels equal-sized. */
+  min-width: 0;
   transition: all 0.3s ease;
 }
 .training-panel::before {
@@ -1261,6 +1269,11 @@ body.tv .wx-lightning-bolt path { stroke-width: 2.2; }
 .wx-anim-wind { position: absolute; inset: 0; pointer-events: none; }
 .wx-wind-streak {
   position: absolute;
+  /* Explicit left:0 so the element box anchors at the panel's left
+     edge — without this some browsers fall back to computed-from-
+     static positioning which can place the streak's box wider than
+     the panel and (combined with default 1fr grid) starve siblings. */
+  left: 0;
   height: 1.5px;
   background: linear-gradient(to right,
     transparent 0%,
