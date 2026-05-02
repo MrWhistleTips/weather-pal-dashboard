@@ -4096,27 +4096,36 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   .disclaimer-banner {
     padding-top: calc(5px + env(safe-area-inset-top));
   }
-  .brand-logo { width: 32px; height: 32px; border-radius: 8px; }
-  .brand-name { font-size: 13px; letter-spacing: 1px; gap: 6px; }
-  .brand-byline { font-size: 9px; letter-spacing: 0.4px; }
-  .brand-callsign { font-size: 9px; letter-spacing: 0.8px; }
-  .brand-sub { font-size: 8px; letter-spacing: 1.2px; }
+  .brand-logo { width: 30px; height: 30px; border-radius: 7px; }
+  .brand-name { font-size: 14px; letter-spacing: 1.2px; gap: 6px; }
+  /* On phone, the byline + callsign + sub clutter the brand row.
+     Strip them so the brand is just logo + title — leaves room for
+     action buttons on the same row. */
+  .brand-byline,
+  .brand-callsign,
+  .brand-sub { display: none; }
   .nav-center {
     order: 3;
     width: 100%;
-    gap: 6px 12px;
+    gap: 4px 10px;
     flex-wrap: wrap;
-    justify-content: flex-start;
+    justify-content: space-between;
     padding-top: 6px;
     margin-top: 2px;
     border-top: 1px solid rgba(93,112,70,0.3);
   }
-  .nav-datum { flex: 0 0 auto; min-width: 52px; line-height: 1.1; }
+  .nav-datum {
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.1;
+    text-align: center;
+  }
   .nav-datum-label { font-size: 7px; letter-spacing: 0.8px; }
   .nav-datum-value { font-size: 11px; }
-  .nav-actions { flex: 0 0 auto; gap: 5px; flex-wrap: wrap; }
+  /* Action buttons in a single tight horizontal row, no wrapping. */
+  .nav-actions { flex: 0 0 auto; gap: 4px; flex-wrap: nowrap; }
   .nav-btn,
-  .demo-menu-btn { font-size: 10px; padding: 4px 8px; letter-spacing: 0.8px; }
+  .demo-menu-btn { font-size: 10px; padding: 4px 7px; letter-spacing: 0.6px; }
 
   /* SECTION HEADERS — allow banner widgets to wrap to their own row */
   .section-header { flex-wrap: wrap; padding: 5px 10px; row-gap: 4px; }
@@ -4239,9 +4248,26 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   .areas-grid { grid-template-columns: 1fr; }
   .aerodromes-grid { grid-template-columns: 1fr; }
 
-  .nav-datum-label { font-size: 6px; }
+  .nav-datum-label { font-size: 7px; letter-spacing: 0.6px; }
   .nav-datum-value { font-size: 10px; }
-  .brand-name { font-size: 12px; }
+  .brand-name { font-size: 13px; letter-spacing: 1px; }
+  /* Forecast Date chip is forecast-driven — em-dash on Weekend View
+     wastes space. Hide on small phones; the period selector below
+     already conveys which forecast is active. */
+  body.weekend-mode .nav-center .nav-datum:first-child { display: none; }
+  /* Hide action-button labels — keep just the leading emoji on phones.
+     The browser breaks the button text into nodes; nth-child selectors
+     don't work, so use a class-targeted pseudo via the existing markup
+     (each button starts with an emoji + space + word). Simplest path
+     is shrinking the font + tightening padding so labels still read but
+     don't dominate. */
+  .nav-btn,
+  .demo-menu-btn {
+    font-size: 9px;
+    padding: 3px 6px;
+    letter-spacing: 0.4px;
+  }
+  /* Section banner toggles wrap onto their own row already; tighten. */
   .section-header-title { font-size: 12px; letter-spacing: 1.5px; }
   .training-panel-status { font-size: 22px; }
   .training-panel-name { font-size: 13px; }
