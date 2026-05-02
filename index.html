@@ -4456,13 +4456,14 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <p>The yellow <b>EXPERIMENTAL</b> badge in the expanded view flags this whole feature (counts, motion detection, per-stagefield pips) as in active development. Treat as situational awareness, not authoritative.</p>
 
         <h3>Per-stagefield ⚡ pips</h3>
-        <p>The banner is KOZR-centric. But the four stagefields (Allen ~4 NM SE, Toth ~8 NM ESE, Highbluff ~7 NM S, Lucas ~17 NM W) can have lightning in <i>their</i> 5 NM ring while KOZR's is clear — especially for Lucas, since it's far enough out west that storm cells in the western training area can hit Lucas without ever entering the KOZR ring.</p>
-        <p>Each Training Status panel (Cairns + 4 stagefields) gets its own small <b>⚡ pill</b> in the top-left corner showing the closest strike's distance and compass cardinal direction (e.g. <code>2.1NM W</code> or <code>7.8NM SE</code>). Two tiers:</p>
+        <p>The banner is KOZR-centric. But the four stagefields (Allen ~4 NM SE, Toth ~8 NM ESE, Highbluff ~7 NM S, Lucas ~17 NM W) can have lightning in <i>their</i> rings while KOZR's are clear — especially for Lucas, since it's far enough out west that storm cells in the western training area can hit Lucas without ever entering the KOZR ring.</p>
+        <p>Each Training Status panel (Cairns + 4 stagefields) gets its own small <b>⚡ pill</b> centered under the runway/winds line. Three tiers:</p>
         <ul>
-          <li><b><span class="help-pip red"></span> Danger</b> — flash within <b>5 NM</b> of the station. Pulsing red border. Operationally significant for that specific airfield.</li>
-          <li><b><span class="help-pip yellow"></span> Caution</b> — flash within <b>10 NM</b> (but not 5). Static yellow glow. Watch carefully; the next strike may be inside the 5 NM ring.</li>
+          <li><b><span class="help-pip red"></span> Danger</b> — flash within <b>5 NM</b>. Pulsing red. Inline shows distance + compass cardinal (e.g. <code>2.1NM W</code>).</li>
+          <li><b><span class="help-pip yellow"></span> Caution</b> — flash within <b>10 NM</b> (not 5). Static yellow glow. Inline shows distance + compass (e.g. <code>7.8NM SE</code>).</li>
+          <li><b><span class="help-pip blue"></span> Notice</b> — flash within <b>25 NM</b> (not 10). Static blue. Label reads <code>Lightning w/in 25NM</code> — added because the brief cloud-flash effect alone is easy to miss when no inner ring is touched.</li>
         </ul>
-        <p>Pip is hidden when there are no flashes within 10 NM of that station. Hover for the full count + bearing in degrees. The publisher computes per-stagefield counts in a single pass through the same flash data — no extra fetches.</p>
+        <p>Pip is hidden when there are no flashes within 25 NM of that station. Hover for the full count + closest distance/bearing. The publisher computes per-stagefield counts in a single pass through the same flash data — no extra fetches.</p>
 
         <h3>Storm motion / approach prediction</h3>
         <p>When the lightning service detects a coherent storm cell with enough flashes to track its motion, it adds an <b>approach line</b> below the detail line:</p>
@@ -4483,7 +4484,9 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li><b>WATCH</b> — severe conditions possible. Amber.</li>
           <li><b>WARNING</b> — severe conditions imminent or occurring. Red.</li>
         </ul>
-        <p>The card only appears when at least one advisory is <b>active</b> (current Zulu time within its valid window) or <b>upcoming</b> (starts within the next 6 hours). Each active advisory shows an expiry countdown (e.g. <i>Expires in 2h 15m</i>). Upcoming advisories show a blue banner above the active list with a "Starts in Xh Xm" countdown.</p>
+        <p>The card only appears when at least one advisory is <b>active</b> (current Zulu time within its valid window) or <b>upcoming</b> (starts within the next 6 hours).</p>
+        <p><b>Collapsible — default collapsed.</b> The header shows a single-line summary: title + per-advisory <code>TYPE NUM</code> pill + the criteria text (e.g. <code>WATCH 05-001  LIGHTNING POTENTIAL W/IN 15NM</code>). No times in the collapsed view. Click the header to expand for full criteria + valid times + expiry countdown (<i>Expires in 2h 15m</i>) + the pending-upcoming banner (<i>Starts in Xh Xm</i>). Active pills full opacity, upcoming pills 0.55 opacity. Preference persists in <code>localStorage</code>.</p>
+        <p>Per-area pills (inside each area-forecast card) show all matching advisories inline next to the area name — small <code>TYPE NUM</code> chips, no glyph, color-coded amber/red. Hover any pill for the full criteria text.</p>
         <p>Special time tokens <b>CURR</b> (currently active) and <b>UFN</b> (until further notice) are recognized — they're treated as open-ended and always active.</p>
       </section>
 

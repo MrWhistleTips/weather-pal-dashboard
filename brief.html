@@ -537,7 +537,7 @@ the day's plan.</p>
     <tr><td><strong>METAR strip</strong></td><td>Raw KOZR METAR text, then decoded cells (Wind / Vis / Ceil / Temp / DP / Alt) — colored by current flight category</td></tr>
     <tr><td><strong>Flight Level Winds strip</strong></td><td>1k / 3k / 6k / 9k inline winds + temps; "POSS ICE" badges where temps ≤ 4°C</td></tr>
     <tr><td><strong>Lightning banner</strong></td><td>Collapsible three-tier strike alert (only shown when GOES-19 detects flashes within 50 NM of KOZR in the last 10 min). Default collapsed to a thin status strip; click to expand for per-ring counts, closest-strike line, and EXPERIMENTAL badge — see §7</td></tr>
-    <tr><td><strong>Active Advisories</strong></td><td>Amber-bordered card (only shown when there's an active or upcoming AWA / TWA / WATCH / WARNING)</td></tr>
+    <tr><td><strong>Active Advisories</strong></td><td>Collapsible amber-bordered card. Default collapsed to a single-line summary (title + TYPE NUM pill + criteria text per advisory). Click to expand for full criteria + valid times + expiry countdown</td></tr>
     <tr><td><strong>VFR Operations banner</strong></td><td>Section divider with the 7-Day Outlook dropdown centered</td></tr>
     <tr><td><strong>Training Status panels</strong></td><td>5 console-light panels: Cairns + Allen + Toth + Highbluff + Lucas. Each panel can show a top-left ⚡ lightning pill (DANGER ≤5 NM red / CAUTION ≤10 NM yellow) and a top-right ⚠️ advisory pip — see §7</td></tr>
     <tr><td><strong>Area Forecasts</strong></td><td>3-column grid: GOLDFISH, BEARCAT, VANGUARD N/C/S, HAWK</td></tr>
@@ -1132,7 +1132,7 @@ into the closer rings.</p>
 </table>
 <p style="font-size: 9.5pt; color: #666;">All four are FAA-IDed private heliports — they have no ICAO code. Coordinates verified from airnav.com.</p>
 
-<p>To surface per-station awareness, each Training Status panel (Cairns + 4 stagefields) gets a small <strong>lightning pill in the top-LEFT corner</strong> showing the closest strike's distance and compass cardinal direction. Two tiers based on distance:</p>
+<p>To surface per-station awareness, each Training Status panel (Cairns + 4 stagefields) gets a <strong>lightning pill centered under the runway/winds line</strong>. Three tiers based on distance:</p>
 
 <table class="zebra">
   <thead><tr><th>Pip</th><th>Trigger</th><th>Visual</th><th>Example</th></tr></thead>
@@ -1150,8 +1150,14 @@ into the closer rings.</p>
       <td><code>⚡ 7.8NM SE</code></td>
     </tr>
     <tr>
+      <td><span class="badge mvfr">NOTICE</span></td>
+      <td>Flash within <strong>25 NM</strong> (but not 10)</td>
+      <td>Blue static pill — added because the brief cloud-flash effect alone is easy to miss when no inner ring is touched</td>
+      <td><code>⚡ Lightning w/in 25NM</code></td>
+    </tr>
+    <tr>
       <td><em>(hidden)</em></td>
-      <td>No flash within 10 NM of that station</td>
+      <td>No flash within 25 NM of that station</td>
       <td>Pip not rendered</td>
       <td>—</td>
     </tr>
