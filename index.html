@@ -6937,14 +6937,18 @@ function wxAnimationHTML(codes) {
       const dur   = (cfg.minDur + Math.random() * (cfg.maxDur - cfg.minDur)).toFixed(2);
       const delay = (Math.random() * cfg.maxDur * 1.4).toFixed(2);
       const op    = (cfg.minOp + Math.random() * (cfg.maxOp - cfg.minOp)).toFixed(2);
-      // Drop and its splash share `left`, animation-duration, and
-      // animation-delay — the splash keyframe fires at 89% of the
-      // cycle, exactly when the drop lands at the panel bottom.
-      // --drop-op is read by both keyframes so per-drop opacity
-      // randomization carries through to the splash brightness too.
-      const inline = `--drop-op:${op};left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s`;
-      elements.push(`<i class="wx-rain-drop" style="${inline}"></i>`);
-      elements.push(`<i class="wx-rain-splash" style="${inline}"></i>`);
+      // Drop and its splash share animation-duration and -delay so
+      // the splash keyframe fires at 89% of the cycle, exactly when
+      // the drop lands at the panel bottom. --drop-op carries opacity
+      // through. The splash uses calc(${left}% + 6px) — the drop
+      // drifts ~8 px right over its fall (8° wind lean), so splashing
+      // at the same `left%` would land 8 px LEFT of the drop's
+      // impact point. +6 px shifts the splash to sit just slightly
+      // left of where the drop actually lands.
+      const dropInline   = `--drop-op:${op};left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s`;
+      const splashInline = `--drop-op:${op};left:calc(${left}% + 6px);animation-duration:${dur}s;animation-delay:${delay}s`;
+      elements.push(`<i class="wx-rain-drop"   style="${dropInline}"></i>`);
+      elements.push(`<i class="wx-rain-splash" style="${splashInline}"></i>`);
     }
     inner += `<div class="wx-anim wx-anim-rain intensity-${intensity}" aria-hidden="true">${elements.join('')}</div>`;
   }
