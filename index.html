@@ -1990,10 +1990,15 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
 .weekend-tile.cat-unknown::before { background: var(--unknown); box-shadow: 0 0 8px var(--unknown); }
 
 .weekend-tile-head {
-  display: flex; align-items: baseline; justify-content: space-between;
+  display: flex; align-items: baseline;
   gap: 8px;
   position: relative; z-index: 2;
 }
+/* Default: cat badge floats to the right end of the head row. */
+.weekend-tile-cat { margin-left: auto; }
+/* When a lightning pip is present it claims the right-side slot, and
+   cat sits immediately after it with a small gap. */
+.weekend-tile-lightning-pip + .weekend-tile-cat { margin-left: 6px; }
 .weekend-tile-icao {
   font-family: var(--font-mono);
   font-size: 20px;
@@ -2098,7 +2103,8 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
 .weekend-tile-taf-cell.cat-ifr  { background: rgba(214,69,69,0.75); }
 .weekend-tile-taf-cell.cat-lifr { background: rgba(179,71,217,0.75); }
 
-/* Inline lightning pip — same three tiers as stagefield panels */
+/* Inline lightning pip — sits in the head row just to the left of the
+   FAA category badge. Same three tiers as stagefield panels. */
 .weekend-tile-lightning-pip {
   display: inline-flex;
   align-items: center;
@@ -2110,8 +2116,9 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
   padding: 2px 6px;
   border-radius: 3px;
   border: 1px solid;
-  align-self: flex-start;
+  margin-left: auto;   /* pushes pip + cat badge to the right end of the head row */
   position: relative; z-index: 2;
+  white-space: nowrap;
 }
 .weekend-tile-lightning-pip.danger {
   color: #ffe5e5; background: rgba(214,69,69,0.7); border-color: var(--nogo);
@@ -7802,6 +7809,7 @@ function weekendTileHTML(icao) {
       <div class="weekend-tile-head">
         <span class="weekend-tile-icao">${icao}</span>
         <span class="weekend-tile-name">${name}</span>
+        ${lightningPip}
         <span class="weekend-tile-cat">${catLabel}</span>
       </div>
       ${raw ? `<div class="weekend-tile-raw">${raw}${staleBadge}</div>` : noMetarNote}
@@ -7815,7 +7823,6 @@ function weekendTileHTML(icao) {
         <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">Alt</span><span class="weekend-tile-cell-value">${altStr}</span></div>
       </div>` : ''}
       ${tafStrip}
-      ${lightningPip}
     </div>
   `;
 }
