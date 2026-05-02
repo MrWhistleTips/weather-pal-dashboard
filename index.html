@@ -1379,15 +1379,16 @@ body.tv .wx-sun-rays { width: 46px; height: 46px; top: 2px; right: 4px; }
 body.tv .wx-moon-disk { width: 28px; height: 28px; top: 9px; right: 12px; }
 
 /* Inside Weekend tiles, the FAA category badge (VFR/MVFR/IFR/LIFR)
-   sits in the top-right corner of the head row — exactly where the
-   sun/moon glyphs land by default. Push the glyphs down below the
-   head row so they don't overlap the badge. */
-.weekend-tile .wx-sun-disk  { top: 38px; }
-.weekend-tile .wx-sun-rays  { top: 32px; }
-.weekend-tile .wx-moon-disk { top: 38px; }
-body.tv .weekend-tile .wx-sun-disk  { top: 50px; }
-body.tv .weekend-tile .wx-sun-rays  { top: 44px; }
-body.tv .weekend-tile .wx-moon-disk { top: 50px; }
+   sits in the top-right corner of the head row. Move the sun/moon
+   glyphs INTO the head row to the right of the field name (open space
+   between the name and the right-aligned pip/cat-badge cluster). Anchor
+   from the left so they don't fight the right-side cluster. */
+.weekend-tile .wx-sun-disk  { top: 6px; right: auto; left: 50%; }
+.weekend-tile .wx-sun-rays  { top: 0;   right: auto; left: calc(50% - 6px); }
+.weekend-tile .wx-moon-disk { top: 6px; right: auto; left: 50%; }
+body.tv .weekend-tile .wx-sun-disk  { top: 9px;  left: 50%; right: auto; }
+body.tv .weekend-tile .wx-sun-rays  { top: 2px;  left: calc(50% - 8px); right: auto; }
+body.tv .weekend-tile .wx-moon-disk { top: 9px;  left: 50%; right: auto; }
 .wx-star {
   position: absolute;
   border-radius: 50%;
