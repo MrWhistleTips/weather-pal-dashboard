@@ -7825,7 +7825,6 @@ function weekendTileHTML(icao) {
   const wxLayer = wxCodes.length ? wxAnimationHTML(wxCodes) : '';
 
   const lightningPip = weekendLightningPipHTML(lightning);
-  const tafStrip = weekendTAFStripHTML(taf);
   const landing = weekendLandingHTML(icao, metar);
 
   const catLabel = cat === 'unknown' ? '—' : cat.toUpperCase();
@@ -7854,7 +7853,6 @@ function weekendTileHTML(icao) {
         <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">Alt</span><span class="weekend-tile-cell-value">${altStr}</span></div>
       </div>` : ''}
       ${landing}
-      ${tafStrip}
     </div>
   `;
 }
