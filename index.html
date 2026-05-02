@@ -1038,30 +1038,79 @@ body.tv .metar-hazards-pill { font-size: 13px; padding: 5px 13px; left: 14px; }
     rgba(180, 210, 240, 0.55) 60%,
     rgba(180, 210, 240, 0.85) 100%);
   border-radius: 1px;
+  opacity: var(--drop-op, 0.6);
   /* Diagonal lean so it looks wind-driven, not a uniform shower. */
-  transform: rotate(8deg);
   animation: wx-rain-fall linear infinite;
-  will-change: transform, top;
+  will-change: top, opacity;
 }
+/* Drop falls from off the top down to the panel bottom over 89% of
+   the cycle, then disappears in 1% (impact moment) and waits the
+   remaining 10% before restarting. Splash fires at the same moment.
+   Using `top: calc(100% - 16px)` instead of a fixed translate means
+   the drop actually lands at the panel bottom regardless of card
+   height — splash sync stays correct on every panel size. */
 @keyframes wx-rain-fall {
-  0%   { transform: translate3d(0, 0, 0) rotate(8deg); }
-  100% { transform: translate3d(8px, 220px, 0) rotate(8deg); }
+  0%   { top: -16px;                opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(0); }
+  89%  { top: calc(100% - 16px);    opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(8px); }
+  90%  { top: calc(100% - 16px);    opacity: 0; transform: rotate(8deg) translateX(8px); }
+  100% { top: calc(100% - 16px);    opacity: 0; transform: rotate(8deg) translateX(8px); }
+}
+/* Splash — small horizontal arc that appears at the panel bottom
+   the instant a drop lands, scales out, and fades. Sibling element
+   to each drop, generated with the same `left`, animation-duration,
+   and animation-delay so it's perfectly synchronized to its drop's
+   impact. transform-origin: bottom center keeps the arc anchored
+   at the impact point as it scales horizontally outward. */
+.wx-anim-rain .wx-rain-splash {
+  position: absolute;
+  bottom: 0;
+  width: 8px;
+  height: 4px;
+  border-top: 1.5px solid rgba(190, 220, 245, 0.85);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  transform: translateX(-50%) scale(0);
+  transform-origin: bottom center;
+  opacity: 0;
+  animation: wx-rain-splash linear infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+@keyframes wx-rain-splash {
+  0%, 87%   { transform: translateX(-50%) scale(0);                opacity: 0; }
+  /* Burst out at the instant of impact (matching the drop's 89% mark) */
+  89%       { transform: translateX(-50%) scaleX(0.4) scaleY(0.6); opacity: var(--drop-op, 0.6); }
+  93%       { transform: translateX(-50%) scaleX(1.6) scaleY(0.7); opacity: var(--drop-op, 0.6); }
+  /* Fade out as it expands further */
+  98%       { transform: translateX(-50%) scaleX(2.6) scaleY(0.3); opacity: 0; }
+  100%      { opacity: 0; }
 }
 /* Intensity tuning — light/heavy variants tweak drop visual size on
    top of the drop-count / fall-speed differences set in JS. Moderate
-   keeps the baseline 1.5×16 from above. */
+   keeps the baseline 1.5×16 from above. Splashes scale with intensity
+   too so heavy rain looks like heavier impact. */
 .wx-anim-rain.intensity-light  .wx-rain-drop { width: 1.2px; height: 14px; }
 .wx-anim-rain.intensity-heavy  .wx-rain-drop { width: 2px;   height: 20px; }
-/* TV mode — slightly bigger drops for the larger panels. */
-body.tv .wx-anim-rain .wx-rain-drop { width: 2px; height: 22px; }
-body.tv .wx-anim-rain.intensity-light .wx-rain-drop { width: 1.5px; height: 18px; }
-body.tv .wx-anim-rain.intensity-heavy .wx-rain-drop { width: 2.5px; height: 28px; }
+.wx-anim-rain.intensity-light  .wx-rain-splash { width: 6px; }
+.wx-anim-rain.intensity-heavy  .wx-rain-splash { width: 11px; }
+/* TV mode — slightly bigger drops + splashes for the larger panels. */
+body.tv .wx-anim-rain .wx-rain-drop   { width: 2px;   height: 22px; }
+body.tv .wx-anim-rain .wx-rain-splash { width: 12px;  height: 5px; }
+body.tv .wx-anim-rain.intensity-light  .wx-rain-drop   { width: 1.5px; height: 18px; }
+body.tv .wx-anim-rain.intensity-light  .wx-rain-splash { width: 9px; }
+body.tv .wx-anim-rain.intensity-heavy  .wx-rain-drop   { width: 2.5px; height: 28px; }
+body.tv .wx-anim-rain.intensity-heavy  .wx-rain-splash { width: 16px; }
+/* TV-mode drops are taller — separate keyframe rebases the start /
+   end positions so the drop still lands cleanly at the panel bottom
+   and starts fully off-screen. */
 body.tv .wx-anim-rain .wx-rain-drop {
   animation-name: wx-rain-fall-tv;
+  top: -28px;
 }
 @keyframes wx-rain-fall-tv {
-  0%   { transform: translate3d(0, 0, 0) rotate(8deg); }
-  100% { transform: translate3d(12px, 320px, 0) rotate(8deg); }
+  0%   { top: -28px;             opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(0); }
+  89%  { top: calc(100% - 28px); opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(12px); }
+  90%  { top: calc(100% - 28px); opacity: 0; transform: rotate(8deg) translateX(12px); }
+  100% { top: calc(100% - 28px); opacity: 0; transform: rotate(8deg) translateX(12px); }
 }
 
 /* FOG — slow horizontal drift of soft semi-transparent gradient pills
@@ -6615,15 +6664,22 @@ function wxAnimationHTML(codes) {
       : intensity === 'light'
       ? { count: 12, minDur: 0.75, maxDur: 1.30, minOp: 0.30, maxOp: 0.65 }
       : { count: 22, minDur: 0.55, maxDur: 1.10, minOp: 0.35, maxOp: 0.80 };
-    const drops = [];
+    const elements = [];
     for (let i = 0; i < cfg.count; i++) {
       const left  = Math.floor(Math.random() * 100);
       const dur   = (cfg.minDur + Math.random() * (cfg.maxDur - cfg.minDur)).toFixed(2);
       const delay = (Math.random() * cfg.maxDur * 1.4).toFixed(2);
       const op    = (cfg.minOp + Math.random() * (cfg.maxOp - cfg.minOp)).toFixed(2);
-      drops.push(`<i class="wx-rain-drop" style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s;opacity:${op}"></i>`);
+      // Drop and its splash share `left`, animation-duration, and
+      // animation-delay — the splash keyframe fires at 89% of the
+      // cycle, exactly when the drop lands at the panel bottom.
+      // --drop-op is read by both keyframes so per-drop opacity
+      // randomization carries through to the splash brightness too.
+      const inline = `--drop-op:${op};left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s`;
+      elements.push(`<i class="wx-rain-drop" style="${inline}"></i>`);
+      elements.push(`<i class="wx-rain-splash" style="${inline}"></i>`);
     }
-    inner += `<div class="wx-anim wx-anim-rain intensity-${intensity}" aria-hidden="true">${drops.join('')}</div>`;
+    inner += `<div class="wx-anim wx-anim-rain intensity-${intensity}" aria-hidden="true">${elements.join('')}</div>`;
   }
   if (codes.find(c => c && c.kind === 'fog')) {
     // Six wide horizontal wisps at different vertical bands, drift
