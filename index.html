@@ -1927,6 +1927,208 @@ body.tv .svfr-gauge-tier { gap: 6px; }
 body.tv .svfr-gauge-tier-dot { width: 11px; height: 11px; }
 body.tv .svfr-gauge-tier-label { font-size: 13px; }
 
+/* ════════════════════════════════════════════════════════════════════
+   WEEKEND VIEW
+   ────────────────────────────────────────────────────────────────────
+   3x3 grid of nearby reporting METAR stations. Visible only when
+   body.weekend-mode is set; otherwise the wrap is display:none and the
+   regular brief-driven sections (.weekend-hide) take over.
+
+   Each tile is flight-category-tinted (cat-vfr/mvfr/ifr/lifr) — green /
+   blue / red / magenta — mirroring the METAR strip's color logic. The
+   wx-anim layer reuses the training-panel animation primitives so the
+   same rain/fog/wind/sun/moon/lightning effects apply.
+   ════════════════════════════════════════════════════════════════════ */
+body.weekend-mode .weekend-hide { display: none !important; }
+body.weekend-mode .section-header-detail { display: none; }
+body.weekend-mode .vfr-section-header,
+body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS toggles */ }
+
+.weekend-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+@media (max-width: 900px) {
+  .weekend-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .weekend-grid { grid-template-columns: 1fr; }
+}
+
+.weekend-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  overflow: hidden;
+  min-width: 0;
+  min-height: 120px;
+  transition: all 0.3s ease;
+}
+.weekend-tile::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--text-ghost);
+  transition: all 0.3s;
+}
+.weekend-tile.cat-vfr  { border-color: rgba(95,186,79,0.55);  background: radial-gradient(ellipse at top, rgba(95,186,79,0.16),  var(--bg-2) 70%); box-shadow: 0 0 14px rgba(95,186,79,0.14),  inset 0 0 24px rgba(95,186,79,0.05); }
+.weekend-tile.cat-vfr::before  { background: var(--vfr);  box-shadow: 0 0 8px var(--vfr); }
+.weekend-tile.cat-mvfr { border-color: rgba(74,144,226,0.55); background: radial-gradient(ellipse at top, rgba(74,144,226,0.16), var(--bg-2) 70%); box-shadow: 0 0 14px rgba(74,144,226,0.14), inset 0 0 24px rgba(74,144,226,0.05); }
+.weekend-tile.cat-mvfr::before { background: var(--mvfr); box-shadow: 0 0 8px var(--mvfr); }
+.weekend-tile.cat-ifr  { border-color: rgba(214,69,69,0.55);  background: radial-gradient(ellipse at top, rgba(214,69,69,0.16),  var(--bg-2) 70%); box-shadow: 0 0 14px rgba(214,69,69,0.14),  inset 0 0 24px rgba(214,69,69,0.05); }
+.weekend-tile.cat-ifr::before  { background: var(--ifr);  box-shadow: 0 0 8px var(--ifr); }
+.weekend-tile.cat-lifr { border-color: rgba(179,71,217,0.55); background: radial-gradient(ellipse at top, rgba(179,71,217,0.16), var(--bg-2) 70%); box-shadow: 0 0 14px rgba(179,71,217,0.14), inset 0 0 24px rgba(179,71,217,0.05); }
+.weekend-tile.cat-lifr::before { background: var(--lifr); box-shadow: 0 0 8px var(--lifr); }
+.weekend-tile.cat-unknown { border-color: rgba(230,165,58,0.45); background: radial-gradient(ellipse at top, rgba(230,165,58,0.10), var(--bg-2) 70%); }
+.weekend-tile.cat-unknown::before { background: var(--unknown); box-shadow: 0 0 8px var(--unknown); }
+
+.weekend-tile-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px;
+  position: relative; z-index: 2;
+}
+.weekend-tile-icao {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text);
+}
+.weekend-tile.cat-vfr  .weekend-tile-icao { color: var(--vfr);  text-shadow: 0 0 10px rgba(95,186,79,0.5); }
+.weekend-tile.cat-mvfr .weekend-tile-icao { color: var(--mvfr); text-shadow: 0 0 10px rgba(74,144,226,0.5); }
+.weekend-tile.cat-ifr  .weekend-tile-icao { color: var(--ifr);  text-shadow: 0 0 10px rgba(214,69,69,0.5); }
+.weekend-tile.cat-lifr .weekend-tile-icao { color: var(--lifr); text-shadow: 0 0 10px rgba(179,71,217,0.5); }
+.weekend-tile-name {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.weekend-tile-cat {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.weekend-tile.cat-vfr  .weekend-tile-cat { color: var(--vfr);  border-color: var(--vfr); }
+.weekend-tile.cat-mvfr .weekend-tile-cat { color: var(--mvfr); border-color: var(--mvfr); }
+.weekend-tile.cat-ifr  .weekend-tile-cat { color: var(--ifr);  border-color: var(--ifr); }
+.weekend-tile.cat-lifr .weekend-tile-cat { color: var(--lifr); border-color: var(--lifr); }
+.weekend-tile.cat-unknown .weekend-tile-cat { color: var(--unknown); border-color: var(--unknown); }
+
+.weekend-tile-raw {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-dim);
+  word-break: break-word;
+  position: relative; z-index: 2;
+}
+.weekend-tile.cat-vfr  .weekend-tile-raw { color: var(--vfr); }
+.weekend-tile.cat-mvfr .weekend-tile-raw { color: var(--mvfr); }
+.weekend-tile.cat-ifr  .weekend-tile-raw { color: var(--ifr); }
+.weekend-tile.cat-lifr .weekend-tile-raw { color: var(--lifr); }
+
+.weekend-tile-cells {
+  display: flex; flex-wrap: wrap; gap: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  position: relative; z-index: 2;
+}
+.weekend-tile-cell {
+  display: flex; gap: 4px; align-items: baseline;
+}
+.weekend-tile-cell-label {
+  color: var(--text-dim);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.weekend-tile-cell-value { color: var(--text); }
+
+.weekend-tile-stale {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: var(--warning);
+  border: 1px solid var(--warning);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 6px;
+}
+
+/* Mini per-tile TAF strip — 6 hour cells colored by FAA flight category.
+   Same color tokens as the KOZR TAF strip in the VFR banner. */
+.weekend-tile-taf {
+  display: flex; gap: 2px;
+  margin-top: 2px;
+  position: relative; z-index: 2;
+}
+.weekend-tile-taf-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: var(--text-dim);
+  margin-right: 4px;
+  align-self: center;
+}
+.weekend-tile-taf-cell {
+  flex: 1;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--bg-3);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.weekend-tile-taf-cell.cat-vfr  { background: rgba(95,186,79,0.7); }
+.weekend-tile-taf-cell.cat-mvfr { background: rgba(74,144,226,0.7); }
+.weekend-tile-taf-cell.cat-ifr  { background: rgba(214,69,69,0.75); }
+.weekend-tile-taf-cell.cat-lifr { background: rgba(179,71,217,0.75); }
+
+/* Inline lightning pip — same three tiers as stagefield panels */
+.weekend-tile-lightning-pip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid;
+  align-self: flex-start;
+  position: relative; z-index: 2;
+}
+.weekend-tile-lightning-pip.danger {
+  color: #ffe5e5; background: rgba(214,69,69,0.7); border-color: var(--nogo);
+  animation: glowOpacityPulseSoft 1.4s ease-in-out infinite;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+.weekend-tile-lightning-pip.caution {
+  color: #fff4dd; background: rgba(230,165,58,0.45); border-color: var(--warning);
+}
+.weekend-tile-lightning-pip.notice {
+  color: #d8e6ff; background: rgba(74,144,226,0.35); border-color: var(--mvfr);
+}
+
+body.tv .weekend-tile { padding: 12px 14px; min-height: 160px; }
+body.tv .weekend-tile-icao { font-size: 24px; }
+body.tv .weekend-tile-name { font-size: 13px; }
+body.tv .weekend-tile-raw  { font-size: 14px; }
+body.tv .weekend-tile-cells { font-size: 14px; }
+body.tv .weekend-tile-cat { font-size: 12px; }
+
 /* Per-stagefield advisory pip */
 .training-panel-advisory-pip {
   position: absolute;
@@ -4098,6 +4300,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <button class="period-btn" data-period="AM">AM</button>
       <button class="period-btn" data-period="PM">PM</button>
       <button class="period-btn" data-period="N1">N1</button>
+      <button class="period-btn" data-period="WKND" title="Weekend View — 9 reporting METAR stations within 35 NM of KOZR">WKND</button>
     </div>
     <!-- Thin solar/lunar strip centered on the same row -->
     <div id="solar-strip" class="solar-strip" style="display:none;"></div>
@@ -4106,6 +4309,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
       <button class="period-btn">AM</button>
       <button class="period-btn">PM</button>
       <button class="period-btn">N1</button>
+      <button class="period-btn">WKND</button>
     </div>
   </div>
 
@@ -4115,7 +4319,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <div id="metar-strip" class="metar-strip"></div>
 
   <!-- Flight Level Winds — horizontal strip showing all levels inline -->
-  <div id="flw-strip" class="flw-strip" style="margin-bottom: 4px;">
+  <div id="flw-strip" class="flw-strip weekend-hide" style="margin-bottom: 4px;">
     <span class="flw-strip-label">💨 FLIGHT LEVEL WINDS</span>
     <div class="flw-strip-cells" id="flw-body"></div>
   </div>
@@ -4141,7 +4345,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
        header with just the type+number badges (e.g. WATCH 04-009 ·
        TWA 04-002). Click the header to expand for full criteria text,
        valid times, expiry countdown, and any pending-upcoming banner. -->
-  <div id="advisories-card" class="card collapsed" style="display:none; margin-bottom:4px;">
+  <div id="advisories-card" class="card collapsed weekend-hide" style="display:none; margin-bottom:4px;">
     <div class="card-header" onclick="toggleAdvisories()" title="Click to expand / collapse">
       <div class="card-title"><span class="card-title-icon">⚠️</span>Active Advisories</div>
       <div class="advisories-pills" id="advisories-pills"></div>
@@ -4177,11 +4381,21 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- TAF expanded detail panel (collapsed by default) -->
   <div id="taf-detail" class="sevenday-detail" style="display:none;"></div>
 
-  <div class="card" style="margin-bottom: 4px;">
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- WEEKEND VIEW — 3x3 grid of nearby reporting stations -->
+  <!-- Visible only when body.weekend-mode is set.         -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div id="weekend-grid-wrap" class="weekend-grid-wrap" style="display:none;">
+    <div class="card" style="margin-bottom: 4px;">
+      <div id="weekend-grid" class="weekend-grid"></div>
+    </div>
+  </div>
+
+  <div class="card weekend-hide" style="margin-bottom: 4px;">
     <div id="training-body"></div>
   </div>
 
-  <div class="card" style="margin-bottom: 4px;">
+  <div class="card weekend-hide" style="margin-bottom: 4px;">
     <div id="areas-body">—</div>
   </div>
 
@@ -4204,7 +4418,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- WAAS expanded detail panel (collapsed by default) -->
   <div id="waas-detail" class="sevenday-detail" style="display:none;"></div>
 
-  <div class="card" style="margin-bottom: 4px;">
+  <div class="card weekend-hide" style="margin-bottom: 4px;">
     <div id="ifr-training" class="ifr-training">
       <!-- Rendered by JS -->
     </div>
@@ -4213,13 +4427,13 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- ═══════════════════════════════════════════════════ -->
   <!-- ALTERNATE PLANNING — thin subheader nested under IFR OPS -->
   <!-- ═══════════════════════════════════════════════════ -->
-  <div class="section-subheader alt-section-subheader">
+  <div class="section-subheader alt-section-subheader weekend-hide">
     <span class="section-subheader-icon">🛬</span>
     <span class="section-subheader-title">Alternate Planning</span>
     <span class="section-subheader-detail">Alternate go/no-go criteria is based on current/future forecast wx to include worst case conditions applying 400/1 to planning minimums.</span>
   </div>
 
- <div class="card" style="margin-bottom: 4px;">
+ <div class="card weekend-hide" style="margin-bottom: 4px;">
     <div id="alt-body" class="alt-grid">
       <!-- Rendered by JS -->
     </div>
@@ -4228,17 +4442,17 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- ═══════════════════════════════════════════════════ -->
   <!-- AERODROME FORECASTS — thin subheader nested under IFR OPS -->
   <!-- ═══════════════════════════════════════════════════ -->
-  <div id="aerodromes-header" class="section-subheader alt-section-subheader" style="display: none;">
+  <div id="aerodromes-header" class="section-subheader alt-section-subheader weekend-hide" style="display: none;">
     <span class="section-subheader-icon">🛫</span>
     <span class="section-subheader-title">Aerodrome Forecasts</span>
   </div>
 
-  <div id="aerodromes-card" class="card" style="margin-bottom: 4px; display: none;">
+  <div id="aerodromes-card" class="card weekend-hide" style="margin-bottom: 4px; display: none;">
     <div id="aerodromes-body">—</div>
   </div>
 
   <!-- Flight Hazards (collapsible, default collapsed) -->
-  <div class="card collapsible" data-collapse-key="hazards" style="margin-bottom: 4px;">
+  <div class="card collapsible weekend-hide" data-collapse-key="hazards" style="margin-bottom: 4px;">
     <div class="card-header" onclick="toggleCollapse(this)">
       <div class="card-title"><span class="card-title-icon">⚡</span>Flight Hazards</div>
       <span id="hazards-badge" class="hazards-present-badge" style="display:none;">⚠️ Hazards Present, Click to View</span>
@@ -5108,6 +5322,15 @@ const DEMO_SCENARIOS = {
     advisory: false,
     lightning: 'showcase',
   },
+  'weekend': {
+    name: '📅 Weekend View',
+    desc: '3x3 grid of nearby reporting METAR stations — mixed flight categories',
+    metarOpts: ({ flt: 'VFR', wdir: 180, wspd: 6, visib: '10+', clouds: [{cover:'SCT',base:5000}] }),
+    areaText: '18008KT 7SM SCT050 BKN120',
+    advisory: false,
+    weekend: true,
+    forcePeriod: 'WKND',
+  },
 };
 
 function addHoursToZuluString(hoursAhead) {
@@ -5544,15 +5767,62 @@ function buildDemoData(key) {
     }
   }
 
+  // Synthetic Weekend View payload — 9 stations spanning all four FAA
+  // categories so the demo exercises tile coloring + animations end to
+  // end. KOZR uses the scenario's main demo METAR; the other 8 are
+  // hand-tuned to a deliberate spread.
+  let weekend = null;
+  if (s.weekend) {
+    weekend = buildDemoWeekendPayload(metar);
+  }
+
   return {
     metar: metar,
     lightning: lightning,
+    weekend: weekend,
     forecasts: [
       makeForecast('AM', '1200Z-1800Z'),
       makeForecast('PM', '1800Z-0030Z'),
       makeForecast('N1', '0030Z-0730Z'),
     ]
   };
+}
+
+/// Synthetic 9-station Weekend payload for the 'weekend' demo scenario.
+/// Uses the demo METAR for KOZR and hand-tuned cells for the rest so
+/// every flight category (VFR / MVFR / IFR / LIFR) is represented and
+/// the rain animation fires on at least one tile.
+function buildDemoWeekendPayload(kozrMetar) {
+  const nowIso = new Date().toISOString();
+  const mk = (icao, opts) => ({
+    icaoId: icao,
+    reportTime: nowIso,
+    temp: opts.temp != null ? opts.temp : 20,
+    dewp: opts.dewp != null ? opts.dewp : 14,
+    wdir: opts.wdir,
+    wspd: opts.wspd,
+    wgst: opts.wgst || null,
+    visib: opts.visib,
+    altim: 1018.5,
+    fltCat: opts.flt,
+    rawOb: opts.rawOb || `METAR ${icao} DEMO [${opts.flt}]`,
+    name: `${icao} (DEMO)`,
+    cover: opts.clouds && opts.clouds[0] ? opts.clouds[0].cover : 'CLR',
+    clouds: opts.clouds || [],
+    wxString: opts.wxString || null,
+  });
+  const metars = {
+    KOZR: kozrMetar || mk('KOZR', { flt:'VFR',  wdir:180, wspd:6,  visib:'10+', clouds:[{cover:'SCT',base:5000}] }),
+    KHEY: mk('KHEY', { flt:'VFR',  wdir:200, wspd:8,  visib:'10+', clouds:[{cover:'FEW',base:6000}] }),
+    KLOR: mk('KLOR', { flt:'MVFR', wdir:210, wspd:10, visib:'5',   clouds:[{cover:'BKN',base:2200}], wxString:'BR' }),
+    KSXS: mk('KSXS', { flt:'VFR',  wdir:190, wspd:7,  visib:'10+', clouds:[{cover:'SCT',base:4500}] }),
+    KEDN: mk('KEDN', { flt:'IFR',  wdir:170, wspd:8,  visib:'2',   clouds:[{cover:'OVC',base:800}],  wxString:'-RA BR' }),
+    KDHN: mk('KDHN', { flt:'MVFR', wdir:220, wspd:12, visib:'4',   clouds:[{cover:'BKN',base:1800}], wxString:'BR' }),
+    KBCR: mk('KBCR', { flt:'VFR',  wdir:160, wspd:5,  visib:'10+', clouds:[{cover:'FEW',base:5500}] }),
+    K0J4: mk('K0J4', { flt:'LIFR', wdir:0,   wspd:0,           visib:'1/2', clouds:[{cover:'OVC',base:200}], wxString:'FG' }),
+    K79J: mk('K79J', { flt:'IFR',  wdir:150, wspd:9,  visib:'2',   clouds:[{cover:'OVC',base:700}],  wxString:'-RA' }),
+  };
+  return { stations: WEEKEND_ICAOS.slice(), metars: metars, tafs: {} };
 }
 
 function setDemoScenario(key) {
@@ -5562,6 +5832,16 @@ function setDemoScenario(key) {
     document.body.classList.add('demo');
     const banner = document.getElementById('demo-scenario');
     if (banner) banner.textContent = DEMO_SCENARIOS[key].name;
+    // Some scenarios pin the period (e.g., Weekend View must select
+    // WKND so the user sees the grid immediately rather than the brief-
+    // driven layout).
+    const force = DEMO_SCENARIOS[key].forcePeriod;
+    if (force) {
+      selectedPeriod = force;
+      document.querySelectorAll('.period-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.period === force);
+      });
+    }
   } else {
     localStorage.removeItem('demoScenario');
     document.body.classList.remove('demo');
@@ -5615,10 +5895,18 @@ document.addEventListener('click', (e) => {
 ///   N1:  17:15 - 03:59 (overnight)
 function autoPeriod() {
   const d = new Date();
+  const dow = d.getDay();   // 0 Sun, 1 Mon, ..., 5 Fri, 6 Sat
   const mins = d.getHours() * 60 + d.getMinutes();
-  if (mins >= 240 && mins < 650) return "AM";    // 04:00 - 10:49
-  if (mins >= 650 && mins < 1035) return "PM";   // 10:50 - 17:14
-  return "N1";                                   // 17:15 - 03:59
+  // Weekend View: midnight ending Friday (= Saturday 00:00) through
+  // Monday 04:00 local (when AM auto-selects). Cairns Weather doesn't
+  // publish briefs Sat/Sun — the weekend grid surfaces live METARs +
+  // TAFs from the 9 reporting stations within ~35 NM of KOZR instead.
+  if (dow === 6) return "WKND";                    // all of Saturday
+  if (dow === 0) return "WKND";                    // all of Sunday
+  if (dow === 1 && mins < 240) return "WKND";      // Monday before 04:00
+  if (mins >= 240 && mins < 650) return "AM";      // 04:00 - 10:49
+  if (mins >= 650 && mins < 1035) return "PM";     // 10:50 - 17:14
+  return "N1";                                     // 17:15 - 03:59
 }
 
 let selectedPeriod = autoPeriod();
@@ -7351,6 +7639,184 @@ function jumpToHazards() {
     if (header) toggleCollapse(header);
   }
   card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ───── Weekend View ─────────────────────────────────────────────────
+// Display order for the 9 reporting METAR stations within ~35 NM of
+// KOZR. KOZR top-left, then Fort Rucker satellite fields in distance
+// order, then civilian neighbors. Must match WeekendStations.icaos in
+// WeatherPalCore (Swift) and WEEKEND_STATIONS in lightning_publish.py
+// so all three sides see the same set.
+const WEEKEND_ICAOS = [
+  'KOZR', 'KHEY', 'KLOR',
+  'KSXS', 'KEDN', 'KDHN',
+  'KBCR', 'K0J4', 'K79J',
+];
+const WEEKEND_NAMES = {
+  KOZR: 'Cairns',     KHEY: 'Hanchey',    KLOR: 'Lowe',
+  KSXS: 'Shell',      KEDN: 'Enterprise', KDHN: 'Dothan',
+  KBCR: 'Bonifay',    K0J4: 'Florala',    K79J: 'Andalusia',
+};
+
+/// Pull the per-station lightning summary for a given ICAO.
+///   - KOZR comes from the top-level `counts` field (banner-shared).
+///   - The other 8 come from `weekend_stations.{ICAO}` (added by the
+///     extended lightning_publish.py).
+/// Returns null when no GLM data is loaded yet or the station isn't in
+/// the payload.
+function lightningForStation(icao) {
+  if (!LIGHTNING_DATA) return null;
+  if (icao === 'KOZR') {
+    const c = LIGHTNING_DATA.counts;
+    if (!c) return null;
+    return {
+      within_5nm:  c.within_5nm  || 0,
+      within_10nm: c.within_10nm || 0,
+      within_25nm: c.within_25nm || 0,
+      last_strike:    LIGHTNING_DATA.last_strike,
+      closest_strike: LIGHTNING_DATA.closest_strike,
+    };
+  }
+  const stations = LIGHTNING_DATA.weekend_stations;
+  if (!stations || !stations[icao]) return null;
+  const s = stations[icao];
+  const c = s.counts || {};
+  return {
+    within_5nm:  c.within_5nm  || 0,
+    within_10nm: c.within_10nm || 0,
+    within_25nm: c.within_25nm || 0,
+    last_strike:    s.last_strike,
+    closest_strike: s.closest_strike,
+  };
+}
+
+/// Render the lightning pip for a Weekend tile — matches the stagefield
+/// pip pattern: ≤5 NM = danger (red, pulsing), ≤10 NM = caution
+/// (yellow), 10–25 NM = notice (blue). Empty string when no flashes
+/// in range.
+function weekendLightningPipHTML(lightning) {
+  if (!lightning) return '';
+  const w5  = lightning.within_5nm  || 0;
+  const w10 = lightning.within_10nm || 0;
+  const w25 = lightning.within_25nm || 0;
+  let tier = null;
+  if (w5 > 0)       tier = 'danger';
+  else if (w10 > 0) tier = 'caution';
+  else if (w25 > 0) tier = 'notice';
+  if (!tier) return '';
+  const featured = lightning.closest_strike || lightning.last_strike;
+  let inlineText, tooltip;
+  if (tier === 'notice') {
+    inlineText = '⚡ w/in 25NM';
+    tooltip = `${w25} flash${w25 > 1 ? 'es' : ''} within 25 NM`;
+  } else {
+    const distStr = featured ? `${featured.distance_nm.toFixed(1)}NM` : '—';
+    const cardStr = featured ? bearingToCompass(featured.bearing_deg) : '';
+    inlineText = `⚡ ${distStr}${cardStr ? ' ' + cardStr : ''}`;
+    const count = tier === 'danger' ? w5 : w10;
+    tooltip = featured
+      ? `${count} flash${count > 1 ? 'es' : ''} within ${tier === 'danger' ? 5 : 10} NM · closest @ ${featured.distance_nm} NM bearing ${featured.bearing_deg}°`
+      : `${count} flash within ${tier === 'danger' ? 5 : 10} NM`;
+  }
+  return `<div class="weekend-tile-lightning-pip ${tier}" title="${escapeAttr(tooltip)}">${inlineText}</div>`;
+}
+
+/// Build the 6-cell mini TAF strip for a Weekend tile. Each cell = 1
+/// upcoming hour, colored by FAA category derived from the worst of
+/// the active main group + any TEMPO/PROB overlay (same logic as the
+/// big KOZR TAF strip). Returns empty string when no TAF available.
+function weekendTAFStripHTML(taf) {
+  if (!taf || !tafWorstCategoryAt) return '';
+  const now = Date.now() / 1000;
+  const cells = [];
+  for (let h = 0; h < 6; h++) {
+    const tsSec = now + h * 3600;
+    const w = tafWorstCategoryAt(taf, tsSec);
+    const cat = (w && w.category) ? w.category : null;
+    cells.push(`<div class="weekend-tile-taf-cell${cat ? ' cat-' + cat : ''}"></div>`);
+  }
+  return `<div class="weekend-tile-taf"><span class="weekend-tile-taf-label">TAF 6H</span>${cells.join('')}</div>`;
+}
+
+/// Build a single Weekend tile.
+function weekendTileHTML(icao) {
+  const name = WEEKEND_NAMES[icao] || icao;
+  const wknd = (DATA && DATA.weekend) || null;
+  const metar = wknd && wknd.metars ? wknd.metars[icao] : null;
+  const taf   = wknd && wknd.tafs   ? wknd.tafs[icao]   : null;
+  const lightning = lightningForStation(icao);
+
+  // Flight category from METAR ceiling/visibility. UNKNOWN when no
+  // METAR or it's stale.
+  let cat = 'unknown';
+  let ceilStr = '—', visStr = '—', windStr = '—', tempStr = '—', dpStr = '—', altStr = '—';
+  let raw = '';
+  let stale = false;
+  if (metar) {
+    stale = isMetarStale(metar);
+    const ceil = metarCeiling(metar);
+    const vis  = parseMetarVis(metar.visib);
+    cat = stale ? 'unknown' : flightCategory(ceil, vis);
+    ceilStr = ceil === null ? 'CLR' : (ceil === 0 ? '<50ft' : `${ceil}ft`);
+    visStr  = (metar.visib != null && metar.visib !== '') ? `${metar.visib} SM` : '—';
+    if (metar.wspd) {
+      const dir = metar.wdir ? String(metar.wdir).padStart(3, '0') : 'VRB';
+      windStr = `${dir}/${String(metar.wspd).padStart(2, '0')}`;
+      if (metar.wgst) windStr += `G${metar.wgst}`;
+      windStr += 'KT';
+    } else {
+      windStr = 'CALM';
+    }
+    tempStr = metar.temp != null ? `${metar.temp}°C` : '—';
+    dpStr   = metar.dewp != null ? `${metar.dewp}°C` : '—';
+    altStr  = metar.altim != null ? (metar.altim / 33.8639).toFixed(2) + '"' : '—';
+    raw = metar.rawOb || '';
+  }
+
+  // Animations — reuse the training-panel primitives. Skip for
+  // unknown/stale METARs so we don't show stale rain/sun.
+  const wxCodes = (metar && !stale) ? metarWxCodes(metar) : [];
+  const ltgCode = lightningWxCode(lightning);
+  if (ltgCode) wxCodes.push(ltgCode);
+  const wxLayer = wxCodes.length ? wxAnimationHTML(wxCodes) : '';
+
+  const lightningPip = weekendLightningPipHTML(lightning);
+  const tafStrip = weekendTAFStripHTML(taf);
+
+  const catLabel = cat === 'unknown' ? '—' : cat.toUpperCase();
+  const noMetarNote = !metar
+    ? `<div class="weekend-tile-raw" style="opacity:0.55;">No METAR available</div>`
+    : '';
+  const staleBadge = stale ? `<span class="weekend-tile-stale">OLD DATA</span>` : '';
+
+  return `
+    <div class="weekend-tile cat-${cat}" data-icao="${icao}">
+      ${wxLayer}
+      <div class="weekend-tile-head">
+        <span class="weekend-tile-icao">${icao}</span>
+        <span class="weekend-tile-name">${name}</span>
+        <span class="weekend-tile-cat">${catLabel}</span>
+      </div>
+      ${raw ? `<div class="weekend-tile-raw">${raw}${staleBadge}</div>` : noMetarNote}
+      ${metar ? `
+      <div class="weekend-tile-cells">
+        <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">Wind</span><span class="weekend-tile-cell-value">${windStr}</span></div>
+        <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">Vis</span><span class="weekend-tile-cell-value">${visStr}</span></div>
+        <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">Ceil</span><span class="weekend-tile-cell-value">${ceilStr}</span></div>
+        <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">Temp</span><span class="weekend-tile-cell-value">${tempStr}</span></div>
+        <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">DP</span><span class="weekend-tile-cell-value">${dpStr}</span></div>
+        <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">Alt</span><span class="weekend-tile-cell-value">${altStr}</span></div>
+      </div>` : ''}
+      ${tafStrip}
+      ${lightningPip}
+    </div>
+  `;
+}
+
+function renderWeekend() {
+  const grid = document.getElementById('weekend-grid');
+  if (!grid) return;
+  grid.innerHTML = WEEKEND_ICAOS.map(weekendTileHTML).join('');
 }
 
 function renderMETAR(metar) {
@@ -9103,6 +9569,41 @@ function activeForecast() {
 }
 
 function renderAll() {
+  // Weekend mode toggles a body class. Brief-driven sections carry
+  // .weekend-hide and disappear via CSS; the 3x3 station grid takes
+  // over. Section banners (VFR / IFR) stay visible so the 7-Day and
+  // WAAS toggles remain reachable.
+  const isWeekend = (selectedPeriod === 'WKND');
+  document.body.classList.toggle('weekend-mode', isWeekend);
+  const wkndWrap = document.getElementById('weekend-grid-wrap');
+  if (wkndWrap) wkndWrap.style.display = isWeekend ? '' : 'none';
+  if (isWeekend) {
+    renderWeekend();
+    // Lightning banner + 7-Day + WAAS still relevant; everything else
+    // is forecast-driven and hidden by the weekend-hide CSS rule.
+    renderLightning();
+    updateLightningHealth();
+    renderSolar(activeForecast());
+    renderSevenDay();
+    renderTAF();
+    // Clear the navbar amendment indicators + forecast date chip
+    // (both forecast-driven and not meaningful in weekend mode).
+    renderMEFAmendmentBadge(null);
+    renderForecastDate(null);
+    // Old-weather warning is forecast-driven — clear it too.
+    document.body.classList.remove('old-weather');
+    // METAR strip shows the live KOZR observation as-is. We deliberately
+    // skip the GOLDFISH forecast-fallback used on weekday views — Sat/Sun
+    // there's no fresh brief to fall back to, and the OLD DATA badge on
+    // the live obs is the right signal when aviationweather.gov is silent.
+    renderMETAR(DATA && DATA.metar);
+    const alertEl = document.getElementById('data-alert');
+    if (alertEl) alertEl.style.display = 'none';
+    document.getElementById('footer-updated').textContent =
+      'Updated ' + localTimeHHMM();
+    return;
+  }
+
   const forecast = activeForecast();
   const liveMetar = DATA && DATA.metar;
   // When the live METAR is stale or missing, synthesize one from the
