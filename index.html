@@ -1059,8 +1059,12 @@ body.tv .metar-hazards-pill { font-size: 13px; padding: 5px 13px; left: 14px; }
    height — splash sync stays correct on every panel size. */
 @keyframes wx-rain-fall {
   0%   { top: -16px;                opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(0); }
-  89%  { top: calc(100% - 16px);    opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(8px); }
-  90%  { top: calc(100% - 16px);    opacity: 0; transform: rotate(8deg) translateX(8px); }
+  /* Drop fully arrived at panel bottom by 87%, then fades to invisible
+     over 87% → 89%. Splash starts emerging at 89% — drop is GONE by
+     then so the previously visible "spike" of the drop overlapping
+     the splash is eliminated. */
+  87%  { top: calc(100% - 16px);    opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(8px); }
+  89%  { top: calc(100% - 16px);    opacity: 0; transform: rotate(8deg) translateX(8px); }
   100% { top: calc(100% - 16px);    opacity: 0; transform: rotate(8deg) translateX(8px); }
 }
 /* Splash — small horizontal arc that appears at the panel bottom
@@ -1116,8 +1120,8 @@ body.tv .wx-anim-rain .wx-rain-drop {
 }
 @keyframes wx-rain-fall-tv {
   0%   { top: -28px;             opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(0); }
-  89%  { top: calc(100% - 28px); opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(12px); }
-  90%  { top: calc(100% - 28px); opacity: 0; transform: rotate(8deg) translateX(12px); }
+  87%  { top: calc(100% - 28px); opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(12px); }
+  89%  { top: calc(100% - 28px); opacity: 0; transform: rotate(8deg) translateX(12px); }
   100% { top: calc(100% - 28px); opacity: 0; transform: rotate(8deg) translateX(12px); }
 }
 
