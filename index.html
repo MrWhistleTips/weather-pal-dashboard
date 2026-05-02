@@ -1996,7 +1996,7 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
 }
 .weekend-tile-icao {
   font-family: var(--font-mono);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--text);
@@ -2007,17 +2007,17 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
 .weekend-tile.cat-lifr .weekend-tile-icao { color: var(--lifr); text-shadow: 0 0 10px rgba(179,71,217,0.5); }
 .weekend-tile-name {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 .weekend-tile-cat {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.5px;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: 3px;
   border: 1px solid;
 }
@@ -2029,8 +2029,8 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
 
 .weekend-tile-raw {
   font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.4;
   color: var(--text-dim);
   word-break: break-word;
   position: relative; z-index: 2;
@@ -2041,17 +2041,17 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
 .weekend-tile.cat-lifr .weekend-tile-raw { color: var(--lifr); }
 
 .weekend-tile-cells {
-  display: flex; flex-wrap: wrap; gap: 4px 10px;
+  display: flex; flex-wrap: wrap; gap: 5px 12px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   position: relative; z-index: 2;
 }
 .weekend-tile-cell {
-  display: flex; gap: 4px; align-items: baseline;
+  display: flex; gap: 5px; align-items: baseline;
 }
 .weekend-tile-cell-label {
   color: var(--text-dim);
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -2071,8 +2071,9 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
 /* Mini per-tile TAF strip — 6 hour cells colored by FAA flight category.
    Same color tokens as the KOZR TAF strip in the VFR banner. */
 .weekend-tile-taf {
-  display: flex; gap: 2px;
-  margin-top: 2px;
+  display: flex; gap: 1px;
+  margin-top: 4px;
+  align-items: center;
   position: relative; z-index: 2;
 }
 .weekend-tile-taf-label {
@@ -2080,15 +2081,16 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
   font-size: 9px;
   letter-spacing: 1.2px;
   color: var(--text-dim);
-  margin-right: 4px;
+  margin-right: 5px;
   align-self: center;
+  flex-shrink: 0;
 }
 .weekend-tile-taf-cell {
   flex: 1;
-  height: 10px;
-  border-radius: 2px;
+  min-width: 0;
+  height: 6px;
+  border-radius: 1px;
   background: var(--bg-3);
-  border: 1px solid rgba(255,255,255,0.05);
 }
 .weekend-tile-taf-cell.cat-vfr  { background: rgba(95,186,79,0.7); }
 .weekend-tile-taf-cell.cat-mvfr { background: rgba(74,144,226,0.7); }
@@ -2123,11 +2125,13 @@ body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS
 }
 
 body.tv .weekend-tile { padding: 12px 14px; min-height: 160px; }
-body.tv .weekend-tile-icao { font-size: 24px; }
-body.tv .weekend-tile-name { font-size: 13px; }
-body.tv .weekend-tile-raw  { font-size: 14px; }
-body.tv .weekend-tile-cells { font-size: 14px; }
-body.tv .weekend-tile-cat { font-size: 12px; }
+body.tv .weekend-tile-icao { font-size: 28px; }
+body.tv .weekend-tile-name { font-size: 14px; }
+body.tv .weekend-tile-raw  { font-size: 16px; }
+body.tv .weekend-tile-cells { font-size: 16px; }
+body.tv .weekend-tile-cell-label { font-size: 12px; }
+body.tv .weekend-tile-cat { font-size: 13px; }
+body.tv .weekend-tile-taf-cell { height: 8px; }
 
 /* Per-stagefield advisory pip */
 .training-panel-advisory-pip {
@@ -7729,13 +7733,14 @@ function weekendTAFStripHTML(taf) {
   if (!taf || !tafWorstCategoryAt) return '';
   const now = Date.now() / 1000;
   const cells = [];
-  for (let h = 0; h < 6; h++) {
+  for (let h = 0; h < 12; h++) {
     const tsSec = now + h * 3600;
     const w = tafWorstCategoryAt(taf, tsSec);
     const cat = (w && w.category) ? w.category : null;
-    cells.push(`<div class="weekend-tile-taf-cell${cat ? ' cat-' + cat : ''}"></div>`);
+    const tip = `+${h}h${cat ? ' ' + cat.toUpperCase() : ''}`;
+    cells.push(`<div class="weekend-tile-taf-cell${cat ? ' cat-' + cat : ''}" title="${tip}"></div>`);
   }
-  return `<div class="weekend-tile-taf"><span class="weekend-tile-taf-label">TAF 6H</span>${cells.join('')}</div>`;
+  return `<div class="weekend-tile-taf"><span class="weekend-tile-taf-label">TAF 12H</span>${cells.join('')}</div>`;
 }
 
 /// Build a single Weekend tile.
