@@ -7358,8 +7358,10 @@ function metarWxCodes(metar) {
   const wspd = parseInt(metar.wspd, 10) || 0;
   const wgst = parseInt(metar.wgst, 10) || 0;
   const windKt = Math.max(wspd, wgst);
-  if (windKt >= 20) {
-    const intensity = windKt < 30 ? 'sparse' : windKt < 45 ? 'active' : 'intense';
+  // Wind tier thresholds (knots, max of sustained vs gust):
+  //   15-20 -> sparse · 21-25 -> active · 26+ -> intense
+  if (windKt >= 15) {
+    const intensity = windKt <= 20 ? 'sparse' : windKt <= 25 ? 'active' : 'intense';
     // Capture wind direction (degrees, wind FROM). wxAnimationHTML
     // converts this into a CSS rotation so streaks travel with the
     // actual reported wind. null/missing/VRB → no rotation (default
