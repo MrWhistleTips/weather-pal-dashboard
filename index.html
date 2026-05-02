@@ -4131,7 +4131,22 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     min-width: 0;
     line-height: 1.1;
     text-align: center;
+    order: 2;   /* datums sit on row 2 of nav-center on mobile */
   }
+  /* Amendment badges (left + right) flank the datums on desktop. On a
+     phone the right badge wrapped alone onto its own row because the
+     datums saturated row 1. Force both badges to row 1 of nav-center
+     via order:1 + flex-basis so they share the row centered, and the
+     datums flow onto row 2 below. */
+  .nav-amd-badge {
+    order: 1;
+    flex: 0 1 auto;
+    text-align: center;
+  }
+  /* When both badges are visible, center them as a pair on row 1.
+     The :first-child / :last-child selectors target the static
+     #nav-amd-left + #nav-amd-right inside .nav-center. */
+  .nav-center { justify-content: center; }
   .nav-datum-label { font-size: 7px; letter-spacing: 0.8px; }
   .nav-datum-value { font-size: 11px; }
   /* Action buttons in a single tight horizontal row, no wrapping. */
