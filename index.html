@@ -3182,6 +3182,48 @@ body.tv .area-ts-coverage { font-size: 13px; }
 }
 body.tv .area-advisory { font-size: 12px; padding: 4px 10px; }
 body.tv .area-advisory-label { font-size: 11px; }
+
+/* Compact advisory pill inside an area card — replaces the full
+   advisory block. Just shows TYPE + NUMBER (and a countdown for
+   upcoming). Hover shows the full criteria text via title attr. */
+.area-advisory-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  margin: 3px 0 4px;
+  border-radius: 3px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: help;
+  border: 1px solid;
+}
+.area-advisory-pill.active {
+  color: var(--warning);
+  background: rgba(230,165,58,0.10);
+  border-color: rgba(230,165,58,0.55);
+  animation: pipPulse 2s ease-in-out infinite;
+}
+.area-advisory-pill.active.red {
+  color: var(--nogo);
+  background: rgba(214,69,69,0.10);
+  border-color: rgba(214,69,69,0.55);
+}
+.area-advisory-pill.upcoming {
+  color: var(--mvfr);
+  background: rgba(74,144,226,0.08);
+  border-color: rgba(74,144,226,0.45);
+}
+.area-advisory-pill.upcoming.red {
+  color: rgba(214,69,69,0.85);
+  background: rgba(214,69,69,0.06);
+  border-color: rgba(214,69,69,0.35);
+}
+body.tv .area-advisory-pill { font-size: 12px; padding: 3px 9px; }
 body.tv .area-advisory-text { font-size: 12px; }
 .area-text {
   font-family: 'JetBrains Mono', monospace;
@@ -7676,15 +7718,20 @@ function renderAreas(forecast) {
     // Upcoming advisory affecting this area (find soonest)
     const upcomingAdv = upcomingAdvs.find(adv => advisoryAffectsArea(adv, a.name));
 
+    // Active / upcoming advisory affecting THIS area — render as a
+    // compact badge only (TYPE + NUMBER, plus countdown for upcoming).
+    // Full criteria text lives in the top-of-page Active Advisories
+    // card and the operator can click that to expand. Repeating it
+    // inside every affected area card just fills the column with
+    // duplicate text.
     let activeAdvHTML = '';
     if (activeAdv) {
+      const red = (activeAdv.type === 'TWA' || activeAdv.type === 'WARNING');
+      const tooltip = `${activeAdv.type} ${activeAdv.number || ''}: ${activeAdv.criteria || ''}`;
       activeAdvHTML = `
-        <div class="area-advisory active">
-          <span class="area-advisory-icon">⚠️</span>
-          <span class="area-advisory-label">${activeAdv.type} ${activeAdv.number || ''} ACTIVE</span>
-          <span class="area-advisory-text">${activeAdv.criteria || ''}</span>
-        </div>
-      `;
+        <span class="area-advisory-pill active${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">
+          ⚠️ ${activeAdv.type} ${activeAdv.number || ''}
+        </span>`;
     } else if (upcomingAdv) {
       const fromMin = parseZuluFromText(upcomingAdv.validFrom);
       let mins = fromMin - now;
@@ -7692,13 +7739,12 @@ function renderAreas(forecast) {
       const h = Math.floor(mins / 60);
       const m = mins % 60;
       const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      const red = (upcomingAdv.type === 'TWA' || upcomingAdv.type === 'WARNING');
+      const tooltip = `${upcomingAdv.type} ${upcomingAdv.number || ''} in ${timeStr}: ${upcomingAdv.criteria || ''}`;
       activeAdvHTML = `
-        <div class="area-advisory upcoming">
-          <span class="area-advisory-icon">🕐</span>
-          <span class="area-advisory-label">${upcomingAdv.type} ${upcomingAdv.number || ''} IN ${timeStr}</span>
-          <span class="area-advisory-text">${upcomingAdv.criteria || ''}</span>
-        </div>
-      `;
+        <span class="area-advisory-pill upcoming${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">
+          🕐 ${upcomingAdv.type} ${upcomingAdv.number || ''} · ${timeStr}
+        </span>`;
     }
 
     // TS Coverage — only render when the MEF reports a non-NONE
