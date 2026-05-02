@@ -4141,7 +4141,10 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     order: 1;
     flex: 1 1 100%;
     text-align: center;
-    display: block !important;   /* override JS-set inline-block */
+    /* No display override — renderMEFAmendmentBadge() controls
+       visibility via inline display:'inline-block' (when amendment
+       present) or 'none' (when not). flex: 1 1 100% takes care of
+       full-width regardless of which display value is in effect. */
   }
   .nav-center { justify-content: center; }
   .nav-datum-label { font-size: 7px; letter-spacing: 0.8px; }
