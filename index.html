@@ -4194,6 +4194,28 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   .metar-strip-raw { font-size: 10px; line-height: 1.3; }
   .metar-strip-data { flex-wrap: wrap; gap: 4px 12px; justify-content: center; }
   .metar-strip-cell { font-size: 10px; }
+  /* HAZARDS pill — desktop pins it absolute at left: 10px / top: 50%.
+     On a stacked mobile strip that lands on top of the decoded cells.
+     Pull it out of absolute flow and stack inline above the raw text. */
+  .metar-hazards-pill {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    display: block;
+    margin: 0 auto 4px;
+    width: fit-content;
+    font-size: 9px;
+    padding: 3px 8px;
+  }
+
+  /* OLD WEATHER overlay — the FLW strip is narrow on phone and the
+     watermark text squeezes/wraps and shows through the underlying
+     winds. Just hide the FLW strip entirely when the brief is stale;
+     the OLD WEATHER banner up top + the same overlay on training
+     panels and area forecasts make the staleness obvious without
+     this strip fighting for legibility. */
+  body.old-weather:not(.demo) .flw-strip { display: none; }
 
   /* FLIGHT LEVEL WINDS — horizontal scroll instead of wrapping */
   .flw-strip { padding: 5px 8px; }
