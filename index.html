@@ -59,6 +59,13 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* iOS Safari paints the safe-area-inset-top zone (above the URL bar
+   when it shrinks during scroll) using the <html> background rather
+   than body's. Without this, the notch / dynamic-island area shows the
+   white default and the page content becomes visible behind it as you
+   scroll. */
+html { background: var(--bg-0); }
+
 body {
   font-family: 'Rajdhani', system-ui, sans-serif;
   background: var(--bg-0);
