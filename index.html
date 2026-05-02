@@ -4109,12 +4109,12 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     padding-top: calc(5px + env(safe-area-inset-top));
   }
   .brand-logo { width: 30px; height: 30px; border-radius: 7px; }
-  .brand-name { font-size: 14px; letter-spacing: 1.2px; gap: 6px; }
-  /* On phone, the byline + callsign + sub clutter the brand row.
-     Strip them so the brand is just logo + title — leaves room for
-     action buttons on the same row. */
-  .brand-byline,
-  .brand-callsign,
+  .brand-name { font-size: 14px; letter-spacing: 1.2px; gap: 4px; flex-wrap: wrap; }
+  /* Byline + callsign visible on phone; size dialed in to fit alongside
+     the title without forcing wraps. brand-sub ('Fort Rucker · USAACE')
+     still hidden — duplicates info already on the page. */
+  .brand-byline { font-size: 8px; letter-spacing: 0.4px; line-height: 1.1; }
+  .brand-callsign { font-size: 8px; letter-spacing: 0.6px; line-height: 1.1; }
   .brand-sub { display: none; }
   .nav-center {
     order: 3;
