@@ -2195,7 +2195,11 @@ body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
 /* ALTERNATE PLANNING — 5 airfield rows with GO/NO-GO Poss. Alternate badge */
 .alt-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* minmax(0, 1fr) lets every column shrink past its intrinsic content
+     width — without this, one card with wider content (e.g. KOZR's
+     "Cairns" parenthetical pushing its meta line longer) can starve
+     a sibling column to ~zero width on landscape iPad. */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   /* Anti-stretch — alts with longer timelines (more upcoming flips)
      don't force shorter sibling cards to grow into empty dark space. */
   grid-auto-rows: min-content;
