@@ -1377,6 +1377,17 @@ body.tv .wx-sun-rays { width: 46px; height: 46px; top: 2px; right: 4px; }
     drop-shadow(0 0 10px rgba(180, 200, 240, 0.30));
 }
 body.tv .wx-moon-disk { width: 28px; height: 28px; top: 9px; right: 12px; }
+
+/* Inside Weekend tiles, the FAA category badge (VFR/MVFR/IFR/LIFR)
+   sits in the top-right corner of the head row — exactly where the
+   sun/moon glyphs land by default. Push the glyphs down below the
+   head row so they don't overlap the badge. */
+.weekend-tile .wx-sun-disk  { top: 38px; }
+.weekend-tile .wx-sun-rays  { top: 32px; }
+.weekend-tile .wx-moon-disk { top: 38px; }
+body.tv .weekend-tile .wx-sun-disk  { top: 50px; }
+body.tv .weekend-tile .wx-sun-rays  { top: 44px; }
+body.tv .weekend-tile .wx-moon-disk { top: 50px; }
 .wx-star {
   position: absolute;
   border-radius: 50%;
