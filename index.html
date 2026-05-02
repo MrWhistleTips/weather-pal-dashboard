@@ -2140,6 +2140,20 @@ body.tv .weekend-tile-cells { font-size: 16px; }
 body.tv .weekend-tile-cell-label { font-size: 12px; }
 body.tv .weekend-tile-cat { font-size: 13px; }
 body.tv .weekend-tile-taf-cell { height: 8px; }
+/* Landing line — left-align inside the tile (parent class default-
+   centers; weekend tiles read better flush-left to match the cells row).
+   Bumps the font slightly because the badge sits in a single line. */
+.weekend-tile-landing {
+  justify-content: flex-start !important;
+  font-size: 12px !important;
+  margin-top: 4px;
+  position: relative; z-index: 2;
+}
+.weekend-tile-landing .land-label { font-size: 10px; }
+.weekend-tile-landing .land-rwy   { font-size: 14px; }
+body.tv .weekend-tile-landing { font-size: 14px !important; }
+body.tv .weekend-tile-landing .land-label { font-size: 12px; }
+body.tv .weekend-tile-landing .land-rwy   { font-size: 16px; }
 
 /* Per-stagefield advisory pip */
 .training-panel-advisory-pip {
@@ -6093,6 +6107,22 @@ const RUNWAYS = {
   'Lucas':     [[180, 360]],               // 18/36
 };
 
+// Fixed-wing runways for the Weekend View tiles. Keyed by ICAO. Sourced
+// from FAA NASR via aviationweather.gov's airport endpoint. Stations
+// without a fixed-wing runway (KLOR, KSXS — heliports only) are absent
+// here; tiles for those show a wind-direction line instead. KHEY's
+// 17/35 strip is only 476' long — included so pilots see the wind
+// alignment, but don't fly anything but rotorcraft into it.
+const WEEKEND_RUNWAYS = {
+  KOZR: [[60, 240], [180, 360]],   // 06/24 and 18/36
+  KHEY: [[170, 350]],               // 17/35
+  KEDN: [[50, 230]],                // 05/23
+  KDHN: [[140, 320], [180, 360]],   // 14/32 and 18/36
+  KBCR: [[10, 190]],                // 01/19
+  K0J4: [[40, 220]],                // 04/22
+  K79J: [[110, 290]],               // 11/29
+};
+
 /// Parse the 1000ft wind from MEF flightLevelWinds.
 /// Returns { dir, spd, isVariable } — null if not parseable.
 function parse1000ftWind(forecast) {
@@ -7796,6 +7826,7 @@ function weekendTileHTML(icao) {
 
   const lightningPip = weekendLightningPipHTML(lightning);
   const tafStrip = weekendTAFStripHTML(taf);
+  const landing = weekendLandingHTML(icao, metar);
 
   const catLabel = cat === 'unknown' ? '—' : cat.toUpperCase();
   const noMetarNote = !metar
@@ -7822,7 +7853,47 @@ function weekendTileHTML(icao) {
         <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">DP</span><span class="weekend-tile-cell-value">${dpStr}</span></div>
         <div class="weekend-tile-cell"><span class="weekend-tile-cell-label">Alt</span><span class="weekend-tile-cell-value">${altStr}</span></div>
       </div>` : ''}
+      ${landing}
       ${tafStrip}
+    </div>
+  `;
+}
+
+/// Build the recommended-landing line for a Weekend tile. Drives off
+/// the station's own METAR surface wind (more accurate than MEF
+/// 1000-ft for surface landing decisions). Stations with no fixed-wing
+/// runway (KLOR, KSXS — heliports) get an empty string so we don't
+/// render a misleading "RWY ..." line; the wind they care about is
+/// already in the decoded Wind cell.
+function weekendLandingHTML(icao, metar) {
+  const runways = WEEKEND_RUNWAYS[icao];
+  if (!runways) return '';
+  if (!metar || isMetarStale(metar)) return '';
+  // Build wind object in the shape bestLanding() expects.
+  const wind = {
+    dir: metar.wdir,
+    spd: metar.wspd || 0,
+    isVariable: !metar.wdir && (metar.wspd || 0) > 0,
+  };
+  const land = bestLanding(runways, wind);
+  if (land.calm) {
+    return `<div class="training-panel-landing weekend-tile-landing"><span class="land-label">RWY</span><span class="land-calm">CALM</span></div>`;
+  }
+  if (land.variable) {
+    return `<div class="training-panel-landing weekend-tile-landing"><span class="land-label">RWY</span><span class="land-vrb">VRB</span><span class="land-xw orange"><span class="land-xw-arrow">↔</span>${land.crosswind}kt</span></div>`;
+  }
+  const rwy = String(Math.round(land.heading / 10)).padStart(2, '0');
+  const hwArrow = land.headwind >= 0 ? '↓' : '↑';
+  const hwClass = land.headwind >= 0 ? 'green' : 'red';
+  const xwArrow = land.crosswindSide === 'right' ? '←' : '→';
+  const xwClass = land.crosswind >= 15 ? 'orange' : '';
+  return `
+    <div class="training-panel-landing weekend-tile-landing">
+      <span class="land-label">RWY</span>
+      <span class="land-rwy">${rwy}</span>
+      <span class="land-arrow ${hwClass}">${hwArrow}</span>
+      <span class="land-hw">HW ${Math.abs(land.headwind)}kt</span>
+      <span class="land-xw ${xwClass}"><span class="land-xw-arrow">${xwArrow}</span>${land.crosswind}kt</span>
     </div>
   `;
 }
