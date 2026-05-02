@@ -4239,7 +4239,11 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
      the OLD WEATHER banner up top + the same overlay on training
      panels and area forecasts make the staleness obvious without
      this strip fighting for legibility. */
-  body.old-weather:not(.demo) .flw-strip { display: none; }
+  /* !important to win against renderFLW()'s inline style.display='flex'.
+     Without it, the inline style would always trump our CSS rule and
+     the FLW strip would remain visible (with the OLD WEATHER overlay
+     squeezed unreadably across it). */
+  body.old-weather:not(.demo) .flw-strip { display: none !important; }
 
   /* FLIGHT LEVEL WINDS — horizontal scroll instead of wrapping */
   .flw-strip { padding: 5px 8px; }
