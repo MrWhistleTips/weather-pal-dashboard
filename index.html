@@ -1737,6 +1737,14 @@ body.tv .sevenday-legend { font-size: 11px; }
   color: rgba(255,255,255,0.7);
   letter-spacing: 0.5px;
   margin-left: auto;
+  /* Always one line — long subtitle text ellipsis-truncates instead of
+     wrapping into awkward gaps across the row on iPad-landscape and
+     similar in-between viewports. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  max-width: 60%;
 }
 body.tv .section-subheader { padding: 5px 16px 5px 26px; }
 body.tv .section-subheader-title { font-size: 17px; letter-spacing: 3px; }
