@@ -2078,6 +2078,19 @@ body.tv .alt-row-meta { font-size: 11px; }
   color: var(--tan);
   text-shadow: 0 0 3px rgba(192,168,120,0.3);
 }
+/* Plain-English airport name in parens after the ICAO — slightly
+   smaller, lower contrast, no letter-spacing, so the ICAO still
+   visually anchors the row. */
+.alt-row-shortname {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: rgba(192,168,120,0.7);
+  text-shadow: none;
+  margin-left: 2px;
+}
+body.tv .alt-row-shortname { font-size: 16px; }
 .alt-row-name {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
@@ -4559,11 +4572,11 @@ const DATA_REFRESH_MS = 5 * 60 * 1000;
 // Alternate Planning minimums per published ILS approach alternate mins.
 // Ceiling in feet, visibility in statute miles (1 1/4 = 1.25, 1 7/16 = 1.4375).
 const ALTERNATES = [
-  { id: 'KCEW', name: 'Bob Sikes · Crestview',    approach: 'ILS RWY 07', minCeil: 600, minVis: 1.25   },
-  { id: 'KOZR', name: 'Cairns AAF',               approach: 'ILS RWY 06', minCeil: 600, minVis: 1.25   },
-  { id: 'KDHN', name: 'Dothan Regional',          approach: 'ILS RWY 32', minCeil: 600, minVis: 1.25   },
-  { id: 'KTOI', name: 'Troy Municipal',           approach: 'ILS RWY 07', minCeil: 700, minVis: 1.4375 },
-  { id: 'KMGM', name: 'Montgomery Regional',      approach: 'ILS RWY 28', minCeil: 600, minVis: 1.25   },
+  { id: 'KCEW', shortName: 'Crestview',  name: 'Bob Sikes · Crestview',    approach: 'ILS RWY 07', minCeil: 600, minVis: 1.25   },
+  { id: 'KOZR', shortName: 'Cairns',     name: 'Cairns AAF',               approach: 'ILS RWY 06', minCeil: 600, minVis: 1.25   },
+  { id: 'KDHN', shortName: 'Dothan',     name: 'Dothan Regional',          approach: 'ILS RWY 32', minCeil: 600, minVis: 1.25   },
+  { id: 'KTOI', shortName: 'Troy',       name: 'Troy Municipal',           approach: 'ILS RWY 07', minCeil: 700, minVis: 1.4375 },
+  { id: 'KMGM', shortName: 'Montgomery', name: 'Montgomery Regional',      approach: 'ILS RWY 28', minCeil: 600, minVis: 1.25   },
 ];
 // Map id → METAR observation (keeps last successful batch fetch)
 let ALTERNATE_METARS = {};
@@ -6222,7 +6235,7 @@ function renderAlternates() {
       <div class="alt-row ${status}">
         <div class="alt-row-top">
           <div class="alt-row-id-group">
-            <span class="alt-row-id">${a.id}</span>
+            <span class="alt-row-id">${a.id}${a.shortName ? ` <span class="alt-row-shortname">(${a.shortName})</span>` : ''}</span>
             <span class="alt-row-meta">${a.approach} · min ${a.minCeil}/${visMinDisplay(a.minVis)}</span>
           </div>
         </div>
