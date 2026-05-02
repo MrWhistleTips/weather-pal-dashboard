@@ -1254,6 +1254,109 @@ body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
 }
 body.tv .wx-lightning-bolt path { stroke-width: 2.2; }
 
+/* WIND — horizontal speed-line streaks crossing the panel left→right
+   at a slight downward tilt. Density and sweep speed scale with the
+   detected wind intensity. Intentionally low-opacity / silver so the
+   streaks feel like atmosphere rather than data viz. */
+.wx-anim-wind { position: absolute; inset: 0; pointer-events: none; }
+.wx-wind-streak {
+  position: absolute;
+  height: 1.5px;
+  background: linear-gradient(to right,
+    transparent 0%,
+    rgba(220, 230, 245, 0.45) 30%,
+    rgba(220, 230, 245, 0.75) 70%,
+    transparent 100%);
+  border-radius: 1px;
+  transform: translateX(-150%) rotate(-3deg);
+  opacity: 0;
+  animation: wx-wind-blow linear infinite;
+  will-change: transform, opacity;
+}
+@keyframes wx-wind-blow {
+  0%   { transform: translateX(-150%) rotate(-3deg); opacity: 0; }
+  10%  { opacity: var(--streak-op, 0.4); }
+  85%  { opacity: var(--streak-op, 0.4); }
+  100% { transform: translateX(150%)  rotate(-3deg); opacity: 0; }
+}
+.wx-anim-wind.intensity-intense .wx-wind-streak { height: 2px; }
+body.tv .wx-wind-streak { height: 2px; }
+body.tv .wx-anim-wind.intensity-intense .wx-wind-streak { height: 2.5px; }
+
+/* SUN — clear daytime. Faint warm radial gradient disk in the top-
+   right corner, with 8 SVG rays slowly rotating behind it. The disk
+   pulses subtly so it feels alive. */
+.wx-anim-sun { position: absolute; inset: 0; pointer-events: none; }
+.wx-sun-disk {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255, 240, 180, 0.95) 0%,
+    rgba(255, 220, 120, 0.65) 40%,
+    rgba(255, 200, 80,  0.30) 70%,
+    transparent 100%);
+  box-shadow:
+    0 0 12px rgba(255, 220, 120, 0.55),
+    0 0 24px rgba(255, 200, 80,  0.30);
+  animation: wx-sun-pulse 5s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes wx-sun-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.07); }
+}
+.wx-sun-rays {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  width: 34px;
+  height: 34px;
+  animation: wx-sun-rotate 60s linear infinite;
+  transform-origin: center;
+  pointer-events: none;
+}
+@keyframes wx-sun-rotate {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+body.tv .wx-sun-disk { width: 30px; height: 30px; top: 9px; right: 12px; }
+body.tv .wx-sun-rays { width: 46px; height: 46px; top: 2px; right: 4px; }
+
+/* MOON + STARS — clear nighttime. Crescent moon (SVG circle masked
+   by an offset circle) in the top-right corner with a soft glow,
+   plus randomly-positioned twinkling star points across the upper
+   panel. Stars pulse opacity 0.3 → 1 → 0.3 with randomized cycle
+   durations so they don't blink in unison. */
+.wx-anim-night { position: absolute; inset: 0; pointer-events: none; }
+.wx-moon {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  filter:
+    drop-shadow(0 0 4px rgba(220, 230, 250, 0.55))
+    drop-shadow(0 0 10px rgba(180, 200, 240, 0.30));
+}
+body.tv .wx-moon { width: 28px; height: 28px; top: 9px; right: 12px; }
+.wx-star {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
+  opacity: 0.3;
+  animation: wx-star-twinkle ease-in-out infinite;
+  will-change: opacity;
+}
+@keyframes wx-star-twinkle {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 1; }
+}
+
 /* IFR ONLY (intermediate) — color matches actual METAR flight category */
 .training-panel.cat-mvfr {
   border-color: rgba(74,144,226,0.5);
@@ -6615,7 +6718,23 @@ function wxCodesFromAreaForecast(text) {
   }
   // Reuse the metar detector by pretending the area text is the rawOb.
   // Area forecasts don't have RMK blocks so the strip is harmless.
-  return metarWxCodes({ rawOb: texts.join(' '), wxString: '' });
+  // Also parse wind + clouds out of the segment so the wind / sun /
+  // moon detectors have the data they need (those check numeric
+  // fields, not the rawOb string).
+  const joined = texts.join(' ');
+  let wspd = 0, wgst = 0;
+  const windMatch = joined.match(/(?:^|\s)(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?KT/i);
+  if (windMatch) {
+    wspd = parseInt(windMatch[2], 10) || 0;
+    wgst = parseInt(windMatch[3], 10) || 0;
+  }
+  const clouds = [];
+  const cloudRe = /(BKN|OVC|FEW|SCT|VV|OVX)(\d{3})/g;
+  let cm;
+  while ((cm = cloudRe.exec(joined)) !== null) {
+    clouds.push({ cover: cm[1], baseFeet: parseInt(cm[2], 10) * 100 });
+  }
+  return metarWxCodes({ rawOb: joined, wxString: '', wspd, wgst, clouds });
 }
 
 function metarWxCodes(metar) {
@@ -6640,6 +6759,28 @@ function metarWxCodes(metar) {
   }
   if (/\b(?:VC|MI|BC|PR|FZ)?(?:FG|BR)\b/.test(haystack)) {
     codes.push({ kind: 'fog' });
+  }
+  // Wind streaks — METAR wspd or wgst ≥ 20 kt. Intensity tiers map to
+  // visible streak density and sweep speed.
+  const wspd = parseInt(metar.wspd, 10) || 0;
+  const wgst = parseInt(metar.wgst, 10) || 0;
+  const windKt = Math.max(wspd, wgst);
+  if (windKt >= 20) {
+    const intensity = windKt < 30 ? 'sparse' : windKt < 45 ? 'active' : 'intense';
+    codes.push({ kind: 'wind', intensity });
+  }
+  // Sun (clear daytime) / Moon (clear nighttime). Suppressed when
+  // rain or fog is already painting the panel — no point layering a
+  // sun glow over a downpour. Clear sky = no BKN/OVC/VV/OVX layer.
+  const hasRainOrFog = codes.some(c => c.kind === 'rain' || c.kind === 'fog');
+  if (!hasRainOrFog) {
+    const clouds = metar.clouds || [];
+    const hasCeiling = clouds.some(c => ['BKN', 'OVC', 'VV', 'OVX'].includes(c.cover));
+    if (!hasCeiling) {
+      const hour = new Date().getHours();
+      const isDay = hour >= 6 && hour < 19;
+      codes.push({ kind: isDay ? 'sun' : 'moon' });
+    }
   }
   return codes;
 }
@@ -6745,6 +6886,74 @@ function wxAnimationHTML(codes) {
       <svg class="wx-lightning-bolt" viewBox="0 0 60 100" preserveAspectRatio="xMidYMid meet" style="left:${leftPct}%;animation-delay:${boltDelay}s">
         <path d="${path}"/>
       </svg>
+    </div>`;
+  }
+  // WIND streaks — horizontal speed lines crossing the panel,
+  // density and sweep speed scaling with intensity. Triggered by
+  // METAR wspd or wgst ≥ 20 kt (or area-forecast equivalent).
+  const wind = codes.find(c => c && c.kind === 'wind');
+  if (wind) {
+    const intensity = wind.intensity || 'sparse';
+    const cfg = intensity === 'intense'
+      ? { count: 28, minDur: 0.40, maxDur: 0.85 }
+      : intensity === 'active'
+      ? { count: 18, minDur: 0.55, maxDur: 1.10 }
+      : { count: 11, minDur: 0.85, maxDur: 1.60 };
+    const streaks = [];
+    for (let i = 0; i < cfg.count; i++) {
+      const top   = Math.floor(Math.random() * 100);
+      const w     = (24 + Math.random() * 38).toFixed(0);  // 24-62 px streak length
+      const dur   = (cfg.minDur + Math.random() * (cfg.maxDur - cfg.minDur)).toFixed(2);
+      const delay = (-Math.random() * cfg.maxDur * 1.6).toFixed(2);
+      const op    = (0.20 + Math.random() * 0.30).toFixed(2);
+      streaks.push(`<i class="wx-wind-streak" style="--streak-op:${op};top:${top}%;width:${w}px;animation-duration:${dur}s;animation-delay:${delay}s"></i>`);
+    }
+    inner += `<div class="wx-anim wx-anim-wind intensity-${intensity}" aria-hidden="true">${streaks.join('')}</div>`;
+  }
+  // SUN — clear daytime. Sits in the top-right corner of the panel:
+  // soft warm glow + faint slowly-rotating SVG ray cluster behind a
+  // brighter disk. Subtle, non-distracting "feels sunny" cue.
+  if (codes.find(c => c && c.kind === 'sun')) {
+    inner += `<div class="wx-anim wx-anim-sun" aria-hidden="true">
+      <svg class="wx-sun-rays" viewBox="0 0 40 40" aria-hidden="true">
+        <g stroke="rgba(255,220,120,0.55)" stroke-width="1.5" stroke-linecap="round">
+          <line x1="20" y1="2"  x2="20" y2="9"/>
+          <line x1="20" y1="31" x2="20" y2="38"/>
+          <line x1="2"  y1="20" x2="9"  y2="20"/>
+          <line x1="31" y1="20" x2="38" y2="20"/>
+          <line x1="6"  y1="6"  x2="11" y2="11"/>
+          <line x1="29" y1="29" x2="34" y2="34"/>
+          <line x1="6"  y1="34" x2="11" y2="29"/>
+          <line x1="29" y1="11" x2="34" y2="6"/>
+        </g>
+      </svg>
+      <div class="wx-sun-disk"></div>
+    </div>`;
+  }
+  // MOON + STARS — clear nighttime. Crescent moon SVG in the
+  // top-right corner plus 5 randomized twinkling star points
+  // scattered across the upper portion of the panel.
+  if (codes.find(c => c && c.kind === 'moon')) {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      const top   = Math.floor(Math.random() * 65);    // upper 65% of panel
+      const left  = Math.floor(8 + Math.random() * 78); // 8-86 % horizontal
+      const dur   = (3 + Math.random() * 4).toFixed(1); // 3-7 s twinkle
+      const delay = (-Math.random() * 5).toFixed(1);
+      const size  = (1.5 + Math.random() * 1.6).toFixed(1);
+      stars.push(`<i class="wx-star" style="top:${top}%;left:${left}%;width:${size}px;height:${size}px;animation-duration:${dur}s;animation-delay:${delay}s"></i>`);
+    }
+    inner += `<div class="wx-anim wx-anim-night" aria-hidden="true">
+      <svg class="wx-moon" viewBox="0 0 24 24" aria-hidden="true">
+        <defs>
+          <mask id="wx-moon-mask">
+            <rect width="24" height="24" fill="white"/>
+            <circle cx="15" cy="10" r="9" fill="black"/>
+          </mask>
+        </defs>
+        <circle cx="12" cy="12" r="9" fill="rgba(225,232,250,0.9)" mask="url(#wx-moon-mask)"/>
+      </svg>
+      ${stars.join('')}
     </div>`;
   }
   return `<div class="training-panel-wx-layer" aria-hidden="true">${inner}</div>`;
