@@ -1345,7 +1345,7 @@ body.tv .wx-sun-rays { width: 46px; height: 46px; top: 2px; right: 4px; }
    panel. Stars pulse opacity 0.3 → 1 → 0.3 with randomized cycle
    durations so they don't blink in unison. */
 .wx-anim-night { position: absolute; inset: 0; pointer-events: none; }
-.wx-moon {
+.wx-moon-disk {
   position: absolute;
   top: 6px;
   right: 8px;
@@ -1355,7 +1355,7 @@ body.tv .wx-sun-rays { width: 46px; height: 46px; top: 2px; right: 4px; }
     drop-shadow(0 0 4px rgba(220, 230, 250, 0.55))
     drop-shadow(0 0 10px rgba(180, 200, 240, 0.30));
 }
-body.tv .wx-moon { width: 28px; height: 28px; top: 9px; right: 12px; }
+body.tv .wx-moon-disk { width: 28px; height: 28px; top: 9px; right: 12px; }
 .wx-star {
   position: absolute;
   border-radius: 50%;
@@ -6957,7 +6957,7 @@ function wxAnimationHTML(codes) {
       stars.push(`<i class="wx-star" style="top:${top}%;left:${left}%;width:${size}px;height:${size}px;animation-duration:${dur}s;animation-delay:${delay}s"></i>`);
     }
     inner += `<div class="wx-anim wx-anim-night" aria-hidden="true">
-      <svg class="wx-moon" viewBox="0 0 24 24" aria-hidden="true">
+      <svg class="wx-moon-disk" viewBox="0 0 24 24" aria-hidden="true">
         <defs>
           <mask id="wx-moon-mask">
             <rect width="24" height="24" fill="white"/>
