@@ -3183,12 +3183,24 @@ body.tv .area-ts-coverage { font-size: 13px; }
 body.tv .area-advisory { font-size: 12px; padding: 4px 10px; }
 body.tv .area-advisory-label { font-size: 11px; }
 
-/* Wrapper that holds 1-N advisory pills inside an area card. */
-.area-advisory-pills {
+/* Inline name + advisory pills row inside the area card header. */
+.area-header-left {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.area-name-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin: 3px 0 4px;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+/* Wrapper that holds 1-N advisory pills inline next to area name. */
+.area-advisory-pills {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
 }
 /* Compact advisory pill inside an area card — replaces the full
    advisory block. Just shows TYPE + NUMBER (and a countdown for
@@ -3197,12 +3209,12 @@ body.tv .area-advisory-label { font-size: 11px; }
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 2px 7px;
-  border-radius: 3px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
   white-space: nowrap;
   cursor: help;
@@ -3229,7 +3241,7 @@ body.tv .area-advisory-label { font-size: 11px; }
   background: rgba(214,69,69,0.06);
   border-color: rgba(214,69,69,0.35);
 }
-body.tv .area-advisory-pill { font-size: 12px; padding: 3px 9px; }
+body.tv .area-advisory-pill { font-size: 10px; padding: 2px 7px; }
 body.tv .area-advisory-text { font-size: 12px; }
 .area-text {
   font-family: 'JetBrains Mono', monospace;
@@ -7730,7 +7742,7 @@ function renderAreas(forecast) {
     const activePillsHTML = matchingActive.map(adv => {
       const red = (adv.type === 'TWA' || adv.type === 'WARNING');
       const tooltip = `${adv.type} ${adv.number || ''}: ${adv.criteria || ''}`;
-      return `<span class="area-advisory-pill active${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">⚠️ ${adv.type} ${adv.number || ''}</span>`;
+      return `<span class="area-advisory-pill active${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">${adv.type} ${adv.number || ''}</span>`;
     }).join('');
 
     const upcomingPillsHTML = matchingUpcoming.map(adv => {
@@ -7742,7 +7754,7 @@ function renderAreas(forecast) {
       const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
       const red = (adv.type === 'TWA' || adv.type === 'WARNING');
       const tooltip = `${adv.type} ${adv.number || ''} in ${timeStr}: ${adv.criteria || ''}`;
-      return `<span class="area-advisory-pill upcoming${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">🕐 ${adv.type} ${adv.number || ''} · ${timeStr}</span>`;
+      return `<span class="area-advisory-pill upcoming${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">${adv.type} ${adv.number || ''} · ${timeStr}</span>`;
     }).join('');
 
     const activeAdvHTML = (activePillsHTML || upcomingPillsHTML)
@@ -7760,8 +7772,11 @@ function renderAreas(forecast) {
     return `
       <div class="area-card">
         <div class="area-header">
-          <div>
-            <div class="area-name">${a.name}</div>
+          <div class="area-header-left">
+            <div class="area-name-row">
+              <div class="area-name">${a.name}</div>
+              ${activeAdvHTML}
+            </div>
             ${tsCovHTML}
           </div>
           <div style="display:flex; gap:4px; align-items:center;">
@@ -7769,7 +7784,6 @@ function renderAreas(forecast) {
             <span class="area-status ${info.status}">${info.icon} ${info.label}</span>
           </div>
         </div>
-        ${activeAdvHTML}
         <div class="area-text">${colored}</div>
       </div>
     `;
