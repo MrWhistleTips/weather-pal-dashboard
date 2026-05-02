@@ -7915,7 +7915,10 @@ function renderMETAR(metar) {
     : '';
 
   if (!metar) {
-    strip.className = 'metar-strip';
+    // Preserve the weekend-hide class so the strip stays hidden when the
+    // user switches AM/PM/N1 -> WKND (renderMETAR runs on the non-weekend
+    // periods, and naive className overwrite would strip weekend-hide).
+    strip.className = 'metar-strip weekend-hide';
     strip.innerHTML = `
       ${hazardPill}
       <div class="metar-strip-raw">No METAR available for ${METAR_STATION}</div>
@@ -7926,8 +7929,9 @@ function renderMETAR(metar) {
   const stale = isMetarStale(metar);
   const isFallback = metar._isForecastFallback === true;
   const cat = (metar.fltCat || '').toLowerCase();
-  // Apply categorical color class so raw + values inherit the right color
-  strip.className = 'metar-strip' + (cat ? ` cat-${cat}` : '');
+  // Apply categorical color class so raw + values inherit the right color.
+  // weekend-hide preserved here too — see comment in the !metar branch.
+  strip.className = 'metar-strip weekend-hide' + (cat ? ` cat-${cat}` : '');
   const reportDate = new Date(metar.reportTime);
   const timeStr = isNaN(reportDate) ? metar.reportTime :
     (String(reportDate.getUTCDate()).padStart(2,'0') + ' ' +
