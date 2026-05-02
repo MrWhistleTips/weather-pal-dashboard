@@ -1934,16 +1934,15 @@ body.tv .svfr-gauge-tier-label { font-size: 13px; }
    Distinct from the amber advisory pip in the top-RIGHT corner; both
    can coexist. */
 .training-panel-lightning-pip {
-  position: absolute;
-  /* Sits one line below the station name so wide names like HIGHBLUFF
-     don't collide with the pip. */
-  top: 32px;
-  left: 6px;
+  /* Sits in the panel's normal flow under the runway/winds line so
+     it never collides with corner badges. Inline-flex lets it size
+     to its content and self-center under the panel's center axis. */
   display: inline-flex;
   align-items: center;
   gap: 3px;
   height: 18px;
   padding: 0 6px;
+  margin: 4px auto 0;
   border-radius: 9px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
@@ -1951,7 +1950,6 @@ body.tv .svfr-gauge-tier-label { font-size: 13px; }
   letter-spacing: 0.5px;
   white-space: nowrap;
   cursor: help;
-  z-index: 2;
 }
 .training-panel-lightning-pip .ltg-icon { font-size: 10px; }
 /* Danger tier — within 5 NM, pulsing red */
@@ -1988,7 +1986,7 @@ body.tv .svfr-gauge-tier-label { font-size: 13px; }
   color: #b9d4f5;
   box-shadow: 0 0 5px rgba(74,144,226,0.35);
 }
-body.tv .training-panel-lightning-pip { height: 22px; font-size: 11px; padding: 0 8px; top: 44px; }
+body.tv .training-panel-lightning-pip { height: 22px; font-size: 11px; padding: 0 8px; }
 body.tv .training-panel-lightning-pip .ltg-icon { font-size: 13px; }
 /* pipPulse replacement — every element that was animating box-shadow
    via @keyframes pipPulse now uses an ::after overlay with pre-baked
@@ -7201,13 +7199,13 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
   return `
     <div class="training-panel ${status}${stagefieldClass}${wxClass}">
       ${wxLayer}
-      ${lightningPipHTML}
       ${pipHTML}
       <div class="training-panel-name">${name}</div>
       <div class="training-panel-status">${label}</div>
       <div class="training-panel-area">${area}</div>
       ${fallbackHTML}
       ${landing || ''}
+      ${lightningPipHTML}
       ${soloHTML}
       ${taxiHTML}
       ${svfrHTML}
