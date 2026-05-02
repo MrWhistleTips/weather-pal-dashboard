@@ -3984,6 +3984,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         <a href="#help-hazards">Flight Hazards</a>
         <a href="#help-colors">Color &amp; Status Legend</a>
         <a href="#help-emoji">Weather Emoji Guide</a>
+        <a href="#help-wx-anim">Weather Animations</a>
         <a href="#help-refresh">Data Refresh &amp; Auto-Update</a>
         <a href="#help-old-weather">Old Weather Warning</a>
         <a href="#help-demo">Demo Mode</a>
@@ -4377,6 +4378,35 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
         </ul>
       </section>
 
+      <section id="help-wx-anim">
+        <h2>Weather Animations</h2>
+        <p>Three CSS-driven effects render inside each training panel when the weather warrants. They're decorative — the GO/NO-GO logic and minimums checks don't depend on them — but they make the operational picture readable at a glance from across the briefing room.</p>
+        <h3>🌧️ Rain</h3>
+        <p>Falling drops with a slight wind-driven diagonal lean. Detected from <code>RA</code>/<code>DZ</code> family tokens (<code>RA</code>, <code>-RA</code>, <code>+RA</code>, <code>SHRA</code>, <code>TSRA</code>, <code>FZRA</code>, <code>DZ</code>). Density and fall speed scale with intensity:</p>
+        <ul>
+          <li><code>-RA</code> light — 12 thin slow drops</li>
+          <li><code>RA</code> moderate — 22 baseline drops</li>
+          <li><code>+RA</code> heavy — 38 dense thicker drops, faster</li>
+        </ul>
+        <p>Cairns reads from the live KOZR METAR. Each stagefield reads from its mapped area forecast (Allen/Toth → GOLDFISH, Highbluff → BEARCAT, Lucas → VANGUARD C), including any active TEMPO/ISOLD/BECMG window — so a current temporary shower in the area forecast drives the animation just like the predominant flow does.</p>
+        <h3>🌫️ Fog</h3>
+        <p>Six soft horizontal wisps drifting slowly L→R across the panel over 12-28 seconds. Detected from <code>FG</code>/<code>BR</code> family (also MIFG, BCFG, PRFG, VCFG, FZFG). Each wisp has its own random height, opacity, drift duration, and starting phase so the layers parallax independently rather than marching in lockstep.</p>
+        <h3>⚡ Lightning</h3>
+        <p>Two-layer effect, both driven by <b>GLM strike data</b> (not METAR text — the satellite sees strikes whether or not the airfield METAR mentions thunderstorms). Triggers on per-station <code>within_25nm</code>:</p>
+        <ul>
+          <li><b>Cloud-flash overlay</b> — warm-white radial-gradient pulse from the panel top, mimicking cloud-internal illumination. Two flash elements running on co-prime cycle durations so the visible pattern drifts and never repeats. The main flash sometimes has a quick recurrence ~25 ms later (real lightning often does this).</li>
+          <li><b>Fractal SVG bolt</b> — a hand-crafted zigzag-with-branches path appears briefly somewhere in the panel, surrounded by a warm yellow-amber glow halo. One of four different bolt shapes picked at random per panel, positioned at a random horizontal offset.</li>
+        </ul>
+        <p>Frequency scales with strike count:</p>
+        <ul>
+          <li><b>1-3 strikes within 25 NM</b> → sparse (10s + 14s flash cycles, 16s bolt)</li>
+          <li><b>4-15</b> → active (5s + 8s flashes, 7.3s bolt)</li>
+          <li><b>16+</b> → intense (2.5s + 3.5s flashes, 4.1s bolt, brighter peak)</li>
+        </ul>
+        <p>Each panel rolls dice independently, so a refresh shuffles which bolt shape and where it sits, and the 5 panels' flash cycles are randomly desynced (no marching in unison even though they share the same intensity tier).</p>
+        <p>All three effects coexist — heavy rain falling through drifting fog illuminated by lightning is visually distinguishable from any single one alone. Pick <b>🌩️🌧️🌫️ Storm overhead</b> from the Demo dropdown to see the full stack at once.</p>
+      </section>
+
       <section id="help-refresh">
         <h2>Data Refresh &amp; Auto-Update</h2>
         <ul>
@@ -4420,6 +4450,11 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
           <li>🌩️ Lightning · inbound (storm tracking) — distant + cell approaching at 28 kt with ~14 min ETA to 5 NM ring (imminent)</li>
           <li>⚡ Lightning · at a stagefield — strike within 5 NM of Lucas only (KOZR clear), exercises the per-panel ⚡ pip</li>
           <li>⏱️ Improving / Degrading / Mixed Timers</li>
+          <li>🌧️ Rain · light / moderate / heavy — three scenarios for the rain animation tiers (-RA / RA / +RA)</li>
+          <li>🌫️ Fog · animation demo — drifting wisps on Cairns</li>
+          <li>🌧️🌫️ Rain + Fog · combined — drops fall through fog wisps</li>
+          <li>🌧️ Rain / 🌫️ Fog · across stagefields — every panel shows the effect via shared area-forecast text</li>
+          <li>🌩️🌧️🌫️ Storm overhead · all animations — heavy rain + fog + intense lightning flashes + bolts on every panel simultaneously</li>
         </ul>
         <p>Demo mode persists in localStorage. A yellow banner + yellow viewport border appear while active. Select "Off" from the dropdown to return to live data.</p>
       </section>

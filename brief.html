@@ -1216,7 +1216,54 @@ ramp. Result is one of:</p>
   <li><strong>Unknown</strong> — sampling failed</li>
 </ul>
 
-<h2>Demo mode (20 scenarios)</h2>
+<h2>Weather animations (Cairns + stagefields)</h2>
+<p>Each training panel renders three CSS-driven effects when the weather warrants
+— decorative, but they make the operational picture readable from across the
+briefing room. All three coexist; a single panel can stack rain + fog + lightning
+at once.</p>
+
+<table class="zebra">
+  <thead><tr><th>Effect</th><th>Trigger</th><th>What you see</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>🌧️ <b>Rain</b></td>
+      <td>RA / DZ family in METAR (Cairns) or area forecast (stagefield).
+          Intensity from <code>+/-/none</code> prefix.</td>
+      <td>Falling drops with 8° wind-driven lean. Scales with intensity:
+          <code>-RA</code> 12 thin slow drops · <code>RA</code> 22 baseline ·
+          <code>+RA</code> 38 dense fast thicker drops.</td>
+    </tr>
+    <tr>
+      <td>🌫️ <b>Fog</b></td>
+      <td>FG / BR / MIFG / BCFG / PRFG / VCFG / FZFG anywhere in METAR or
+          active area-forecast segment.</td>
+      <td>Six soft horizontal wisps drifting L→R over 12-28 s with parallax —
+          each wisp has its own random height (22-40%), opacity, drift speed,
+          and starting phase.</td>
+    </tr>
+    <tr>
+      <td>⚡ <b>Lightning</b></td>
+      <td>GLM strike data (NOT METAR text). Triggers on per-station
+          <code>within_25nm</code> count from the standalone lightning service
+          — Lucas can flash while KOZR stays calm.</td>
+      <td>Two layered effects:
+          <ul>
+            <li>Cloud-flash overlay — warm-white radial pulse from the panel top, mimicking cloud-internal illumination. Two flash elements with co-prime cycle durations so the visible pattern drifts and never repeats.</li>
+            <li>Fractal SVG bolt — branched zigzag path with warm yellow-amber glow halo. One of four shapes picked randomly per panel, positioned at a random horizontal offset.</li>
+          </ul>
+          Frequency scales with strike count: 1-3 → sparse · 4-15 → active · 16+ → intense (brighter, ~every 2.5 s). Per-panel desync via random animation-delays so the 5 panels don't flash in unison.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Cairns reads from the live KOZR METAR. Each stagefield reads from its mapped
+area forecast (Allen/Toth → GOLDFISH, Highbluff → BEARCAT, Lucas → VANGUARD C),
+including any active TEMPO/ISOLD/BECMG window — so a current temporary shower in
+the area forecast drives the animation just like the predominant flow does.
+Lightning triggers regardless of METAR fallback state because the satellite still
+sees strikes when aviationweather.gov is silent for KOZR.</p>
+
+<h2>Demo mode (~25 scenarios)</h2>
 <p>The 🧪 Demo dropdown replaces live data with synthetic conditions for layout
 verification or training people on how the dashboard looks under various weather:</p>
 <div class="cols-2">
@@ -1243,6 +1290,12 @@ verification or training people on how the dashboard looks under various weather
     <li>⚡ Lightning · distant only (INFO)</li>
     <li>🌩️ Lightning · inbound (storm tracking, ~14-min ETA)</li>
     <li>⚡ Lightning · at a stagefield (per-panel pip demo)</li>
+    <li>🌧️ Rain · light / moderate / heavy</li>
+    <li>🌫️ Fog · animation demo</li>
+    <li>🌧️🌫️ Rain + Fog · combined</li>
+    <li>🌧️ Rain · across stagefields</li>
+    <li>🌫️ Fog · across stagefields</li>
+    <li>🌩️🌧️🌫️ Storm overhead — all animations</li>
   </ul>
 </div>
 <p>Demo mode persists in localStorage. A yellow banner + viewport border appear while
