@@ -4170,8 +4170,17 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   .sevenday-toggle-day { font-size: 11px; gap: 3px; }
   .sevenday-toggle-dot { width: 9px; height: 9px; }
 
-  /* Demo-menu dropdown — keep it visible on mobile instead of overflowing */
-  .demo-menu-list { right: -4px; min-width: 240px; }
+  /* Demo-menu dropdown — on phone the demo button sits near the left of
+     nav-actions, not the right of the viewport, so the desktop right:0
+     anchor pushes the 240px-wide list off the LEFT edge of the screen.
+     Switch to left-anchoring + a max-width clamp so it stays on-screen
+     regardless of where the demo button lands in the wrap order. */
+  .demo-menu-list {
+    left: 0;
+    right: auto;
+    min-width: 240px;
+    max-width: calc(100vw - 20px);
+  }
 
   /* OLD WEATHER / DEMO banners */
   .old-weather-banner,
