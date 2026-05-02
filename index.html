@@ -2970,6 +2970,27 @@ body.tv .lightning-count-chip { font-size: 14px; padding: 4px 9px; }
   color: #000;
 }
 .advisory-pill.red { background: var(--nogo); color: #fff; }
+/* Summary row in collapsed header — TYPE NUM badge + criteria text
+   side by side so the operator knows at a glance what each active
+   advisory is for. No times in the collapsed view (those live in
+   the expanded body). */
+.advisory-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-width: 0;
+}
+.advisory-summary-text {
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.advisory-summary.red .advisory-summary-text { color: var(--text); }
+body.tv .advisory-summary-text { font-size: 13px; }
 .advisories-chevron {
   flex: 0 0 auto;
   font-size: 13px;
@@ -7623,17 +7644,25 @@ function renderAdvisories(forecast) {
     ? `${active.length} active`
     : `${upcoming.length} upcoming`;
 
-  // Compact pill row in the header — just type+number per advisory.
-  // Color the pill red for TWA/WARNING, amber otherwise. Upcoming
-  // advisories also get a pill so the header always summarizes.
+  // Compact summary row in the header — TYPE NUM badge plus the
+  // advisory's criteria text so the operator knows what each
+  // advisory is for at a glance, without expanding the card. No
+  // valid times in the collapsed view (those live in the expanded
+  // body).
   const pillsHTML = [
     ...active.map(a => {
       const red = (a.type === 'TWA' || a.type === 'WARNING');
-      return `<span class="advisory-pill ${red ? 'red' : ''}">${a.type} ${a.number || ''}</span>`;
+      return `<span class="advisory-summary ${red ? 'red' : ''}">
+        <span class="advisory-pill ${red ? 'red' : ''}">${a.type} ${a.number || ''}</span>
+        <span class="advisory-summary-text">${a.criteria || ''}</span>
+      </span>`;
     }),
     ...upcoming.map(a => {
       const red = (a.type === 'TWA' || a.type === 'WARNING');
-      return `<span class="advisory-pill ${red ? 'red' : ''}" style="opacity:0.55">${a.type} ${a.number || ''}</span>`;
+      return `<span class="advisory-summary ${red ? 'red' : ''}" style="opacity:0.55">
+        <span class="advisory-pill ${red ? 'red' : ''}">${a.type} ${a.number || ''}</span>
+        <span class="advisory-summary-text">${a.criteria || ''}</span>
+      </span>`;
     }),
   ].join('');
   pills.innerHTML = pillsHTML;
