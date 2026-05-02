@@ -1978,6 +1978,16 @@ body.tv .svfr-gauge-tier-label { font-size: 13px; }
   color: #ffe6b0;
   box-shadow: 0 0 6px rgba(230,165,58,0.45);
 }
+/* Notice tier — within 25 NM (but not yet within 10), subtle blue.
+   Shows the "Lightning w/in 25NM" label so the operator knows a cell
+   is close-ish even when the brief cloud-flash effect on the panel
+   could be missed. */
+.training-panel-lightning-pip.notice {
+  background: rgba(74,144,226,0.18);
+  border: 1.5px solid rgba(74,144,226,0.55);
+  color: #b9d4f5;
+  box-shadow: 0 0 5px rgba(74,144,226,0.35);
+}
 body.tv .training-panel-lightning-pip { height: 22px; font-size: 11px; padding: 0 8px; top: 44px; }
 body.tv .training-panel-lightning-pip .ltg-icon { font-size: 13px; }
 /* pipPulse replacement — every element that was animating box-shadow
@@ -7138,20 +7148,35 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
   if (lightningInRange) {
     const within5  = lightningInRange.within_5nm  || 0;
     const within10 = lightningInRange.within_10nm || 0;
+    const within25 = lightningInRange.within_25nm || 0;
+    // Three tiers — danger / caution show distance + cardinal, the
+    // notice tier (within 25 NM but not yet inside 10) shows a plain
+    // "Lightning w/in 25NM" label since the brief cloud-flash effect
+    // alone is easy to miss.
     let tier = null;
     if (within5 > 0)        tier = 'danger';
     else if (within10 > 0)  tier = 'caution';
+    else if (within25 > 0)  tier = 'notice';
     if (tier) {
-      // Prefer closest_strike — last_strike returns the newest in the
-      // 50 NM window, which can be 49 NM out and mask a closer strike.
       const featured = lightningInRange.closest_strike || lightningInRange.last_strike;
-      const distStr = featured ? `${featured.distance_nm.toFixed(1)}NM` : '—';
-      const cardStr = featured ? bearingToCompass(featured.bearing_deg) : '';
-      const inlineText = featured ? `${distStr} ${cardStr}` : `${tier === 'danger' ? '≤5' : '≤10'}NM`;
-      const count = tier === 'danger' ? within5 : within10;
-      const tooltip = featured
-        ? `${count} flash${count > 1 ? 'es' : ''} within ${tier === 'danger' ? 5 : 10} NM · closest @ ${featured.distance_nm} NM bearing ${featured.bearing_deg}°`
-        : `${count} flash within ${tier === 'danger' ? 5 : 10} NM`;
+      let inlineText, tooltip;
+      if (tier === 'notice') {
+        inlineText = 'Lightning w/in 25NM';
+        const count = within25;
+        tooltip = featured
+          ? `${count} flash${count > 1 ? 'es' : ''} within 25 NM · closest @ ${featured.distance_nm} NM bearing ${featured.bearing_deg}°`
+          : `${count} flash${count > 1 ? 'es' : ''} within 25 NM`;
+      } else {
+        // Prefer closest_strike — last_strike returns the newest in the
+        // 50 NM window, which can be 49 NM out and mask a closer strike.
+        const distStr = featured ? `${featured.distance_nm.toFixed(1)}NM` : '—';
+        const cardStr = featured ? bearingToCompass(featured.bearing_deg) : '';
+        inlineText = featured ? `${distStr} ${cardStr}` : `${tier === 'danger' ? '≤5' : '≤10'}NM`;
+        const count = tier === 'danger' ? within5 : within10;
+        tooltip = featured
+          ? `${count} flash${count > 1 ? 'es' : ''} within ${tier === 'danger' ? 5 : 10} NM · closest @ ${featured.distance_nm} NM bearing ${featured.bearing_deg}°`
+          : `${count} flash within ${tier === 'danger' ? 5 : 10} NM`;
+      }
       lightningPipHTML = `<div class="training-panel-lightning-pip ${tier}" title="${escapeAttr(tooltip)}"><span class="ltg-icon">⚡</span><span>${inlineText}</span></div>`;
     }
   }
