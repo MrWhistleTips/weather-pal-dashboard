@@ -2218,7 +2218,8 @@ body.tv .ifr-training-taxi { font-size: 13px; padding: 4px 11px; }
   position: relative;
   min-width: 0;          /* allow flex/grid child to shrink below content size */
   overflow: hidden;      /* keep the badge from spilling outside the card */
-  height: 100%;          /* fill grid cell so empty bg doesn't show through */
+  align-self: stretch;   /* grid-idiomatic version of height:100% */
+  min-height: 56px;      /* floor — prevents collapse if Safari mis-stretches */
 }
 .alt-row-top {
   display: flex;
@@ -3097,12 +3098,12 @@ body.tv .advisory-expires { font-size: 12px; }
   background: var(--border);
   align-items: stretch;
 }
-/* Force the card to actually stretch to its grid cell height — Safari
-   on iPad Pro has been observed to under-size grid items in some
-   landscape configurations, leaving the cell's tan-translucent grid
-   bg visible as a "black rectangle" below shorter cards. height: 100%
-   pins the card to the cell. */
-.areas-grid > .area-card { height: 100%; }
+/* Force cards to stretch to their grid cell — Safari iPad Pro has
+   been observed to under-size grid items in landscape, leaving the
+   cell's tan-translucent grid bg visible as a "black rectangle"
+   below shorter cards. align-self: stretch is the grid-idiomatic
+   way to do this; min-height ensures a visible floor. */
+.areas-grid > .area-card { align-self: stretch; min-height: 56px; }
 @media (max-width: 1100px) {
   .areas-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -3306,7 +3307,7 @@ body.tv .area-advisory-text { font-size: 12px; }
   background: var(--border);
   align-items: stretch;
 }
-.aerodromes-grid > .aero-card { height: 100%; }
+.aerodromes-grid > .aero-card { align-self: stretch; min-height: 56px; }
 @media (max-width: 1100px) { .aerodromes-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 700px) { .aerodromes-grid { grid-template-columns: 1fr; } }
 .aero-card {
