@@ -4319,8 +4319,9 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
 
   <div id="data-alert" class="alert" style="display:none;"></div>
 
-  <!-- Thin METAR strip across the page -->
-  <div id="metar-strip" class="metar-strip"></div>
+  <!-- Thin METAR strip across the page. Hidden in Weekend mode since
+       KOZR has its own tile in the 3x3 grid. -->
+  <div id="metar-strip" class="metar-strip weekend-hide"></div>
 
   <!-- Flight Level Winds — horizontal strip showing all levels inline -->
   <div id="flw-strip" class="flw-strip weekend-hide" style="margin-bottom: 4px;">
@@ -9597,11 +9598,8 @@ function renderAll() {
     renderForecastDate(null);
     // Old-weather warning is forecast-driven — clear it too.
     document.body.classList.remove('old-weather');
-    // METAR strip shows the live KOZR observation as-is. We deliberately
-    // skip the GOLDFISH forecast-fallback used on weekday views — Sat/Sun
-    // there's no fresh brief to fall back to, and the OLD DATA badge on
-    // the live obs is the right signal when aviationweather.gov is silent.
-    renderMETAR(DATA && DATA.metar);
+    // METAR strip is hidden in weekend mode (.weekend-hide) since KOZR
+    // has its own tile in the 3x3 grid — no need to render it.
     const alertEl = document.getElementById('data-alert');
     if (alertEl) alertEl.style.display = 'none';
     document.getElementById('footer-updated').textContent =
