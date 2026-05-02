@@ -3183,6 +3183,13 @@ body.tv .area-ts-coverage { font-size: 13px; }
 body.tv .area-advisory { font-size: 12px; padding: 4px 10px; }
 body.tv .area-advisory-label { font-size: 11px; }
 
+/* Wrapper that holds 1-N advisory pills inside an area card. */
+.area-advisory-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 3px 0 4px;
+}
 /* Compact advisory pill inside an area card — replaces the full
    advisory block. Just shows TYPE + NUMBER (and a countdown for
    upcoming). Hover shows the full criteria text via title attr. */
@@ -3191,7 +3198,6 @@ body.tv .area-advisory-label { font-size: 11px; }
   align-items: center;
   gap: 3px;
   padding: 2px 7px;
-  margin: 3px 0 4px;
   border-radius: 3px;
   font-family: 'Rajdhani', sans-serif;
   font-size: 10px;
@@ -7713,39 +7719,35 @@ function renderAreas(forecast) {
       ? `<span class="badge unknown" style="font-size:10px">${a.amendmentNumber}${a.amendmentTime ? `<span class="area-amd-time">@ ${a.amendmentTime}</span>` : ''}</span>`
       : '';
 
-    // Active advisory affecting this area
-    const activeAdv = activeAdvs.find(adv => advisoryAffectsArea(adv, a.name));
-    // Upcoming advisory affecting this area (find soonest)
-    const upcomingAdv = upcomingAdvs.find(adv => advisoryAffectsArea(adv, a.name));
+    // ALL advisories affecting this area, not just the first. Active
+    // pills render first (more relevant), then upcoming. Each becomes
+    // its own compact pill — TYPE + NUMBER plus optional countdown
+    // for upcoming. Full criteria text lives in the top-of-page
+    // Active Advisories card.
+    const matchingActive = activeAdvs.filter(adv => advisoryAffectsArea(adv, a.name));
+    const matchingUpcoming = upcomingAdvs.filter(adv => advisoryAffectsArea(adv, a.name));
 
-    // Active / upcoming advisory affecting THIS area — render as a
-    // compact badge only (TYPE + NUMBER, plus countdown for upcoming).
-    // Full criteria text lives in the top-of-page Active Advisories
-    // card and the operator can click that to expand. Repeating it
-    // inside every affected area card just fills the column with
-    // duplicate text.
-    let activeAdvHTML = '';
-    if (activeAdv) {
-      const red = (activeAdv.type === 'TWA' || activeAdv.type === 'WARNING');
-      const tooltip = `${activeAdv.type} ${activeAdv.number || ''}: ${activeAdv.criteria || ''}`;
-      activeAdvHTML = `
-        <span class="area-advisory-pill active${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">
-          ⚠️ ${activeAdv.type} ${activeAdv.number || ''}
-        </span>`;
-    } else if (upcomingAdv) {
-      const fromMin = parseZuluFromText(upcomingAdv.validFrom);
+    const activePillsHTML = matchingActive.map(adv => {
+      const red = (adv.type === 'TWA' || adv.type === 'WARNING');
+      const tooltip = `${adv.type} ${adv.number || ''}: ${adv.criteria || ''}`;
+      return `<span class="area-advisory-pill active${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">⚠️ ${adv.type} ${adv.number || ''}</span>`;
+    }).join('');
+
+    const upcomingPillsHTML = matchingUpcoming.map(adv => {
+      const fromMin = parseZuluFromText(adv.validFrom);
       let mins = fromMin - now;
       if (mins < 0) mins += 1440;
       const h = Math.floor(mins / 60);
       const m = mins % 60;
       const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
-      const red = (upcomingAdv.type === 'TWA' || upcomingAdv.type === 'WARNING');
-      const tooltip = `${upcomingAdv.type} ${upcomingAdv.number || ''} in ${timeStr}: ${upcomingAdv.criteria || ''}`;
-      activeAdvHTML = `
-        <span class="area-advisory-pill upcoming${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">
-          🕐 ${upcomingAdv.type} ${upcomingAdv.number || ''} · ${timeStr}
-        </span>`;
-    }
+      const red = (adv.type === 'TWA' || adv.type === 'WARNING');
+      const tooltip = `${adv.type} ${adv.number || ''} in ${timeStr}: ${adv.criteria || ''}`;
+      return `<span class="area-advisory-pill upcoming${red ? ' red' : ''}" title="${escapeAttr(tooltip)}">🕐 ${adv.type} ${adv.number || ''} · ${timeStr}</span>`;
+    }).join('');
+
+    const activeAdvHTML = (activePillsHTML || upcomingPillsHTML)
+      ? `<span class="area-advisory-pills">${activePillsHTML}${upcomingPillsHTML}</span>`
+      : '';
 
     // TS Coverage — only render when the MEF reports a non-NONE
     // thunderstorm coverage for this zone. NONE is the default/quiet
