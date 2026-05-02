@@ -7313,9 +7313,11 @@ function wxCodesFromAreaForecast(text) {
   // moon detectors have the data they need (those check numeric
   // fields, not the rawOb string).
   const joined = texts.join(' ');
-  let wspd = 0, wgst = 0;
+  let wspd = 0, wgst = 0, wdir = null;
   const windMatch = joined.match(/(?:^|\s)(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?KT/i);
   if (windMatch) {
+    const dirToken = windMatch[1];
+    wdir = (dirToken === 'VRB') ? null : parseInt(dirToken, 10);
     wspd = parseInt(windMatch[2], 10) || 0;
     wgst = parseInt(windMatch[3], 10) || 0;
   }
@@ -7325,7 +7327,7 @@ function wxCodesFromAreaForecast(text) {
   while ((cm = cloudRe.exec(joined)) !== null) {
     clouds.push({ cover: cm[1], baseFeet: parseInt(cm[2], 10) * 100 });
   }
-  return metarWxCodes({ rawOb: joined, wxString: '', wspd, wgst, clouds });
+  return metarWxCodes({ rawOb: joined, wxString: '', wspd, wgst, wdir, clouds });
 }
 
 function metarWxCodes(metar) {
@@ -7358,7 +7360,12 @@ function metarWxCodes(metar) {
   const windKt = Math.max(wspd, wgst);
   if (windKt >= 20) {
     const intensity = windKt < 30 ? 'sparse' : windKt < 45 ? 'active' : 'intense';
-    codes.push({ kind: 'wind', intensity });
+    // Capture wind direction (degrees, wind FROM). wxAnimationHTML
+    // converts this into a CSS rotation so streaks travel with the
+    // actual reported wind. null/missing/VRB → no rotation (default
+    // L→R westerly look).
+    const dir = parseInt(metar.wdir, 10);
+    codes.push({ kind: 'wind', intensity, dir: Number.isFinite(dir) ? dir : null });
   }
   // Sun (clear daytime) / Moon (clear nighttime). Suppressed when
   // rain or fog is already painting the panel — no point layering a
@@ -7515,7 +7522,22 @@ function wxAnimationHTML(codes) {
       const op    = (0.20 + Math.random() * 0.30).toFixed(2);
       streaks.push(`<i class="wx-wind-streak" style="--streak-op:${op};top:${top}%;width:${w}px;animation-duration:${dur}s;animation-delay:${delay}s"></i>`);
     }
-    inner += `<div class="wx-anim wx-anim-wind intensity-${intensity}" aria-hidden="true">${streaks.join('')}</div>`;
+    // Rotate the wind layer so streaks travel WITH the reported wind.
+    // METAR wdir = direction wind blows FROM. Travel direction (compass)
+    // = (wdir + 180) mod 360. CSS rotation 0deg = up, default streak
+    // travels 90deg (east, L→R), so rotation needed = travel - 90.
+    // Examples:
+    //   wdir 270 (W) → travels 90 (E) → rotation 0   (default L→R)
+    //   wdir   0 (N) → travels 180 (S) → rotation 90  (top → bottom)
+    //   wdir 180 (S) → travels 360 (N) → rotation 270 (bottom → top)
+    //   wdir  90 (E) → travels 270 (W) → rotation 180 (R→L)
+    let rotStyle = '';
+    if (Number.isFinite(wind.dir)) {
+      const travel = (wind.dir + 180) % 360;
+      const rot = (travel - 90 + 360) % 360;
+      rotStyle = ` style="transform: rotate(${rot}deg);"`;
+    }
+    inner += `<div class="wx-anim wx-anim-wind intensity-${intensity}" aria-hidden="true"${rotStyle}>${streaks.join('')}</div>`;
   }
   // SUN — clear daytime. Sits in the top-right corner of the panel:
   // soft warm glow + faint slowly-rotating SVG ray cluster behind a
