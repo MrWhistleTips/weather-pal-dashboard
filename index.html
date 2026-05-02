@@ -2764,6 +2764,46 @@ body.tv .lightning-count-chip { font-size: 14px; padding: 4px 9px; }
   align-items: center;
   min-width: 0;
 }
+/* Collapsed-state compact pill row inside the header — just the
+   type+number badges (e.g. WATCH 04-009 · TWA 04-002) so the bar is
+   one line. The full body lives below and toggles on click. */
+.advisories-pills {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+.advisory-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  white-space: nowrap;
+  background: var(--warning);
+  color: #000;
+}
+.advisory-pill.red { background: var(--nogo); color: #fff; }
+.advisories-chevron {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--tan);
+  opacity: 0.7;
+  transition: transform 0.18s ease;
+  margin-left: 6px;
+}
+#advisories-card.collapsed .advisories-chevron { transform: rotate(-90deg); }
+#advisories-card .card-header { cursor: pointer; }
+#advisories-card .advisories-body {
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#advisories-card.collapsed .advisories-body { display: none; }
 
 .advisory {
   display: inline-flex; align-items: center; gap: 8px;
@@ -3783,17 +3823,18 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div class="lightning-chevron" aria-hidden="true">▾</div>
   </div>
 
-  <!-- Active Advisories (shown above both sections when active).
-       Layout note: the advisories list lives inline within the card
-       header — same row as the "⚠️ Active Advisories" label — so a
-       single active advisory takes one row instead of two. Multiple
-       advisories wrap to additional rows in the same header. -->
-  <div id="advisories-card" class="card" style="display:none; margin-bottom:4px;">
-    <div class="card-header">
+  <!-- Active Advisories — collapsible. Default state: compact one-line
+       header with just the type+number badges (e.g. WATCH 04-009 ·
+       TWA 04-002). Click the header to expand for full criteria text,
+       valid times, expiry countdown, and any pending-upcoming banner. -->
+  <div id="advisories-card" class="card collapsed" style="display:none; margin-bottom:4px;">
+    <div class="card-header" onclick="toggleAdvisories()" title="Click to expand / collapse">
       <div class="card-title"><span class="card-title-icon">⚠️</span>Active Advisories</div>
-      <div class="advisories-inline" id="advisories-body"></div>
+      <div class="advisories-pills" id="advisories-pills"></div>
       <div class="card-subtitle" id="advisories-count">0 active</div>
+      <div class="advisories-chevron" aria-hidden="true">▾</div>
     </div>
+    <div class="advisories-body" id="advisories-body"></div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════ -->
@@ -7213,6 +7254,7 @@ function bearingToCompass(deg) {
 
 function renderAdvisories(forecast) {
   const card = document.getElementById('advisories-card');
+  const pills = document.getElementById('advisories-pills');
   const body = document.getElementById('advisories-body');
   const count = document.getElementById('advisories-count');
 
@@ -7230,7 +7272,23 @@ function renderAdvisories(forecast) {
     ? `${active.length} active`
     : `${upcoming.length} upcoming`;
 
-  // Pending advisory banner (shows the next upcoming one)
+  // Compact pill row in the header — just type+number per advisory.
+  // Color the pill red for TWA/WARNING, amber otherwise. Upcoming
+  // advisories also get a pill so the header always summarizes.
+  const pillsHTML = [
+    ...active.map(a => {
+      const red = (a.type === 'TWA' || a.type === 'WARNING');
+      return `<span class="advisory-pill ${red ? 'red' : ''}">${a.type} ${a.number || ''}</span>`;
+    }),
+    ...upcoming.map(a => {
+      const red = (a.type === 'TWA' || a.type === 'WARNING');
+      return `<span class="advisory-pill ${red ? 'red' : ''}" style="opacity:0.55">${a.type} ${a.number || ''}</span>`;
+    }),
+  ].join('');
+  pills.innerHTML = pillsHTML;
+
+  // Pending advisory banner (shows the next upcoming one) — lives in
+  // the expandable body so it's only visible when expanded.
   let pendingHTML = '';
   if (upcoming.length > 0) {
     const next = upcoming[0];
@@ -7252,7 +7310,7 @@ function renderAdvisories(forecast) {
     `;
   }
 
-  // Active advisories list
+  // Full active advisories list — visible only in expanded state
   const activeHTML = active.map(a => {
     const red = (a.type === 'TWA' || a.type === 'WARNING');
     const expiresStr = expiryCountdown(a);
@@ -7272,6 +7330,26 @@ function renderAdvisories(forecast) {
   }).join('');
 
   body.innerHTML = pendingHTML + activeHTML;
+}
+
+/// Click handler for the advisories card header — toggles the
+/// .collapsed class and persists the preference in localStorage so
+/// the TV remembers across the nightly 03:00 reload.
+function toggleAdvisories() {
+  const card = document.getElementById('advisories-card');
+  if (!card) return;
+  const willCollapse = !card.classList.contains('collapsed');
+  card.classList.toggle('collapsed', willCollapse);
+  localStorage.setItem('advisoriesCollapsed', willCollapse ? '1' : '0');
+}
+
+/// Restore collapsed state on page load. Default is collapsed.
+function applyAdvisoriesCollapsedState() {
+  const card = document.getElementById('advisories-card');
+  if (!card) return;
+  const stored = localStorage.getItem('advisoriesCollapsed');
+  const collapsed = stored === null ? true : stored === '1';
+  card.classList.toggle('collapsed', collapsed);
 }
 
 function renderAreas(forecast) {
@@ -8839,6 +8917,7 @@ setInterval(checkForDashboardUpdate, 5 * 60 * 1000);
 setupPeriodButtons();
 initCollapsibles();
 applyLightningBannerCollapsedState();
+applyAdvisoriesCollapsedState();
 updateClock();
 setInterval(updateClock, 30 * 1000);
 // Re-check auto period every minute so the page snaps to the
