@@ -7098,12 +7098,12 @@ function panelHTML(status, label, name, area, solo, taxi, advisory, landing, svf
       </div>
     `;
   }
-  // Advisory pip — small ⚠️ in top-right corner with hover tooltip
-  let pipHTML = '';
-  if (advisory) {
-    const tooltip = `${advisory.type} ${advisory.number || ''}: ${advisory.criteria || ''}`;
-    pipHTML = `<div class="training-panel-advisory-pip" title="${escapeAttr(tooltip)}">⚠️</div>`;
-  }
+  // Advisory pip dropped from training panels — the top-of-page
+  // Active Advisories card and the per-area-forecast pills already
+  // surface every advisory. A pulsing ⚠️ on each training panel
+  // was redundant once the area cards started showing TYPE NUM
+  // pills inline with the area name.
+  const pipHTML = '';
   // Lightning pip — top-LEFT corner pill. Two tiers:
   //   ≤ 5 NM  — danger  (red, pulsing)
   //   ≤ 10 NM — caution (yellow, static glow)
