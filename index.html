@@ -1941,8 +1941,9 @@ body.tv .svfr-gauge-tier-label { font-size: 13px; }
    ════════════════════════════════════════════════════════════════════ */
 body.weekend-mode .weekend-hide { display: none !important; }
 body.weekend-mode .section-header-detail { display: none; }
-body.weekend-mode .vfr-section-header,
-body.weekend-mode .ifr-section-header { /* keep banners visible for 7-Day + WAAS toggles */ }
+/* VFR banner stays visible in weekend mode (7-Day toggle lives there).
+   IFR banner is hidden via .weekend-hide on the element itself —
+   WAAS toggle lives inside it but isn't surfaced on weekends. */
 
 .weekend-grid {
   display: grid;
@@ -4429,7 +4430,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
   <!-- ═══════════════════════════════════════════════════ -->
   <!-- IFR SECTION: IFR Training strip + Aerodrome Forecasts -->
   <!-- ═══════════════════════════════════════════════════ -->
-  <div class="section-header ifr-section-header">
+  <div class="section-header ifr-section-header weekend-hide">
     <span class="section-header-icon">🎯</span>
     <span class="section-header-title">IFR Operations</span>
     <span class="section-header-spacer"></span>
@@ -4443,7 +4444,7 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <span class="section-header-detail">KOZR ≥200ft / ¼ SM</span>
   </div>
   <!-- WAAS expanded detail panel (collapsed by default) -->
-  <div id="waas-detail" class="sevenday-detail" style="display:none;"></div>
+  <div id="waas-detail" class="sevenday-detail weekend-hide" style="display:none;"></div>
 
   <div class="card weekend-hide" style="margin-bottom: 4px;">
     <div id="ifr-training" class="ifr-training">
@@ -4488,8 +4489,9 @@ body.cursor-hidden, body.cursor-hidden * { cursor: none !important; }
     <div class="card-body collapsible-body" id="hazards-body">—</div>
   </div>
 
-  <!-- Bottom row: NWS Radar + Windy.com map, side-by-side, equal size -->
-  <div class="grid grid-2" style="margin-bottom: 4px;">
+  <!-- Bottom row: ADS-B + Windy.com map, side-by-side, equal size.
+       Hidden in Weekend mode so the page focuses on the 9-station grid. -->
+  <div class="grid grid-2 weekend-hide" style="margin-bottom: 4px;">
 
     <!-- ADS-B Exchange Live Traffic — Fort Rucker area -->
     <div class="card collapsible" data-collapse-key="adsb">
