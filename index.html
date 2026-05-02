@@ -6950,8 +6950,20 @@ function wxAnimationHTML(codes) {
       ? { count: 12, minDur: 0.75, maxDur: 1.30, minOp: 0.30, maxOp: 0.65 }
       : { count: 22, minDur: 0.55, maxDur: 1.10, minOp: 0.35, maxOp: 0.80 };
     const elements = [];
+    // Shuffle slice indices so drops within a single panel render in
+    // random visual order even though their horizontal positions are
+    // stratified — keeps the timing pattern from looking columnar.
+    const sliceOrder = Array.from({length: cfg.count}, (_, i) => i)
+      .sort(() => Math.random() - 0.5);
     for (let i = 0; i < cfg.count; i++) {
-      const left  = Math.floor(Math.random() * 100);
+      // Stratified horizontal sampling — instead of pure random
+      // (which can cluster all drops on one side, especially with
+      // count=22 at moderate intensity), divide 0-100% into N slices
+      // and place one drop per slice with small jitter. Guarantees
+      // the rain visibly spans the full panel width every render.
+      const sliceIdx   = sliceOrder[i];
+      const sliceWidth = 100 / cfg.count;
+      const left = (sliceIdx * sliceWidth + Math.random() * sliceWidth).toFixed(1);
       const dur   = (cfg.minDur + Math.random() * (cfg.maxDur - cfg.minDur)).toFixed(2);
       const delay = (Math.random() * cfg.maxDur * 1.4).toFixed(2);
       const op    = (cfg.minOp + Math.random() * (cfg.maxOp - cfg.minOp)).toFixed(2);
