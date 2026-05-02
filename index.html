@@ -2208,21 +2208,21 @@ body.tv .alt-tl-status { font-size: 11px; padding: 2px 7px; }
   border-color: var(--nogo-border);
 }
 body.tv .alt-row-change { font-size: 12px; padding: 2px 8px; }
-/* Inline (field name + ceil/vis on same line) */
+/* Second line — ceiling/vis on the left, Poss. Alt pill on the right.
+   Aligns vertically with the ICAO + meta on line 1. */
 .alt-row-nameline {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
   min-width: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
-.alt-row-nameline .alt-row-name {
+.alt-row-nameline .alt-row-cur-left {
   flex: 1 1 auto;
   min-width: 0;
 }
 .alt-row-nameline .alt-row-cur {
-  flex: 0 0 auto;
   font-weight: 700;
 }
 .alt-row-stale {
@@ -6220,11 +6220,10 @@ function renderAlternates() {
             <span class="alt-row-id">${a.id}</span>
             <span class="alt-row-meta">${a.approach} · min ${a.minCeil}/${visMinDisplay(a.minVis)}</span>
           </div>
-          <div class="alt-badge ${status}">${badgeLabel}</div>
         </div>
         <div class="alt-row-nameline">
-          <div class="alt-row-name">${a.name}</div>
-          <div>${curLine}</div>
+          <div class="alt-row-cur-left">${curLine}</div>
+          <div class="alt-badge ${status}">${badgeLabel}</div>
         </div>
         ${timelineHTML}
       </div>
