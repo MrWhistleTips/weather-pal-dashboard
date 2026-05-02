@@ -1058,7 +1058,16 @@ body.tv .metar-hazards-pill { font-size: 13px; padding: 5px 13px; left: 14px; }
    the drop actually lands at the panel bottom regardless of card
    height — splash sync stays correct on every panel size. */
 @keyframes wx-rain-fall {
-  0%   { top: -16px;                opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(0); }
+  /* Drop is invisible at the top of the cycle (above the panel). When
+     the animation loops and the next iteration starts, this prevents
+     a 1-frame "flicker" where the drop briefly renders at its
+     starting (un-drifted) position before the keyframe interpolation
+     kicks in — visible to the eye as a phantom drop appearing at
+     left% just as the previous drop's splash fires. */
+  0%   { top: -16px;                opacity: 0; transform: rotate(8deg) translateX(0); }
+  /* Fade in over the first ~10% as the drop emerges into the panel. */
+  10%  { top: calc(-16px + (100% + 16px) * 0.10);
+                                    opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(0.8px); }
   /* Drop fully arrived at panel bottom by 87%, then fades to invisible
      over 87% → 89%. Splash starts emerging at 89% — drop is GONE by
      then so the previously visible "spike" of the drop overlapping
@@ -1119,7 +1128,12 @@ body.tv .wx-anim-rain .wx-rain-drop {
   top: -28px;
 }
 @keyframes wx-rain-fall-tv {
-  0%   { top: -28px;             opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(0); }
+  /* Same cycle-snap artifact protection as wx-rain-fall — opacity:0 at
+     start kills the 1-frame flash of the drop at its un-drifted
+     position when the animation loops. */
+  0%   { top: -28px;             opacity: 0; transform: rotate(8deg) translateX(0); }
+  10%  { top: calc(-28px + (100% + 28px) * 0.10);
+                                 opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(1.2px); }
   87%  { top: calc(100% - 28px); opacity: var(--drop-op, 0.6); transform: rotate(8deg) translateX(12px); }
   89%  { top: calc(100% - 28px); opacity: 0; transform: rotate(8deg) translateX(12px); }
   100% { top: calc(100% - 28px); opacity: 0; transform: rotate(8deg) translateX(12px); }
