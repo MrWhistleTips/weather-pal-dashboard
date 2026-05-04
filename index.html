@@ -9561,7 +9561,9 @@ async function refreshWAAS() {
       samples: DATA.waas.sampleCount,
     };
     WAAS_SNAPSHOT = {
-      dataUrl: 'waas.png?' + Date.now(),  // same-origin, cache-bust
+      // raw.github instead of relative — Pages was serving stale waas.png
+      // for the same reason as data.json (10-min CDN cache + slow rebuild).
+      dataUrl: 'https://raw.githubusercontent.com/MrWhistleTips/weather-pal-dashboard/main/waas.png?' + Date.now(),
       snapshotTime: DATA.waasFetchedAt ? new Date(DATA.waasFetchedAt) : new Date(),
     };
     persistWAASState();
@@ -9906,7 +9908,15 @@ async function loadLightning() {
   // skip the network fetch entirely in that case.
   if (demoScenario && DEMO_SCENARIOS[demoScenario]) return;
   try {
-    const res = await fetch('lightning.json?' + Date.now(), { cache: 'no-store' });
+    // Read directly from raw.githubusercontent.com instead of the
+    // same-origin Pages URL. Pages serves data.json / lightning.json
+    // through its CDN with cache-control: max-age=600, AND only
+    // rebuilds intermittently when commit flurries land — together
+    // that meant the dashboard was reading data 15-25 minutes stale
+    // even though the publisher writes every 5 min. raw.github reads
+    // straight from the branch HEAD with sub-second freshness and
+    // open CORS.
+    const res = await fetch('https://raw.githubusercontent.com/MrWhistleTips/weather-pal-dashboard/main/lightning.json?' + Date.now(), { cache: 'no-store' });
     if (res.ok) {
       LIGHTNING_DATA = await res.json();
       renderLightning();
@@ -9948,7 +9958,10 @@ async function loadData() {
   // those required CORS proxies that kept dying. waas.png is loaded
   // same-origin from this same GitHub Pages domain.
   try {
-    const res = await fetch('data.json?' + Date.now(), { cache: 'no-store' });
+    // raw.githubusercontent.com instead of relative path — see comment
+    // on the lightning.json fetch above for why (Pages CDN was serving
+    // 15-25 minute old data.json).
+    const res = await fetch('https://raw.githubusercontent.com/MrWhistleTips/weather-pal-dashboard/main/data.json?' + Date.now(), { cache: 'no-store' });
     if (res.ok) DATA = await res.json();
   } catch (e) {
     DATA = DATA || { forecasts: [], metar: null };
