@@ -3410,35 +3410,37 @@ body.tv .advisory-expires { font-size: 12px; }
 .wx-leaf {
   position: absolute;
   left: 0;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-  font-size: 12px;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Twemoji Mozilla", sans-serif;
+  font-size: 14px;
   line-height: 1;
-  /* Negative left offset so the leaf starts off-screen in the rotated
-     frame; the keyframes translate it across the card. */
-  transform: translateX(-150%) rotate(0deg);
+  transform: translate(-150%, 0);
   opacity: 0;
-  animation: wx-leaf-blow linear infinite, wx-leaf-tumble linear infinite;
+  /* Single animation: blow + slight vertical bob so leaves don't
+     look like marching dots. Per-leaf duration/delay come from the
+     inline style. Explicit non-zero fallback duration here so leaves
+     animate even if the inline override fails to apply. */
+  animation-name: wx-leaf-blow;
+  animation-duration: 4s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
   will-change: transform, opacity;
   user-select: none;
+  z-index: 1;
 }
 @keyframes wx-leaf-blow {
-  0%   { transform: translateX(-150%); opacity: 0; }
-  10%  { opacity: var(--leaf-op, 0.55); }
-  85%  { opacity: var(--leaf-op, 0.55); }
-  100% { transform: translateX(150%);  opacity: 0; }
+  0%   { transform: translate(-150%, 0); opacity: 0; }
+  10%  { opacity: var(--leaf-op, 0.6); }
+  30%  { transform: translate(-50%, -8px); }
+  60%  { transform: translate(50%, 6px); }
+  85%  { opacity: var(--leaf-op, 0.6); }
+  100% { transform: translate(150%, 0); opacity: 0; }
 }
-@keyframes wx-leaf-tumble {
-  /* Continuous spin synthesized via a separate animation. Keyframe
-     percentages aren't meaningful here — both keyframes use rotate
-     deltas, and the infinite duration controls speed. */
-  0%   { rotate: 0deg; }
-  100% { rotate: 720deg; }
-}
-.wx-anim-leaves.intensity-active .wx-leaf  { font-size: 13px; }
-.wx-anim-leaves.intensity-intense .wx-leaf { font-size: 14px; }
-body.tv .wx-leaf { font-size: 16px; }
-body.tv .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 18px; }
-body.tv .wx-anim-leaves.intensity-intense .wx-leaf { font-size: 20px; }
+.wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 14px; }
+.wx-anim-leaves.intensity-active  .wx-leaf { font-size: 16px; }
+.wx-anim-leaves.intensity-intense .wx-leaf { font-size: 18px; }
+body.tv .wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 18px; }
+body.tv .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 22px; }
+body.tv .wx-anim-leaves.intensity-intense .wx-leaf { font-size: 26px; }
 .area-header {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px;
@@ -8649,13 +8651,13 @@ function areaLeavesHTML(text) {
     const top = Math.floor(Math.random() * 100);
     const dur = (minDur + Math.random() * (maxDur - minDur)).toFixed(2);
     const delay = (-Math.random() * maxDur * 1.6).toFixed(2);
-    const tumble = (1.0 + Math.random() * 2.5).toFixed(2);
-    const op = (0.40 + Math.random() * 0.35).toFixed(2);
-    // Pick one of three leaf glyphs at random for visual variety —
-    // green leaf, fluttery leaf, fall leaf. The fall variant gives the
-    // intense tier a more "stuff is being torn off trees" feel.
-    const glyph = (Math.random() < 0.7) ? '🍃' : (Math.random() < 0.5 ? '🍂' : '🍃');
-    leaves.push(`<span class="wx-leaf" style="--leaf-op:${op};top:${top}%;animation-duration:${dur}s,${tumble}s;animation-delay:${delay}s,0s">${glyph}</span>`);
+    const op = (0.55 + Math.random() * 0.30).toFixed(2);
+    // Mix of green/fall leaves for visual variety — bias toward green
+    // for sparse/active tiers, more browns at intense (looks like stuff
+    // is being torn off trees).
+    const brownsBias = intensity === 'intense' ? 0.5 : intensity === 'active' ? 0.3 : 0.15;
+    const glyph = (Math.random() < brownsBias) ? '🍂' : '🍃';
+    leaves.push(`<span class="wx-leaf" style="--leaf-op:${op};top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s">${glyph}</span>`);
   }
   return `<div class="wx-anim-leaves intensity-${intensity}" aria-hidden="true"${rotStyle}>${leaves.join('')}</div>`;
 }
