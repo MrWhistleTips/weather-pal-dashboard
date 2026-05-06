@@ -7652,10 +7652,10 @@ function wxAnimationHTML(codes) {
   if (leaves) {
     const intensity = leaves.intensity || 'sparse';
     const cfg = intensity === 'intense'
-      ? { count: 14, minDur: 1.6, maxDur: 3.0 }
+      ? { count: 14, minDur: 0.9, maxDur: 1.8 }
       : intensity === 'active'
-      ? { count: 9,  minDur: 2.4, maxDur: 4.5 }
-      : { count: 5,  minDur: 3.2, maxDur: 6.0 };
+      ? { count: 9,  minDur: 1.4, maxDur: 2.6 }
+      : { count: 5,  minDur: 1.8, maxDur: 3.4 };
     const leafEls = [];
     for (let i = 0; i < cfg.count; i++) {
       const top = Math.floor(Math.random() * 100);
