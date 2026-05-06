@@ -3415,7 +3415,7 @@ body.tv .advisory-expires { font-size: 12px; }
   position: absolute;
   left: 0;
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Twemoji Mozilla", sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
   transform: translate(-150%, 0);
   opacity: 0;
@@ -3430,21 +3430,27 @@ body.tv .advisory-expires { font-size: 12px; }
   will-change: transform, opacity;
   user-select: none;
   z-index: 1;
+  /* Dark drop-shadow so green 🍃 leaves don't disappear into the
+     green-tinted training-panel backgrounds (cat-vfr / GO panels) and
+     yellow 🍂 leaves don't disappear into amber NO-GO panels. Pure
+     emoji rendering would otherwise blend. */
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85))
+          drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
 }
 @keyframes wx-leaf-blow {
   0%   { transform: translate(-150%, 0); opacity: 0; }
-  10%  { opacity: var(--leaf-op, 0.6); }
+  8%   { opacity: var(--leaf-op, 0.95); }
   30%  { transform: translate(-50%, -8px); }
   60%  { transform: translate(50%, 6px); }
-  85%  { opacity: var(--leaf-op, 0.6); }
+  92%  { opacity: var(--leaf-op, 0.95); }
   100% { transform: translate(150%, 0); opacity: 0; }
 }
-.wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 14px; }
-.wx-anim-leaves.intensity-active  .wx-leaf { font-size: 16px; }
-.wx-anim-leaves.intensity-intense .wx-leaf { font-size: 18px; }
-body.tv .wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 18px; }
-body.tv .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 22px; }
-body.tv .wx-anim-leaves.intensity-intense .wx-leaf { font-size: 26px; }
+.wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 18px; }
+.wx-anim-leaves.intensity-active  .wx-leaf { font-size: 20px; }
+.wx-anim-leaves.intensity-intense .wx-leaf { font-size: 24px; }
+body.tv .wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 22px; }
+body.tv .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 26px; }
+body.tv .wx-anim-leaves.intensity-intense .wx-leaf { font-size: 30px; }
 .area-header {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px;
@@ -7655,8 +7661,10 @@ function wxAnimationHTML(codes) {
       const top = Math.floor(Math.random() * 100);
       const dur = (cfg.minDur + Math.random() * (cfg.maxDur - cfg.minDur)).toFixed(2);
       const delay = (-Math.random() * cfg.maxDur * 1.6).toFixed(2);
-      const op = (0.55 + Math.random() * 0.30).toFixed(2);
-      const brownsBias = intensity === 'intense' ? 0.5 : intensity === 'active' ? 0.3 : 0.15;
+      const op = (0.85 + Math.random() * 0.15).toFixed(2);
+      // Bias toward brown leaves in all tiers — they stand out better
+      // against the green-tinted GO training panels than green 🍃.
+      const brownsBias = intensity === 'intense' ? 0.65 : intensity === 'active' ? 0.55 : 0.45;
       const glyph = (Math.random() < brownsBias) ? '🍂' : '🍃';
       leafEls.push(`<span class="wx-leaf" style="--leaf-op:${op};top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s">${glyph}</span>`);
     }
