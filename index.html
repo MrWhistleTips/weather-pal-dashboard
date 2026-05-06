@@ -3453,12 +3453,16 @@ body.tv .advisory-expires { font-size: 12px; }
   /* Travel from -50cqw (off-screen left) → 150cqw (past right edge),
      full panel width crossing. cqw = container-query width units;
      parent .wx-anim-leaves has container-type: inline-size so cqw
-     resolves against the panel, not the leaf's own 18px width. */
-  0%   { transform: translate(-50cqw, 0)   rotate(0deg);  opacity: 0; }
-  8%   { transform: translate(-30cqw, 0)   rotate(calc(var(--leaf-rot, 90deg) * 0.08)); opacity: var(--leaf-op, 0.55); }
-  30%  { transform: translate(20cqw, -8px) rotate(calc(var(--leaf-rot, 90deg) * 0.27)); }
-  60%  { transform: translate(70cqw, 6px)  rotate(calc(var(--leaf-rot, 90deg) * 0.65)); opacity: var(--leaf-op, 0.55); }
-  100% { transform: translate(150cqw, 0)   rotate(var(--leaf-rot, 90deg)); opacity: 0; }
+     resolves against the panel, not the leaf's own 18px width.
+     Opacity holds steady from 8% → 75% of the cycle (leaf is fully
+     visible across most of the panel), then fades over the last 25%
+     while the leaf is in the right ~25% of its travel. */
+  0%   { transform: translate(-50cqw, 0)    rotate(0deg);  opacity: 0; }
+  8%   { transform: translate(-30cqw, 0)    rotate(calc(var(--leaf-rot, 90deg) * 0.08)); opacity: var(--leaf-op, 0.55); }
+  30%  { transform: translate(20cqw, -8px)  rotate(calc(var(--leaf-rot, 90deg) * 0.27)); }
+  60%  { transform: translate(70cqw, 6px)   rotate(calc(var(--leaf-rot, 90deg) * 0.65)); opacity: var(--leaf-op, 0.55); }
+  75%  { transform: translate(100cqw, 4px)  rotate(calc(var(--leaf-rot, 90deg) * 0.78)); opacity: var(--leaf-op, 0.55); }
+  100% { transform: translate(150cqw, 0)    rotate(var(--leaf-rot, 90deg)); opacity: 0; }
 }
 .wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 18px; }
 .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 20px; }
@@ -7667,10 +7671,10 @@ function wxAnimationHTML(codes) {
   if (leaves) {
     const intensity = leaves.intensity || 'sparse';
     const cfg = intensity === 'intense'
-      ? { count: 10, minDur: 0.9, maxDur: 1.8 }
+      ? { count: 10, minDur: 1.8, maxDur: 3.6 }
       : intensity === 'active'
-      ? { count: 6,  minDur: 1.4, maxDur: 2.6 }
-      : { count: 3,  minDur: 1.8, maxDur: 3.4 };
+      ? { count: 6,  minDur: 2.8, maxDur: 5.2 }
+      : { count: 3,  minDur: 3.6, maxDur: 6.8 };
     const leafEls = [];
     for (let i = 0; i < cfg.count; i++) {
       const top = Math.floor(Math.random() * 100);
