@@ -3406,6 +3406,10 @@ body.tv .advisory-expires { font-size: 12px; }
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  /* Keep leaves on TOP of the area-text + header so they're always
+     visible. Text-content elements use z-index:2 (added when I made
+     .area-card a stacking context); leaves at z=3 sit just above. */
+  z-index: 3;
 }
 .wx-leaf {
   position: absolute;
@@ -7452,6 +7456,15 @@ function metarWxCodes(metar) {
     const dir = parseInt(metar.wdir, 10);
     codes.push({ kind: 'wind', intensity, dir: Number.isFinite(dir) ? dir : null });
   }
+  // Leaves — ambient breezy effect that triggers earlier than the wind
+  // streaks (10 kt vs 15 kt) so a moderate breeze gets a visible cue
+  // even when conditions don't warrant the more aggressive streak
+  // overlay. Same direction-rotation logic as wind streaks.
+  if (windKt >= 10) {
+    const intensity = windKt <= 15 ? 'sparse' : windKt <= 25 ? 'active' : 'intense';
+    const dir = parseInt(metar.wdir, 10);
+    codes.push({ kind: 'leaves', intensity, dir: Number.isFinite(dir) ? dir : null });
+  }
   // Sun (clear daytime) / Moon (clear nighttime). Suppressed when
   // rain or fog is already painting the panel — no point layering a
   // sun glow over a downpour. Clear sky = no BKN/OVC/VV/OVX layer.
@@ -7623,6 +7636,37 @@ function wxAnimationHTML(codes) {
       rotStyle = ` style="transform: rotate(${rot}deg);"`;
     }
     inner += `<div class="wx-anim wx-anim-wind intensity-${intensity}" aria-hidden="true"${rotStyle}>${streaks.join('')}</div>`;
+  }
+  // LEAVES — ambient breezy 🍃 / 🍂 glyphs blowing across the panel
+  // with the wind. Triggers separately from streaks (lower threshold,
+  // see metarWxCodes). Reuses the same direction-rotation math as
+  // streaks so leaves and streaks travel in the same direction when
+  // both are active.
+  const leaves = codes.find(c => c && c.kind === 'leaves');
+  if (leaves) {
+    const intensity = leaves.intensity || 'sparse';
+    const cfg = intensity === 'intense'
+      ? { count: 14, minDur: 1.6, maxDur: 3.0 }
+      : intensity === 'active'
+      ? { count: 9,  minDur: 2.4, maxDur: 4.5 }
+      : { count: 5,  minDur: 3.2, maxDur: 6.0 };
+    const leafEls = [];
+    for (let i = 0; i < cfg.count; i++) {
+      const top = Math.floor(Math.random() * 100);
+      const dur = (cfg.minDur + Math.random() * (cfg.maxDur - cfg.minDur)).toFixed(2);
+      const delay = (-Math.random() * cfg.maxDur * 1.6).toFixed(2);
+      const op = (0.55 + Math.random() * 0.30).toFixed(2);
+      const brownsBias = intensity === 'intense' ? 0.5 : intensity === 'active' ? 0.3 : 0.15;
+      const glyph = (Math.random() < brownsBias) ? '🍂' : '🍃';
+      leafEls.push(`<span class="wx-leaf" style="--leaf-op:${op};top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s">${glyph}</span>`);
+    }
+    let leafRot = '';
+    if (Number.isFinite(leaves.dir)) {
+      const travel = (leaves.dir + 180) % 360;
+      const rot = (travel - 90 + 360) % 360;
+      leafRot = ` style="transform: rotate(${rot}deg);"`;
+    }
+    inner += `<div class="wx-anim wx-anim-leaves intensity-${intensity}" aria-hidden="true"${leafRot}>${leafEls.join('')}</div>`;
   }
   // SUN — clear daytime. Sits in the top-right corner of the panel:
   // soft warm glow + faint slowly-rotating SVG ray cluster behind a
@@ -8728,10 +8772,8 @@ function renderAreas(forecast) {
       ? `<div class="area-ts-coverage"><span class="area-ts-coverage-label">TS Coverage:</span>${tsCov}</div>`
       : '';
 
-    const leavesHTML = areaLeavesHTML(a.forecast || a.amendmentText || '');
     return `
       <div class="area-card">
-        ${leavesHTML}
         <div class="area-header">
           <div class="area-header-left">
             <div class="area-name-row">
