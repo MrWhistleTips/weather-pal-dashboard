@@ -3421,20 +3421,21 @@ body.tv .advisory-expires { font-size: 12px; }
 .wx-leaf {
   position: absolute;
   left: 0;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Twemoji Mozilla", sans-serif;
-  font-size: 16px;
+  /* Text-glyph fonts only — earlier this animation used color emoji
+     (🍁), now it uses a Unicode arrow (⮕). System sans-serif renders
+     the glyph cleanly; "Apple Symbols" picks up the heavy arrow on
+     macOS specifically. */
+  font-family: "Apple Symbols", "Segoe UI Symbol", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
   line-height: 1;
   /* translateX uses cqw (container-query width = % of parent layer
      width). -50cqw starts the leaf 50% of the panel-width to the
      left of its origin (off-screen left); 150cqw sends it past the
-     right edge. Total travel = 200% of panel width = leaf actually
+     right edge. Total travel = 200% of panel width = arrow actually
      crosses the panel. */
   transform: translate(-50cqw, 0);
   opacity: 0;
-  /* Single animation: blow + slight vertical bob so leaves don't
-     look like marching dots. Per-leaf duration/delay come from the
-     inline style. Explicit non-zero fallback duration here so leaves
-     animate even if the inline override fails to apply. */
   animation-name: wx-leaf-blow;
   animation-duration: 4s;
   animation-timing-function: linear;
@@ -3442,10 +3443,18 @@ body.tv .advisory-expires { font-size: 12px; }
   will-change: transform, opacity;
   user-select: none;
   z-index: 1;
-  /* Dark drop-shadow so green 🍃 leaves don't disappear into the
-     green-tinted training-panel backgrounds (cat-vfr / GO panels) and
-     yellow 🍂 leaves don't disappear into amber NO-GO panels. Pure
-     emoji rendering would otherwise blend. */
+  /* 3D-metallic arrow look. Light gradient (top-bright to bottom-
+     dim) fills the glyph via background-clip:text, so it reads as a
+     chrome / brushed-metal arrow rather than a flat outline. The
+     drop-shadow stack adds depth + ensures contrast on every panel
+     color (green GO, red NO-GO, amber UNKNOWN, dark VFR). */
+  background: linear-gradient(180deg,
+    rgba(245,245,250,1.0) 0%,
+    rgba(200,205,215,1.0) 45%,
+    rgba(140,145,155,1.0) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85))
           drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
 }
@@ -3470,12 +3479,12 @@ body.tv .advisory-expires { font-size: 12px; }
   55%  { transform: translate(60cqw, 6px)   rotate(calc(var(--leaf-rot, 90deg) * 0.60)); opacity: 0; }
   100% { transform: translate(150cqw, 0)    rotate(var(--leaf-rot, 90deg)); opacity: 0; }
 }
-.wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 18px; }
-.wx-anim-leaves.intensity-active  .wx-leaf { font-size: 20px; }
-.wx-anim-leaves.intensity-intense .wx-leaf { font-size: 24px; }
-body.tv .wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 22px; }
-body.tv .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 26px; }
-body.tv .wx-anim-leaves.intensity-intense .wx-leaf { font-size: 30px; }
+.wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 22px; }
+.wx-anim-leaves.intensity-active  .wx-leaf { font-size: 26px; }
+.wx-anim-leaves.intensity-intense .wx-leaf { font-size: 30px; }
+body.tv .wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 28px; }
+body.tv .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 34px; }
+body.tv .wx-anim-leaves.intensity-intense .wx-leaf { font-size: 40px; }
 .area-header {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px;
@@ -7668,11 +7677,14 @@ function wxAnimationHTML(codes) {
     }
     inner += `<div class="wx-anim wx-anim-wind intensity-${intensity}" aria-hidden="true"${rotStyle}>${streaks.join('')}</div>`;
   }
-  // LEAVES — ambient breezy 🍃 / 🍂 glyphs blowing across the panel
-  // with the wind. Triggers separately from streaks (lower threshold,
-  // see metarWxCodes). Reuses the same direction-rotation math as
-  // streaks so leaves and streaks travel in the same direction when
-  // both are active.
+  // WIND-DIRECTION ARROWS — ambient ➡️ glyphs blowing across the
+  // panel pointing in the direction the wind is travelling. Triggers
+  // separately from streaks (lower threshold, see metarWxCodes).
+  // Reuses the same direction-rotation math as streaks so arrows and
+  // streaks travel in the same direction when both are active.
+  // (Internally still named "leaves" — the kind: 'leaves' code path,
+  // .wx-anim-leaves / .wx-leaf classes, --leaf-op CSS var. Just the
+  // glyph and the per-leaf rotation behavior changed.)
   const leaves = codes.find(c => c && c.kind === 'leaves');
   if (leaves) {
     const intensity = leaves.intensity || 'sparse';
@@ -7687,15 +7699,15 @@ function wxAnimationHTML(codes) {
       const dur = (cfg.minDur + Math.random() * (cfg.maxDur - cfg.minDur)).toFixed(2);
       const delay = (-Math.random() * cfg.maxDur * 1.6).toFixed(2);
       const op = (0.45 + Math.random() * 0.20).toFixed(2);
-      // Maple leaf 🍁 only — distinct red/orange against any panel
-      // background tint, no need for browns/greens variety.
-      const glyph = '🍁';
-      // Per-leaf rotation: half rotate clockwise, half counter so the
-      // panel doesn't visually drift in one direction over time.
-      // Magnitude scales with intensity so heavier wind tumbles more.
-      const rotMax = intensity === 'intense' ? 200 : intensity === 'active' ? 140 : 90;
-      const rotEnd = (Math.random() < 0.5 ? -1 : 1) * (rotMax * (0.6 + Math.random() * 0.4));
-      leafEls.push(`<span class="wx-leaf" style="--leaf-op:${op};--leaf-rot:${rotEnd.toFixed(0)}deg;top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s">${glyph}</span>`);
+      // ⮕ U+2B95 — heavy clean rightward arrow, text glyph (inherits
+      // CSS color, no boxed background). The PARENT .wx-anim-leaves
+      // layer is already rotated to match the reported wind direction
+      // (same math as the streaks); each arrow inherits that rotation
+      // so they all point — and travel — WITH the wind. --leaf-rot is
+      // set to 0 so the per-leaf tumble (originally for leaves) is
+      // suppressed: arrows look wrong flipping around mid-flight.
+      const glyph = '⮕';
+      leafEls.push(`<span class="wx-leaf" style="--leaf-op:${op};--leaf-rot:0deg;top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s">${glyph}</span>`);
     }
     let leafRot = '';
     if (Number.isFinite(leaves.dir)) {
