@@ -3438,11 +3438,11 @@ body.tv .advisory-expires { font-size: 12px; }
           drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
 }
 @keyframes wx-leaf-blow {
-  0%   { transform: translate(-150%, 0); opacity: 0; }
+  0%   { transform: translate(-150%, 0)  rotate(0deg); opacity: 0; }
   8%   { opacity: var(--leaf-op, 0.55); }
-  30%  { transform: translate(-50%, -8px); }
-  60%  { transform: translate(50%, 6px); opacity: var(--leaf-op, 0.55); }
-  100% { transform: translate(150%, 0); opacity: 0; }
+  30%  { transform: translate(-50%, -8px) rotate(calc(var(--leaf-rot, 90deg) * 0.27)); }
+  60%  { transform: translate(50%, 6px)   rotate(calc(var(--leaf-rot, 90deg) * 0.65)); opacity: var(--leaf-op, 0.55); }
+  100% { transform: translate(150%, 0)    rotate(var(--leaf-rot, 90deg)); opacity: 0; }
 }
 .wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 18px; }
 .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 20px; }
@@ -7651,21 +7651,25 @@ function wxAnimationHTML(codes) {
   if (leaves) {
     const intensity = leaves.intensity || 'sparse';
     const cfg = intensity === 'intense'
-      ? { count: 14, minDur: 0.9, maxDur: 1.8 }
+      ? { count: 10, minDur: 0.9, maxDur: 1.8 }
       : intensity === 'active'
-      ? { count: 9,  minDur: 1.4, maxDur: 2.6 }
-      : { count: 5,  minDur: 1.8, maxDur: 3.4 };
+      ? { count: 6,  minDur: 1.4, maxDur: 2.6 }
+      : { count: 3,  minDur: 1.8, maxDur: 3.4 };
     const leafEls = [];
     for (let i = 0; i < cfg.count; i++) {
       const top = Math.floor(Math.random() * 100);
       const dur = (cfg.minDur + Math.random() * (cfg.maxDur - cfg.minDur)).toFixed(2);
       const delay = (-Math.random() * cfg.maxDur * 1.6).toFixed(2);
       const op = (0.45 + Math.random() * 0.20).toFixed(2);
-      // Bias toward brown leaves in all tiers — they stand out better
-      // against the green-tinted GO training panels than green 🍃.
-      const brownsBias = intensity === 'intense' ? 0.65 : intensity === 'active' ? 0.55 : 0.45;
-      const glyph = (Math.random() < brownsBias) ? '🍂' : '🍃';
-      leafEls.push(`<span class="wx-leaf" style="--leaf-op:${op};top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s">${glyph}</span>`);
+      // Maple leaf 🍁 only — distinct red/orange against any panel
+      // background tint, no need for browns/greens variety.
+      const glyph = '🍁';
+      // Per-leaf rotation: half rotate clockwise, half counter so the
+      // panel doesn't visually drift in one direction over time.
+      // Magnitude scales with intensity so heavier wind tumbles more.
+      const rotMax = intensity === 'intense' ? 200 : intensity === 'active' ? 140 : 90;
+      const rotEnd = (Math.random() < 0.5 ? -1 : 1) * (rotMax * (0.6 + Math.random() * 0.4));
+      leafEls.push(`<span class="wx-leaf" style="--leaf-op:${op};--leaf-rot:${rotEnd.toFixed(0)}deg;top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s">${glyph}</span>`);
     }
     let leafRot = '';
     if (Number.isFinite(leaves.dir)) {
