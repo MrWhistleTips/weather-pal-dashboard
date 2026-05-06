@@ -3457,11 +3457,17 @@ body.tv .advisory-expires { font-size: 12px; }
      Opacity holds steady from 8% → 75% of the cycle (leaf is fully
      visible across most of the panel), then fades over the last 25%
      while the leaf is in the right ~25% of its travel. */
+  /* Opacity curve: 0 → 0.55 by time 8%, hold to time 40%, then linearly
+     fade 0.55 → 0 by time 55%, hold at 0 thereafter. By time 55% the
+     leaf is at position 60cqw (≈30% from the LEFT edge of the panel),
+     so the leaf has fully faded by roughly the panel's mid-point and
+     is gone for the second half of its travel. The rest of the cycle
+     just unwinds the leaf's motion off-screen invisibly. */
   0%   { transform: translate(-50cqw, 0)    rotate(0deg);  opacity: 0; }
   8%   { transform: translate(-30cqw, 0)    rotate(calc(var(--leaf-rot, 90deg) * 0.08)); opacity: var(--leaf-op, 0.55); }
-  30%  { transform: translate(20cqw, -8px)  rotate(calc(var(--leaf-rot, 90deg) * 0.27)); }
-  55%  { transform: translate(60cqw, 6px)   rotate(calc(var(--leaf-rot, 90deg) * 0.60)); opacity: var(--leaf-op, 0.55); }
-  75%  { transform: translate(100cqw, 4px)  rotate(calc(var(--leaf-rot, 90deg) * 0.80)); opacity: 0; }
+  30%  { transform: translate(20cqw, -8px)  rotate(calc(var(--leaf-rot, 90deg) * 0.27)); opacity: var(--leaf-op, 0.55); }
+  40%  { transform: translate(35cqw, -2px)  rotate(calc(var(--leaf-rot, 90deg) * 0.40)); opacity: var(--leaf-op, 0.55); }
+  55%  { transform: translate(60cqw, 6px)   rotate(calc(var(--leaf-rot, 90deg) * 0.60)); opacity: 0; }
   100% { transform: translate(150cqw, 0)    rotate(var(--leaf-rot, 90deg)); opacity: 0; }
 }
 .wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 18px; }
