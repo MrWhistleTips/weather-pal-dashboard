@@ -3387,7 +3387,58 @@ body.tv .advisory-expires { font-size: 12px; }
      can ellipsis instead of pushing the layout. */
   min-width: 0;
   overflow: hidden;
+  /* Stacking context for the leaf wx-anim layer below — without this
+     the absolute-positioned .wx-anim-layer would escape the card. */
+  position: relative;
 }
+/* Make sure card content sits above any wx-anim layer. */
+.area-card > .area-header,
+.area-card > .area-text { position: relative; z-index: 2; }
+
+/* LEAVES — windy ambiance for area-of-operations cards. Each leaf is
+   a 🍃 emoji absolutely positioned in the card; the parent layer
+   rotates to match the reported wind direction (same logic as
+   .wx-anim-wind streaks) so leaves blow WITH the wind. Each leaf
+   has its own translate cycle (drift across) plus an independent
+   tumble rotation so they look organic, not a marching grid. */
+.wx-anim-leaves {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.wx-leaf {
+  position: absolute;
+  left: 0;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-size: 12px;
+  line-height: 1;
+  /* Negative left offset so the leaf starts off-screen in the rotated
+     frame; the keyframes translate it across the card. */
+  transform: translateX(-150%) rotate(0deg);
+  opacity: 0;
+  animation: wx-leaf-blow linear infinite, wx-leaf-tumble linear infinite;
+  will-change: transform, opacity;
+  user-select: none;
+}
+@keyframes wx-leaf-blow {
+  0%   { transform: translateX(-150%); opacity: 0; }
+  10%  { opacity: var(--leaf-op, 0.55); }
+  85%  { opacity: var(--leaf-op, 0.55); }
+  100% { transform: translateX(150%);  opacity: 0; }
+}
+@keyframes wx-leaf-tumble {
+  /* Continuous spin synthesized via a separate animation. Keyframe
+     percentages aren't meaningful here — both keyframes use rotate
+     deltas, and the infinite duration controls speed. */
+  0%   { rotate: 0deg; }
+  100% { rotate: 720deg; }
+}
+.wx-anim-leaves.intensity-active .wx-leaf  { font-size: 13px; }
+.wx-anim-leaves.intensity-intense .wx-leaf { font-size: 14px; }
+body.tv .wx-leaf { font-size: 16px; }
+body.tv .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 18px; }
+body.tv .wx-anim-leaves.intensity-intense .wx-leaf { font-size: 20px; }
 .area-header {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px;
@@ -8536,6 +8587,79 @@ function applyAdvisoriesCollapsedState() {
   card.classList.toggle('collapsed', collapsed);
 }
 
+/// Build a leaves-blowing layer for an Area Forecast card. Drives off
+/// the area's active-segment wind: ≥10 kt fires a sparse layer, ≥16
+/// active, ≥26 intense (more leaves, slightly bigger). The whole layer
+/// rotates to match the wind direction (METAR wdir = direction FROM,
+/// CSS rotation = travel direction − 90°), same convention as the wind
+/// streaks. Returns empty string when no wind found in the active
+/// segment or speed under threshold.
+function areaLeavesHTML(text) {
+  if (!text) return '';
+  // Reuse the segment-aware wind extractor — it handles current
+  // segment + active TEMPO/ISOLD overlays just like wind streaks do.
+  const segs = splitSegments(text);
+  if (!segs.length) return '';
+  const idx = currentSegmentIndex(segs);
+  const now = zuluMinutes();
+  const collected = [];
+  if (segs[idx]) collected.push(segs[idx].text);
+  for (const s of segs) {
+    if (!s.isTemporary) continue;
+    const m = s.text.match(/^(?:ISOLD|TEMPO|BECMG)\s+(\d{4})-(\d{4})Z/i);
+    if (!m) continue;
+    let from = parseInt(m[1].slice(0,2),10) * 60 + parseInt(m[1].slice(2,4),10);
+    let to   = parseInt(m[2].slice(0,2),10) * 60 + parseInt(m[2].slice(2,4),10);
+    if (to <= from) to += 1440;
+    if ((now >= from && now < to) || (now + 1440 >= from && now + 1440 < to)) {
+      collected.push(s.text);
+    }
+  }
+  const joined = collected.join(' ');
+  const wm = joined.match(/(?:^|\s)(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?KT/i);
+  if (!wm) return '';
+  const wspd = parseInt(wm[2], 10) || 0;
+  const wgst = parseInt(wm[3], 10) || 0;
+  const speed = Math.max(wspd, wgst);
+  if (speed < 10) return '';
+  const intensity = speed >= 26 ? 'intense' : speed >= 16 ? 'active' : 'sparse';
+  const count = intensity === 'intense' ? 14 : intensity === 'active' ? 9 : 5;
+
+  // Direction-aware rotation. Same math as the wind streaks: METAR
+  // wdir is FROM, travel = (wdir + 180) % 360, CSS rot = travel - 90
+  // (default leaf path is left→right = 90° east in compass terms).
+  let rotStyle = '';
+  const dirToken = wm[1];
+  if (dirToken !== 'VRB') {
+    const wdir = parseInt(dirToken, 10);
+    if (Number.isFinite(wdir)) {
+      const travel = (wdir + 180) % 360;
+      const rot = (travel - 90 + 360) % 360;
+      rotStyle = ` style="transform: rotate(${rot}deg);"`;
+    }
+  }
+
+  // Faster sweep for higher intensity. Each leaf gets its own duration,
+  // delay, top offset, and tumble period so they look organic instead
+  // of a coordinated marching line.
+  const minDur = intensity === 'intense' ? 1.6 : intensity === 'active' ? 2.4 : 3.2;
+  const maxDur = intensity === 'intense' ? 3.0 : intensity === 'active' ? 4.5 : 6.0;
+  const leaves = [];
+  for (let i = 0; i < count; i++) {
+    const top = Math.floor(Math.random() * 100);
+    const dur = (minDur + Math.random() * (maxDur - minDur)).toFixed(2);
+    const delay = (-Math.random() * maxDur * 1.6).toFixed(2);
+    const tumble = (1.0 + Math.random() * 2.5).toFixed(2);
+    const op = (0.40 + Math.random() * 0.35).toFixed(2);
+    // Pick one of three leaf glyphs at random for visual variety —
+    // green leaf, fluttery leaf, fall leaf. The fall variant gives the
+    // intense tier a more "stuff is being torn off trees" feel.
+    const glyph = (Math.random() < 0.7) ? '🍃' : (Math.random() < 0.5 ? '🍂' : '🍃');
+    leaves.push(`<span class="wx-leaf" style="--leaf-op:${op};top:${top}%;animation-duration:${dur}s,${tumble}s;animation-delay:${delay}s,0s">${glyph}</span>`);
+  }
+  return `<div class="wx-anim-leaves intensity-${intensity}" aria-hidden="true"${rotStyle}>${leaves.join('')}</div>`;
+}
+
 function renderAreas(forecast) {
   const body = document.getElementById('areas-body');
   if (!forecast || !forecast.mef || !forecast.mef.areaForecasts) {
@@ -8602,8 +8726,10 @@ function renderAreas(forecast) {
       ? `<div class="area-ts-coverage"><span class="area-ts-coverage-label">TS Coverage:</span>${tsCov}</div>`
       : '';
 
+    const leavesHTML = areaLeavesHTML(a.forecast || a.amendmentText || '');
     return `
       <div class="area-card">
+        ${leavesHTML}
         <div class="area-header">
           <div class="area-header-left">
             <div class="area-name-row">
