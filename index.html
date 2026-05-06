@@ -3410,6 +3410,13 @@ body.tv .advisory-expires { font-size: 12px; }
      visible. Text-content elements use z-index:2 (added when I made
      .area-card a stacking context); leaves at z=3 sit just above. */
   z-index: 3;
+  /* Establish a container so each .wx-leaf below can use cqw units
+     for translateX. Without this the keyframe's translateX(150%) was
+     150% of the LEAF's own width (~18px) instead of the parent's, so
+     leaves barely crossed 50px and were invisible-by-the-time-they-
+     showed-up. cqw makes the % refer to this layer's width = full
+     panel width. */
+  container-type: inline-size;
 }
 .wx-leaf {
   position: absolute;
@@ -3417,7 +3424,12 @@ body.tv .advisory-expires { font-size: 12px; }
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Twemoji Mozilla", sans-serif;
   font-size: 16px;
   line-height: 1;
-  transform: translate(-150%, 0);
+  /* translateX uses cqw (container-query width = % of parent layer
+     width). -50cqw starts the leaf 50% of the panel-width to the
+     left of its origin (off-screen left); 150cqw sends it past the
+     right edge. Total travel = 200% of panel width = leaf actually
+     crosses the panel. */
+  transform: translate(-50cqw, 0);
   opacity: 0;
   /* Single animation: blow + slight vertical bob so leaves don't
      look like marching dots. Per-leaf duration/delay come from the
@@ -3438,11 +3450,15 @@ body.tv .advisory-expires { font-size: 12px; }
           drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
 }
 @keyframes wx-leaf-blow {
-  0%   { transform: translate(-150%, 0)  rotate(0deg); opacity: 0; }
-  8%   { opacity: var(--leaf-op, 0.55); }
-  30%  { transform: translate(-50%, -8px) rotate(calc(var(--leaf-rot, 90deg) * 0.27)); }
-  60%  { transform: translate(50%, 6px)   rotate(calc(var(--leaf-rot, 90deg) * 0.65)); opacity: var(--leaf-op, 0.55); }
-  100% { transform: translate(150%, 0)    rotate(var(--leaf-rot, 90deg)); opacity: 0; }
+  /* Travel from -50cqw (off-screen left) → 150cqw (past right edge),
+     full panel width crossing. cqw = container-query width units;
+     parent .wx-anim-leaves has container-type: inline-size so cqw
+     resolves against the panel, not the leaf's own 18px width. */
+  0%   { transform: translate(-50cqw, 0)   rotate(0deg);  opacity: 0; }
+  8%   { transform: translate(-30cqw, 0)   rotate(calc(var(--leaf-rot, 90deg) * 0.08)); opacity: var(--leaf-op, 0.55); }
+  30%  { transform: translate(20cqw, -8px) rotate(calc(var(--leaf-rot, 90deg) * 0.27)); }
+  60%  { transform: translate(70cqw, 6px)  rotate(calc(var(--leaf-rot, 90deg) * 0.65)); opacity: var(--leaf-op, 0.55); }
+  100% { transform: translate(150cqw, 0)   rotate(var(--leaf-rot, 90deg)); opacity: 0; }
 }
 .wx-anim-leaves.intensity-sparse  .wx-leaf { font-size: 18px; }
 .wx-anim-leaves.intensity-active  .wx-leaf { font-size: 20px; }
