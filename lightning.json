@@ -2,50 +2,84 @@
   "approach": {
     "closest_inbound": {
       "approaching_kozr": true,
-      "buckets_observed": 6,
-      "centroid_lat": 30.4016,
-      "centroid_lon": -86.1717,
-      "confidence": "high",
-      "current_distance_nm": 57.59,
-      "flash_count": 30,
+      "buckets_observed": 5,
+      "centroid_lat": 30.4005,
+      "centroid_lon": -86.1411,
+      "confidence": "moderate",
+      "current_distance_nm": 57.02,
+      "flash_count": 27,
       "minutes_to_10nm": null,
       "minutes_to_25nm": null,
       "minutes_to_50nm": null,
       "minutes_to_5nm": null,
       "minutes_to_field": null,
-      "motion_bearing_deg": 103,
-      "r_squared": 0.809,
-      "speed_kts": 32.9
+      "motion_bearing_deg": 102,
+      "r_squared": 0.798,
+      "speed_kts": 32.6
     },
-    "tracked_cells": 2
+    "tracked_cells": 1
   },
-  "closest_strike": null,
+  "closest_strike": {
+    "bearing_deg": 221,
+    "distance_nm": 46.16,
+    "time_iso": "2026-05-07T19:13:34.513622Z"
+  },
   "counts": {
     "within_10nm": 0,
     "within_25nm": 0,
-    "within_50nm": 0,
+    "within_50nm": 1,
     "within_5nm": 0
   },
-  "fetched_at": "2026-05-07T19:12:22.549862Z",
+  "fetched_at": "2026-05-07T19:15:00.321876Z",
   "files_scanned": 90,
-  "last_strike": null,
+  "last_strike": {
+    "bearing_deg": 221,
+    "distance_nm": 46.16,
+    "time_iso": "2026-05-07T19:13:34.513622Z"
+  },
   "lookback_min": 10,
   "stagefields": {
     "allen": {
-      "closest_strike": null,
+      "closest_strike": {
+        "bearing_deg": 226,
+        "distance_nm": 46.32,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
+      },
       "counts": {
         "within_10nm": 0,
         "within_25nm": 0,
-        "within_50nm": 0,
+        "within_50nm": 1,
         "within_5nm": 0
       },
-      "last_strike": null
+      "last_strike": {
+        "bearing_deg": 226,
+        "distance_nm": 46.32,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
+      }
     },
     "highbluff": {
       "closest_strike": {
-        "bearing_deg": 229,
-        "distance_nm": 45.25,
-        "time_iso": "2026-05-07T19:06:49.301902Z"
+        "bearing_deg": 227,
+        "distance_nm": 39.98,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
+      },
+      "counts": {
+        "within_10nm": 0,
+        "within_25nm": 0,
+        "within_50nm": 3,
+        "within_5nm": 0
+      },
+      "last_strike": {
+        "bearing_deg": 227,
+        "distance_nm": 39.98,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
+      }
+    },
+    "lucas": {
+      "closest_strike": {
+        "bearing_deg": 201,
+        "distance_nm": 36.97,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       },
       "counts": {
         "within_10nm": 0,
@@ -54,16 +88,16 @@
         "within_5nm": 0
       },
       "last_strike": {
-        "bearing_deg": 208,
-        "distance_nm": 49.03,
-        "time_iso": "2026-05-07T19:09:50.826660Z"
+        "bearing_deg": 201,
+        "distance_nm": 36.97,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       }
     },
-    "lucas": {
+    "toth": {
       "closest_strike": {
-        "bearing_deg": 207,
-        "distance_nm": 40.98,
-        "time_iso": "2026-05-07T19:06:49.301902Z"
+        "bearing_deg": 230,
+        "distance_nm": 49.47,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       },
       "counts": {
         "within_10nm": 0,
@@ -72,75 +106,65 @@
         "within_5nm": 0
       },
       "last_strike": {
-        "bearing_deg": 207,
-        "distance_nm": 40.98,
-        "time_iso": "2026-05-07T19:06:49.301902Z"
+        "bearing_deg": 230,
+        "distance_nm": 49.47,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       }
-    },
-    "toth": {
-      "closest_strike": null,
-      "counts": {
-        "within_10nm": 0,
-        "within_25nm": 0,
-        "within_50nm": 0,
-        "within_5nm": 0
-      },
-      "last_strike": null
     }
   },
   "weekend_stations": {
     "K0J4": {
       "closest_strike": {
-        "bearing_deg": 191,
-        "distance_nm": 23.54,
-        "time_iso": "2026-05-07T19:06:49.301902Z"
+        "bearing_deg": 178,
+        "distance_nm": 21.06,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       },
       "counts": {
         "within_10nm": 0,
-        "within_25nm": 1,
-        "within_50nm": 7,
+        "within_25nm": 2,
+        "within_50nm": 5,
         "within_5nm": 0
       },
       "last_strike": {
-        "bearing_deg": 169,
-        "distance_nm": 37.68,
-        "time_iso": "2026-05-07T19:09:50.826660Z"
+        "bearing_deg": 178,
+        "distance_nm": 21.06,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       }
     },
     "K79J": {
       "closest_strike": {
-        "bearing_deg": 181,
-        "distance_nm": 38.83,
-        "time_iso": "2026-05-07T19:06:49.301902Z"
+        "bearing_deg": 172,
+        "distance_nm": 37.06,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       },
       "counts": {
         "within_10nm": 0,
         "within_25nm": 0,
-        "within_50nm": 1,
+        "within_50nm": 2,
         "within_5nm": 0
       },
       "last_strike": {
-        "bearing_deg": 181,
-        "distance_nm": 38.83,
-        "time_iso": "2026-05-07T19:06:49.301902Z"
+        "bearing_deg": 172,
+        "distance_nm": 37.06,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       }
     },
     "KBCR": {
       "closest_strike": {
-        "bearing_deg": 230,
-        "distance_nm": 38.46,
-        "time_iso": "2026-05-07T19:09:50.826660Z"
+        "bearing_deg": 256,
+        "distance_nm": 36.77,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       },
       "counts": {
         "within_10nm": 0,
         "within_25nm": 0,
-        "within_50nm": 7,
+        "within_50nm": 5,
         "within_5nm": 0
       },
       "last_strike": {
-        "bearing_deg": 230,
-        "distance_nm": 38.46,
-        "time_iso": "2026-05-07T19:09:50.826660Z"
+        "bearing_deg": 256,
+        "distance_nm": 36.77,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       }
     },
     "KDHN": {
@@ -155,20 +179,20 @@
     },
     "KEDN": {
       "closest_strike": {
-        "bearing_deg": 214,
-        "distance_nm": 46.14,
-        "time_iso": "2026-05-07T19:06:49.301902Z"
+        "bearing_deg": 209,
+        "distance_nm": 41.63,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       },
       "counts": {
         "within_10nm": 0,
         "within_25nm": 0,
-        "within_50nm": 1,
+        "within_50nm": 2,
         "within_5nm": 0
       },
       "last_strike": {
-        "bearing_deg": 214,
-        "distance_nm": 46.14,
-        "time_iso": "2026-05-07T19:06:49.301902Z"
+        "bearing_deg": 209,
+        "distance_nm": 41.63,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
       }
     },
     "KHEY": {
@@ -182,24 +206,40 @@
       "last_strike": null
     },
     "KLOR": {
-      "closest_strike": null,
+      "closest_strike": {
+        "bearing_deg": 215,
+        "distance_nm": 48.88,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
+      },
       "counts": {
         "within_10nm": 0,
         "within_25nm": 0,
-        "within_50nm": 0,
+        "within_50nm": 1,
         "within_5nm": 0
       },
-      "last_strike": null
+      "last_strike": {
+        "bearing_deg": 215,
+        "distance_nm": 48.88,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
+      }
     },
     "KSXS": {
-      "closest_strike": null,
+      "closest_strike": {
+        "bearing_deg": 210,
+        "distance_nm": 46.4,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
+      },
       "counts": {
         "within_10nm": 0,
         "within_25nm": 0,
-        "within_50nm": 0,
+        "within_50nm": 1,
         "within_5nm": 0
       },
-      "last_strike": null
+      "last_strike": {
+        "bearing_deg": 210,
+        "distance_nm": 46.4,
+        "time_iso": "2026-05-07T19:13:34.513622Z"
+      }
     }
   }
 }
