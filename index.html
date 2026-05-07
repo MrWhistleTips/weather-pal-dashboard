@@ -6677,6 +6677,29 @@ function windowsOverlap(aFrom, aTo, bFrom, bTo) {
 /// the forecast's training period at any point. CURR/UFN advisories have
 /// unparseable times and are treated as always-in-effect. If the forecast's
 /// training period can't be parsed we fall back to active-now OR upcoming
+/// Find an active tornado watch within 15 NM of the airfield. Per
+/// USAACE flight rules a tornado watch in proximity grounds ALL
+/// training operations (Cairns + every stagefield) regardless of
+/// METAR / forecast values, so the Training Status card needs to
+/// override every panel to NO-GO when this fires.
+///
+/// Match logic: any active advisory (typically a WATCH or WW row)
+/// whose criteria text contains "TORNADO" — the criteria almost
+/// always pairs that with "W/IN 15NM" but we keep the string match
+/// permissive in case the brief uses different phrasing (e.g.
+/// "TORNADO POTENTIAL", "TORNADO WW"). Returns the matching advisory
+/// or null.
+function findActiveTornadoWatch(advisories) {
+  if (!advisories) return null;
+  const active = activeAdvisories(advisories);
+  for (const a of active) {
+    if (!a || !a.criteria) continue;
+    const t = String(a.criteria).toUpperCase();
+    if (t.includes('TORNADO')) return a;
+  }
+  return null;
+}
+
 /// within 6 hours (previous behavior).
 /// Returns null if no such advisory exists.
 function findWindAdvisoryDuringPeriod(advisories, forecast) {
@@ -7256,6 +7279,13 @@ function renderTraining(metar, forecast) {
   const advs = (forecast && forecast.mef && forecast.mef.weatherAdvisories) || [];
   const activeAdvs = activeAdvisories(advs);
 
+  // Tornado watch override — when a TORNADO WATCH is active (any
+  // advisory whose criteria mentions TORNADO), ALL training
+  // operations are grounded regardless of METAR / forecast values.
+  // We compute this once and apply it as an override below in both
+  // the Cairns and stagefield render paths.
+  const tornadoWatch = findActiveTornadoWatch(advs);
+
   // Cairns VFR-only logic (1000/3) — IFR is shown separately above
   let cairnsStatus = 'unknown';
   let cairnsLabel = 'UNKNOWN';
@@ -7292,6 +7322,15 @@ function renderTraining(metar, forecast) {
         closest_strike: LIGHTNING_DATA.closest_strike,
       }
     : null;
+  // Tornado-watch override for Cairns — grounds it regardless of
+  // METAR. The advisory's number (e.g. "WATCH 05-003") goes into
+  // the area subtitle so the operator sees WHY at a glance.
+  if (tornadoWatch) {
+    cairnsStatus = 'nogo';
+    cairnsLabel = 'NO GO';
+    cairnsArea = `🌪 TORNADO WATCH · ${tornadoWatch.type} ${tornadoWatch.number || ''}`.trim();
+  }
+
   // Weather animations — rain/fog from METAR (skipped during forecast
   // fallback because we don't fake those when we don't have a real
   // observation), lightning from GLM (runs regardless of METAR state).
@@ -7323,6 +7362,18 @@ function renderTraining(metar, forecast) {
         // segment text (plus any active TEMPO overlay) so a stagefield
         // that's forecast to be rainy or foggy looks the part.
         sfWx = wxCodesFromAreaForecast(area.forecast);
+      }
+    }
+    // Tornado-watch override for every stagefield — grounds them
+    // regardless of area-forecast values. Solos are also forced NO
+    // GO so the operator can't accidentally read "SOLO GO" while a
+    // tornado watch is active.
+    if (tornadoWatch) {
+      status = 'nogo';
+      label = 'NO GO';
+      areaSubtitle = `🌪 TORNADO WATCH · ${tornadoWatch.type} ${tornadoWatch.number || ''}`.trim();
+      if (showSolo) {
+        solo = { isGo: false, reason: 'TORNADO WATCH' };
       }
     }
     // Advisory pip — true if any active advisory affects this area
