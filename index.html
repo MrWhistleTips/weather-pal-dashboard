@@ -967,6 +967,19 @@ body.tv .metar-hazards-pill { font-size: 13px; padding: 5px 13px; left: 14px; }
      minmax(0, 1fr) to keep all five panels equal-sized. */
   min-width: 0;
   transition: all 0.3s ease;
+  /* Compositor-isolation hints. With 5 panels each running rain +
+     fog + wind streaks + arrows + lightning + sun/moon at the same
+     time, the browser was promoting the entire panel grid into one
+     enormous composite layer — and on long-running TV sessions the
+     GPU compositor would saturate, causing animations to visibly
+     stutter or pause. `contain` tells the browser this subtree's
+     layout / paint / style work is independent of everything outside;
+     it gets its own compositing layer and reflows don't propagate
+     out. `transform: translateZ(0)` forces creation of a dedicated
+     GPU layer per panel so animation work doesn't pile onto the
+     root layer. */
+  contain: layout paint style;
+  transform: translateZ(0);
 }
 .training-panel::before {
   content: "";
@@ -1248,10 +1261,15 @@ body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
   height: 100%;
   opacity: 0;
   pointer-events: none;
+  /* Reduced from a 3-layer drop-shadow stack to 2 — each drop-shadow
+     pass triggers a separate compositor blur operation, and on TV
+     sessions running 5 panels simultaneously the cumulative cost
+     was visible (animations stuttering or pausing). 2 layers still
+     give the warm yellow halo + outer glow without the deepest
+     bloom. */
   filter:
-    drop-shadow(0 0 2px rgba(255, 240, 180, 0.95))
-    drop-shadow(0 0 6px rgba(255, 220, 120, 0.65))
-    drop-shadow(0 0 14px rgba(255, 200, 80, 0.35));
+    drop-shadow(0 0 3px rgba(255, 235, 160, 0.95))
+    drop-shadow(0 0 10px rgba(255, 210, 100, 0.45));
   animation: wx-lightning-bolt 7.3s linear infinite;
   will-change: opacity;
 }
@@ -3455,8 +3473,10 @@ body.tv .advisory-expires { font-size: 12px; }
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85))
-          drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
+  /* Single drop-shadow instead of two — at 10 arrows/panel × 5
+     panels the second blur pass was a measurable compositor cost.
+     One layer keeps depth + readable contrast on every panel color. */
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85));
 }
 @keyframes wx-leaf-blow {
   /* Travel from -50cqw (off-screen left) → 150cqw (past right edge),
@@ -7587,11 +7607,18 @@ function wxAnimationHTML(codes) {
     //   moderate: 22 drops, baseline  (0.55-1.10 s)
     //   heavy   : 38 drops, fast      (0.40-0.80 s)
     const intensity = rain.intensity || 'moderate';
+    // Counts trimmed ~30% from earlier (38/22/12 → 24/14/8) to keep
+    // the per-panel compositor budget reasonable. With 5 panels each
+    // potentially running rain + fog + streaks + arrows + lightning,
+    // the old counts pushed the GPU compositor past its budget on
+    // long-running TV sessions and animations would visibly stutter
+    // or pause entirely. Visual density still reads as "heavy" at 24
+    // drops over the panel area.
     const cfg = intensity === 'heavy'
-      ? { count: 38, minDur: 0.40, maxDur: 0.80, minOp: 0.50, maxOp: 0.95 }
+      ? { count: 24, minDur: 0.40, maxDur: 0.80, minOp: 0.50, maxOp: 0.95 }
       : intensity === 'light'
-      ? { count: 12, minDur: 0.75, maxDur: 1.30, minOp: 0.30, maxOp: 0.65 }
-      : { count: 22, minDur: 0.55, maxDur: 1.10, minOp: 0.35, maxOp: 0.80 };
+      ? { count: 8,  minDur: 0.75, maxDur: 1.30, minOp: 0.30, maxOp: 0.65 }
+      : { count: 14, minDur: 0.55, maxDur: 1.10, minOp: 0.35, maxOp: 0.80 };
     const elements = [];
     // Shuffle slice indices so drops within a single panel render in
     // random visual order even though their horizontal positions are
@@ -7635,7 +7662,11 @@ function wxAnimationHTML(codes) {
     // different point in its cycle so they're spread across the panel
     // from frame 0.
     const wisps = [];
-    const rows = 6;
+    // Fog wisp count cut 6 → 4 to ease the GPU compositor on long-
+    // running TV sessions (radial-gradient pills with `filter: blur`
+    // are some of the heaviest things to composite). Visual density
+    // still reads as fog with the per-wisp jitter + parallax.
+    const rows = 4;
     for (let i = 0; i < rows; i++) {
       // Distribute vertically across the panel with a small jitter so
       // wisps overlap and blend instead of forming six clean stripes.
@@ -7698,10 +7729,16 @@ function wxAnimationHTML(codes) {
   if (wind) {
     const intensity = wind.intensity || 'sparse';
     const cfg = intensity === 'intense'
-      ? { count: 28, minDur: 0.40, maxDur: 0.85 }
+      // Wind streaks trimmed ~30% to ease compositor load (28/18/11
+      // → 20/13/8). With the new wind-direction arrow layer + rain
+      // + fog + lightning all potentially running, the previous
+      // streak counts pushed total animated elements per panel
+      // toward 80+, which combined across 5 panels saturated the
+      // GPU compositor and caused visible animation pauses.
+      ? { count: 20, minDur: 0.40, maxDur: 0.85 }
       : intensity === 'active'
-      ? { count: 18, minDur: 0.55, maxDur: 1.10 }
-      : { count: 11, minDur: 0.85, maxDur: 1.60 };
+      ? { count: 13, minDur: 0.55, maxDur: 1.10 }
+      : { count: 8,  minDur: 0.85, maxDur: 1.60 };
     const streaks = [];
     for (let i = 0; i < cfg.count; i++) {
       const top   = Math.floor(Math.random() * 100);
