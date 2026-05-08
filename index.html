@@ -7960,22 +7960,13 @@ function wxAnimationHTML(codes) {
       const midRot = (180 + Math.random() * 360).toFixed(0);  // 180–540 deg by midpoint
       const endRot = (parseInt(midRot) + 180 + Math.random() * 360).toFixed(0); // keeps spinning
       const styleVars = `--debris-x:${x}cqw;--debris-y:${y}cqh;--debris-dur:${dur}s;--debris-delay:${delay}s;--debris-mid-rot:${midRot}deg;--debris-end-rot:${endRot}deg`;
-      // Pick item type. Distribution: 50% chicken, 25% cow, 25%
-      // mobile home — chickens are the lightest+most-common debris,
-      // mobile homes are the iconic Wizard-of-Oz visual but only
-      // every 4th piece on average.
+      // Pick item type. Distribution: 50% chicken, 25% cow, 25% pig.
       const r = Math.random();
-      if (r < 0.50) {
-        debrisHTML += `<span class="wx-tornado-debris" style="${styleVars}">🐓</span>`;
-      } else if (r < 0.75) {
-        debrisHTML += `<span class="wx-tornado-debris" style="${styleVars}">🐄</span>`;
-      } else {
-        // <img> variant — `is-img` class strips the font-size and
-        // sets the width directly so the picture renders at the
-        // intended size. Same fling keyframes work because all
-        // debris elements share the .wx-tornado-debris animation.
-        debrisHTML += `<img class="wx-tornado-debris is-img" src="screenshots/mobile-home.png" alt="" style="${styleVars}">`;
-      }
+      let glyph;
+      if (r < 0.50)      glyph = '🐓';
+      else if (r < 0.75) glyph = '🐄';
+      else               glyph = '🐖';
+      debrisHTML += `<span class="wx-tornado-debris" style="${styleVars}">${glyph}</span>`;
     }
     inner += `<div class="wx-anim wx-anim-tornado" aria-hidden="true">`
           + `<span class="wx-tornado-funnel" style="animation-delay: ${tornDelay}s">🌪</span>`
