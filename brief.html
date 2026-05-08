@@ -579,6 +579,18 @@ the day's plan.</p>
   </table>
 </div>
 
+<div class="callout">
+  <div class="callout-title">🌪 Tornado watch override</div>
+  <p style="margin: 4pt 0 0 0;">When ANY active advisory's criteria text contains
+  &ldquo;TORNADO&rdquo; (typically WATCH or WW), <strong>all 5 panels</strong>
+  (Cairns + Allen + Toth + Highbluff + Lucas) override to <span class="badge nogo">NO GO</span>
+  regardless of ceiling/vis/wind values, with subtitle
+  &ldquo;🌪 TORNADO WATCH · &lt;TYPE&gt; &lt;NUMBER&gt;&rdquo;. Solo (when AM/PM)
+  forces NO SOLO with reason &ldquo;TORNADO WATCH&rdquo;. Per USAACE flight rules
+  a tornado watch in proximity grounds all training; the override clears the
+  moment the watch expires and panels revert to their normal computed status.</p>
+</div>
+
 <h2>Stagefield → Area mapping</h2>
 <p>Each stagefield's GO/NO-GO comes from its host training-area forecast, not Cairns:</p>
 <table>
@@ -763,6 +775,7 @@ parsed from the DD 175-1's terminal-forecast section. Each card:</p>
     <tr><td><strong>TWA</strong> Terminal Weather Advisory</td><td><span class="dot red"></span> Red</td><td>Conditions within 15 NM of Cairns AAF</td></tr>
     <tr><td><strong>WATCH</strong></td><td><span class="dot amber"></span> Yellow</td><td>Severe / hazardous conditions watch</td></tr>
     <tr><td><strong>WARNING</strong></td><td><span class="dot red"></span> Red</td><td>Imminent / occurring severe conditions</td></tr>
+    <tr><td><strong>WW</strong> Watch with Warning</td><td><span class="dot amber"></span> Yellow</td><td>SPC follow-on watch box appended below a parent WATCH (e.g. tornado-watch box with hail/wind criteria)</td></tr>
   </tbody>
 </table>
 
@@ -1248,15 +1261,29 @@ rain + fog + wind + sun/moon + lightning at once.</p>
           and starting phase.</td>
     </tr>
     <tr>
-      <td>💨 <b>Wind</b></td>
+      <td>💨 <b>Wind streaks</b></td>
       <td>METAR <code>max(wspd, wgst) ≥ 15 kt</code>, or area-forecast wind
           token in the active segment for stagefields/weekend tiles.</td>
       <td>Speed-line streaks sweeping across the panel. Tiers: <b>15–20 kt</b>
-          sparse (11 streaks, slow) · <b>21–25 kt</b> active (18, medium) ·
-          <b>26+ kt</b> intense (28, fast). The whole streak layer is rotated
+          sparse (8 streaks, slow) · <b>21–25 kt</b> active (13, medium) ·
+          <b>26+ kt</b> intense (20, fast). The whole streak layer is rotated
           to match the reported wind direction so streaks travel WITH the wind
           (wind from W → L→R; wind from N → top→bottom; etc.). VRB / missing
           dir falls back to default L→R.</td>
+    </tr>
+    <tr>
+      <td>⮕ <b>Wind direction arrows</b></td>
+      <td>Same gate as wind streaks but lower threshold:
+          <code>max(wspd, wgst) ≥ 10 kt</code>. So a moderate breeze gets a
+          visible cue even when streaks aren't warranted yet.</td>
+      <td>Chrome-metallic ⮕ glyphs (Unicode U+2B95) drift across the panel
+          at the wind direction. Container-query width units (cqw) make
+          them traverse the full panel width regardless of panel size.
+          Arrows don't tumble — they're rigid so they read as direction
+          indicators rather than tumbling debris. Tier counts: <b>10–15 kt</b>
+          sparse (3 arrows) · <b>16–25 kt</b> active (6) · <b>26+ kt</b>
+          intense (10). Fades out at 55% of travel so they vanish as they
+          approach the right edge.</td>
     </tr>
     <tr>
       <td>☀️ <b>Sun</b> / 🌙 <b>Moon</b></td>
@@ -1388,6 +1415,71 @@ green border for success, red for failure). Useful when troubleshooting why the
   <li><strong>ADS-B Live Traffic</strong> — globe.adsbexchange.com centered on KOZR. Includes military aircraft (FlightRadar24 filters them out)</li>
   <li><strong>Windy.com</strong> — embed.windy.com centered on Fort Rucker, wind overlay default. Click and drag for radar / clouds / temperature views</li>
 </ul>
+
+<h2>Telegram alerting</h2>
+<p>The publishing server pushes alerts to two Telegram destinations
+through the same <code>@Whistletips_Jr_Bot</code>:</p>
+<table class="zebra">
+  <thead><tr><th>Destination</th><th>What lands there</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Public dashboard channel</strong><br><em>(pilots subscribe)</em></td>
+      <td>
+        Scheduled briefings: <strong>05:05 L (AM)</strong> + <strong>11:05 L (PM)</strong>
+        Mon–Fri only · weekends silent.<br>
+        New-amendment alerts: triggered the moment Cairns Weather pushes an
+        amended PDF. Includes a <code>📝 Reason:</code> line pulled from the
+        forecaster's REMARKS field (e.g. <em>&ldquo;AMD 1 TO ADD PREDOM
+        BKN006 TIL 1330Z FOR GF, VG C, BCAT&rdquo;</em>) — operator knows
+        what changed without opening the PDF.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Operator's personal DM</strong><br><em>(noise stays out of the public channel)</em></td>
+      <td>
+        Cairns flight-category transitions:
+        <ul style="margin: 4pt 0 0 0;">
+          <li>🌫 <strong>Cairns went LIFR</strong> — any state → LIFR (ceiling &lt; 500 OR vis &lt; 1)</li>
+          <li>🌧 <strong>Cairns went IFR</strong> — trainable → IFR boundary cross only (not fired on LIFR → IFR improvement)</li>
+          <li>✈️ <strong>Cairns ≥ 1000/3</strong> — IFR or LIFR → trainable</li>
+        </ul>
+        Plus operational system alerts: stuck-publisher kills, repo-staleness
+        detection, watchdog forensics dumps.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">Colored stripe at the top of every alert</div>
+  <p style="margin: 4pt 0 0 0;">Every Telegram briefing + transition DM opens
+  with a 3-square colored stripe keyed to the live FAA flight category, so
+  the operator's eye reads severity before any text:</p>
+  <table style="margin: 6pt 0 0 0;">
+    <tr><td style="width: 25%;">🟩🟩🟩 <strong>VFR</strong></td><td>Conditions clear of Cairns mins</td></tr>
+    <tr><td>🟦🟦🟦 <strong>MVFR</strong></td><td>Marginal but trainable (≥ 1000/3)</td></tr>
+    <tr><td>🟥🟥🟥 <strong>IFR</strong></td><td>Below training mins</td></tr>
+    <tr><td>🟪🟪🟪 <strong>LIFR</strong></td><td>Severely below mins (ceiling &lt; 500 OR vis &lt; 1)</td></tr>
+    <tr><td>⬜⬜⬜ <strong>NO METAR</strong></td><td>Live observation unavailable</td></tr>
+  </table>
+</div>
+
+<h2>Self-monitoring (watchdog)</h2>
+<p>A separate launchd agent on the publishing server (<code>com.weatherpal.watchdog</code>)
+runs every 60 s and watches for failures the dashboard heartbeat pip would
+only show 15-20 minutes after the fact:</p>
+<ul>
+  <li><strong>Stuck publisher</strong> — process running but high CPU + log silent &gt; 10 min. Captures a <code>sample(1)</code> stack trace BEFORE killing so the cause can be diagnosed; launchd respawns at the next interval.</li>
+  <li><strong>Stuck lightning service</strong> — same logic, 10-min window (lightning runs every 2 min, 10 = 5 missed).</li>
+  <li><strong>Silent launchd</strong> — no process AND no recent successful run = agent stopped firing or every attempt is crashing before logging.</li>
+  <li><strong>Repo staleness</strong> — <code>data.json</code> &gt; 12 min old or <code>lightning.json</code> &gt; 10 min old = local logs say success but pushes are silently failing (expired token, network, etc.).</li>
+</ul>
+<p>Each detection records a <code>🛑</code> line in the watchdog log AND DMs
+the operator's personal Telegram (15-min debounce, won't spam). Built after a
+2026-05-06 incident where the publisher hung at 498% CPU for 18 minutes due
+to a Swift dictionary race condition — operator only noticed via the
+dashboard heartbeat going red. Watchdog now catches that class of failure
+within ~90 seconds.</p>
 </div>
 
 
