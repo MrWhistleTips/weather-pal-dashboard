@@ -10394,7 +10394,14 @@ async function loadLightning() {
     const res = await fetch('https://raw.githubusercontent.com/MrWhistleTips/weather-pal-dashboard/main/lightning.json?' + Date.now(), { cache: 'no-store' });
     if (res.ok) {
       LIGHTNING_DATA = await res.json();
-      renderLightning();
+      // Re-render the whole dashboard, not just the banner. Training-panel
+      // pips, weekend tile pips, and the per-panel lightning animations
+      // all read LIGHTNING_DATA at renderTraining/renderWeekend time, so
+      // a banner-only refresh leaves them stale until the next 5-min
+      // loadData cycle (observed 2026-05-08: banner showed within_5nm
+      // strikes while every panel pip had disappeared). renderAll keeps
+      // everything coherent against the same snapshot.
+      renderAll();
       updateLightningDetail();
       updateLightningHealth();
     }
