@@ -1287,6 +1287,18 @@ body.tv .wx-tornado-funnel { font-size: 57px; }   /* +50% TV scale */
 }
 body.tv .wx-tornado-debris { font-size: 26px; }
 
+/* Mobile home image — same fling animation, but it's an <img>
+   tag instead of an emoji <span> so the size is set on the
+   element directly. Aspect ratio ~2.7:1 (wide trailer); width
+   sized to roughly match the visual weight of a chicken/cow
+   emoji at the same animation step. */
+.wx-tornado-debris.is-img {
+  width: 38px;
+  height: auto;
+  font-size: 0;          /* zero font-size so line-height doesn't add space */
+}
+body.tv .wx-tornado-debris.is-img { width: 50px; }
+
 /* LIGHTNING — brief radial-gradient flash from the top of the panel
    that mimics cloud-internal illumination. Two flash <i> elements
    with co-prime cycle durations (5s + 8s for "active") so the visible
@@ -7938,8 +7950,7 @@ function wxAnimationHTML(codes) {
     // + total spin rotation. Vectors restricted to "outward and
     // upward" (X positive-ish, Y always negative) so they look
     // like they're being thrown OUT of the funnel.
-    const animals = ['🐓', '🐄'];
-    const debrisCount = 4;
+    const debrisCount = 5;
     let debrisHTML = '';
     for (let i = 0; i < debrisCount; i++) {
       const x = (Math.random() * 75 - 5).toFixed(0);          // -5 to 70 cqw (outward right-bias)
@@ -7948,9 +7959,23 @@ function wxAnimationHTML(codes) {
       const delay = (-Math.random() * 10).toFixed(1);         // negative — desync via mid-cycle starts
       const midRot = (180 + Math.random() * 360).toFixed(0);  // 180–540 deg by midpoint
       const endRot = (parseInt(midRot) + 180 + Math.random() * 360).toFixed(0); // keeps spinning
-      // Bias toward chickens (lighter, more get tossed) — 70/30 mix.
-      const animal = Math.random() < 0.7 ? animals[0] : animals[1];
-      debrisHTML += `<span class="wx-tornado-debris" style="--debris-x:${x}cqw;--debris-y:${y}cqh;--debris-dur:${dur}s;--debris-delay:${delay}s;--debris-mid-rot:${midRot}deg;--debris-end-rot:${endRot}deg">${animal}</span>`;
+      const styleVars = `--debris-x:${x}cqw;--debris-y:${y}cqh;--debris-dur:${dur}s;--debris-delay:${delay}s;--debris-mid-rot:${midRot}deg;--debris-end-rot:${endRot}deg`;
+      // Pick item type. Distribution: 50% chicken, 25% cow, 25%
+      // mobile home — chickens are the lightest+most-common debris,
+      // mobile homes are the iconic Wizard-of-Oz visual but only
+      // every 4th piece on average.
+      const r = Math.random();
+      if (r < 0.50) {
+        debrisHTML += `<span class="wx-tornado-debris" style="${styleVars}">🐓</span>`;
+      } else if (r < 0.75) {
+        debrisHTML += `<span class="wx-tornado-debris" style="${styleVars}">🐄</span>`;
+      } else {
+        // <img> variant — `is-img` class strips the font-size and
+        // sets the width directly so the picture renders at the
+        // intended size. Same fling keyframes work because all
+        // debris elements share the .wx-tornado-debris animation.
+        debrisHTML += `<img class="wx-tornado-debris is-img" src="screenshots/mobile-home.png" alt="" style="${styleVars}">`;
+      }
     }
     inner += `<div class="wx-anim wx-anim-tornado" aria-hidden="true">`
           + `<span class="wx-tornado-funnel" style="animation-delay: ${tornDelay}s">🌪</span>`
