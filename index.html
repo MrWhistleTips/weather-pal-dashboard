@@ -1200,7 +1200,10 @@ body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
 }
 .wx-tornado-funnel {
   position: absolute;
-  bottom: 0;             /* funnel base flush with the panel bottom */
+  /* Negative offset to compensate for the emoji's built-in
+     descender padding so the visual base of the funnel touches
+     the panel's bottom edge instead of floating just above it. */
+  bottom: -6px;
   left: 0;
   font-size: 30px;
   line-height: 1;
