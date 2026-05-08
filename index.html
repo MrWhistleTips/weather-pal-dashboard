@@ -1181,6 +1181,52 @@ body.tv .wx-anim-rain .wx-rain-drop {
 }
 body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
 
+/* TORNADO — fires when an active advisory's criteria mentions
+   "TORNADO" (typically WATCH or WW). Renders a 🌪 emoji wobbling
+   near the bottom of the panel with a slow horizontal drift, so
+   the operator's eye lands on the threat even at briefing-room
+   distance. One funnel per panel — multiple would be visually
+   chaotic. Pairs with the existing tornado-watch override that
+   forces all 5 panels to NO GO. */
+.wx-anim-tornado {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 4;
+  /* Container query for cqw drift units below — ensures the funnel
+     traverses the panel width regardless of panel size. */
+  container-type: inline-size;
+}
+.wx-tornado-funnel {
+  position: absolute;
+  bottom: 18%;
+  left: 0;
+  font-size: 36px;
+  line-height: 1;
+  /* Dark-red glow signals threat without hiding the emoji's color. */
+  filter: drop-shadow(0 0 5px rgba(180, 30, 30, 0.65))
+          drop-shadow(0 0 12px rgba(120, 0, 0, 0.45));
+  /* Two simultaneous animations: wobble (transform — rotation +
+     scaleX squish for "spinning funnel" feel) and drift (translate
+     across cqw width). They use different transform components in
+     a single composed transform via the keyframes so they don't
+     fight each other. */
+  animation: wx-tornado-wobble 1.6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes wx-tornado-wobble {
+  /* Combines a side-to-side body-lean wobble with a slow drift
+     across the bottom of the panel. translateX uses cqw so the
+     drift covers the full panel width. */
+  0%   { transform: translate3d(-10cqw, 0, 0) rotate(-15deg) scaleX(1.0); opacity: 0.85; }
+  25%  { transform: translate3d( 30cqw, -4px, 0) rotate( 10deg) scaleX(0.85); opacity: 1.0; }
+  50%  { transform: translate3d( 60cqw, 0, 0) rotate(-10deg) scaleX(1.0); opacity: 0.9; }
+  75%  { transform: translate3d( 85cqw, -3px, 0) rotate( 15deg) scaleX(0.85); opacity: 1.0; }
+  100% { transform: translate3d(110cqw, 0, 0) rotate(-15deg) scaleX(1.0); opacity: 0.85; }
+}
+body.tv .wx-tornado-funnel { font-size: 48px; }
+
 /* LIGHTNING — brief radial-gradient flash from the top of the panel
    that mimics cloud-internal illumination. Two flash <i> elements
    with co-prime cycle durations (5s + 8s for "active") so the visible
@@ -7357,6 +7403,10 @@ function renderTraining(metar, forecast) {
   const cairnsWx = (metar && !isFallback) ? metarWxCodes(metar) : [];
   const cairnsLightningWx = lightningWxCode(cairnsLightning);
   if (cairnsLightningWx) cairnsWx.push(cairnsLightningWx);
+  // Tornado animation — when a TORNADO WATCH is active, drop a 🌪
+  // funnel into every panel's wx layer. Driven off the same advisory
+  // detection as the NO-GO override so the visual + status agree.
+  if (tornadoWatch) cairnsWx.push({ kind: 'tornado' });
   let cells = panelHTML(cairnsStatus, cairnsLabel, 'CAIRNS', cairnsArea, null, null, null, cairnsLanding, svfrStatus, isFallback, cairnsLightning, cairnsWx);
 
   for (const sf of stagefields) {
@@ -7414,6 +7464,10 @@ function renderTraining(metar, forecast) {
     // this specific station (Lucas might flash while KOZR stays calm).
     const sfLightningWx = lightningWxCode(sfLightning);
     if (sfLightningWx) sfWx.push(sfLightningWx);
+    // Tornado animation — same trigger as Cairns above, drops a 🌪
+    // funnel onto every stagefield panel so the operator sees the
+    // threat across the whole grid.
+    if (tornadoWatch) sfWx.push({ kind: 'tornado' });
     cells += panelHTML(status, label, sf.name.toUpperCase(), areaSubtitle, solo, null, affectingAdv, landing, null, false, sfLightning, sfWx);
   }
 
@@ -7804,6 +7858,15 @@ function wxAnimationHTML(codes) {
       leafRot = ` style="transform: rotate(${rot}deg);"`;
     }
     inner += `<div class="wx-anim wx-anim-leaves intensity-${intensity}" aria-hidden="true"${leafRot}>${leafEls.join('')}</div>`;
+  }
+  // TORNADO — fires when an active tornado advisory is in effect.
+  // Pushed into wxCodes by renderTraining (NOT metarWxCodes, since
+  // it's advisory-driven not METAR-driven). One funnel per panel:
+  // the wobble keyframe combines a slow drift across the panel
+  // bottom with a side-to-side rotation + horizontal squish so it
+  // reads as a spinning funnel.
+  if (codes.find(c => c && c.kind === 'tornado')) {
+    inner += `<div class="wx-anim wx-anim-tornado" aria-hidden="true"><span class="wx-tornado-funnel">🌪</span></div>`;
   }
   // SUN — clear daytime. Sits in the top-right corner of the panel:
   // soft warm glow + faint slowly-rotating SVG ray cluster behind a
