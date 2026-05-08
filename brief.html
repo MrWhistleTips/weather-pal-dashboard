@@ -237,6 +237,40 @@ table.zebra tr:nth-child(even) td { background: #faf9f5; }
 .callout.warn .callout-title { color: #a05c10; }
 .callout.danger .callout-title { color: #a02020; }
 
+/* ── Screenshot figures ───────────────────────────────────── */
+/* Centered figure with image + caption. Used throughout the brief
+   to drop in dashboard screenshots from the screenshots/ folder.
+   The image is sized to the available column width with a soft
+   border + shadow so it lifts off the page; the caption sits
+   below in italic gray. page-break-inside:avoid keeps the
+   image+caption together when printed to PDF. */
+figure.brief-figure {
+  margin: 14pt 0 18pt;
+  padding: 0;
+  text-align: center;
+  page-break-inside: avoid;
+}
+figure.brief-figure img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border: 1pt solid #d8d2c0;
+  border-radius: 4pt;
+  box-shadow: 0 2pt 6pt rgba(0, 0, 0, 0.08);
+}
+figure.brief-figure figcaption {
+  font-size: 9.5pt;
+  font-style: italic;
+  color: #666;
+  margin-top: 6pt;
+  padding: 0 12pt;
+  line-height: 1.4;
+}
+/* Compact variant for smaller / inline screenshots that don't
+   need to dominate the page (e.g. trust-and-verification chip). */
+figure.brief-figure.small img { max-width: 60%; }
+
 /* ── Color/symbol legend dots ─────────────────────────────── */
 .dot {
   display: inline-block;
@@ -534,6 +568,11 @@ reference, not a substitute for official forecaster briefings.</em></p>
   <li><strong>USING FORECAST · METAR IS STALE badge</strong> — if the live METAR is &gt;90 min old, the dashboard synthesizes conditions from the GOLDFISH area forecast and flags the substitution prominently</li>
 </ul>
 <p>The design principle: <strong>stale data is always labeled, never silently shown as fresh.</strong></p>
+
+<figure class="brief-figure small">
+  <img src="screenshots/trust-and-verification.png" alt="Heartbeat + ⚡ Detector chips in the navbar">
+  <figcaption>Heartbeat + ⚡ Detector chips in the navbar — green / yellow / red show how recently each pipeline pushed fresh data.</figcaption>
+</figure>
 </div>
 
 
@@ -543,6 +582,11 @@ reference, not a substitute for official forecaster briefings.</em></p>
 <div class="page-break page">
 <h1>3 · Anatomy of the dashboard</h1>
 <div class="lead">Top-to-bottom walkthrough of every region.</div>
+
+<figure class="brief-figure">
+  <img src="screenshots/dashboard-layout.png" alt="Full dashboard layout in TV mode">
+  <figcaption>Full TV-mode view — navbar, period selector, METAR strip, FLW strip, lightning banner, advisories, VFR Operations (training panels + area forecasts), IFR Operations (training strip + alternates + aerodromes), hazards, and the bottom-row maps.</figcaption>
+</figure>
 
 <p>The dashboard is structured as a vertical scroll, optimized for a 4K TV display
 in the briefing room. Sections are grouped under <strong>VFR Operations</strong> and
@@ -593,6 +637,11 @@ the day's plan.</p>
   <li><strong>SOLO badge</strong> (stagefields, AM/PM only) — <span class="badge solo">SOLO GO</span> or <span class="badge solnogo">NO SOLO</span> with reason</li>
   <li><strong>Advisory pip</strong> — small pulsing ⚠️ corner badge if an active advisory affects that area</li>
 </ul>
+
+<figure class="brief-figure">
+  <img src="screenshots/training-panels.png" alt="Training Status panels">
+  <figcaption>The five Training Status panels (Cairns + Allen + Toth + Highbluff + Lucas) — each pane is self-contained: status, area, recommended landing arrows, SOLO badge, and active-advisory pip.</figcaption>
+</figure>
 
 <div class="callout">
   <div class="callout-title">Training minimums</div>
@@ -659,6 +708,11 @@ GO/NO-GO badge and trainability countdown shown below the area name.</p>
   <li><span style="color:#a05c10;">⚠️ Untrainable in Xh Xm</span> — currently GO, future segment drops below</li>
   <li><span style="color:#a02020;">❌ Weather is Untrainable</span> — below mins, no future improvement in this period</li>
 </ul>
+
+<figure class="brief-figure">
+  <img src="screenshots/trainability-labels.png" alt="Trainability countdown labels on area forecasts">
+  <figcaption>Each area's trainability countdown — "Trainable in Xh", "Untrainable in Xh", or steady-state — driven by the current Zulu time and the next time-segment that crosses 700/1.</figcaption>
+</figure>
 </div>
 
 
@@ -679,6 +733,11 @@ GO/NO-GO badge and trainability countdown shown below the area name.</p>
 </table>
 <p>If an active advisory affects IFR ops (criteria mentions wind, ceiling, visibility,
 fog, icing, thunderstorms, or LLWS), the strip flashes amber and shows a corner ⚠️ pip.</p>
+
+<figure class="brief-figure">
+  <img src="screenshots/ifr-training-strip.png" alt="IFR Training strip">
+  <figcaption>IFR Training strip — taxi authorization (≥ 200 ft / ¼ SM) on the left, IFR GO/NO-GO on the right, with current ceiling + visibility in between.</figcaption>
+</figure>
 
 <h2>Alternate Planning</h2>
 <p>Five-card row showing whether each airfield meets <strong>published planning
@@ -801,6 +860,11 @@ parsed from the DD 175-1's terminal-forecast section. Each card:</p>
     <tr><td><strong>WW</strong> Watch with Warning</td><td><span class="dot amber"></span> Yellow</td><td>SPC follow-on watch box appended below a parent WATCH (e.g. tornado-watch box with hail/wind criteria)</td></tr>
   </tbody>
 </table>
+
+<figure class="brief-figure">
+  <img src="screenshots/weather-advisories.png" alt="Active Advisories card">
+  <figcaption>Active Advisories card — collapsible amber-bordered list at the top of the dashboard. Each pill is type + number, click to expand for full criteria + valid times + expiry countdown.</figcaption>
+</figure>
 
 <h2>Recommended landing arrows (training panels)</h2>
 <table>
@@ -1039,6 +1103,11 @@ the storm has only moved about 1.25 NM closer between detection and display —
 well inside the 5 NM operational ring. The system is fast enough to be
 operationally trustworthy.</p>
 
+<figure class="brief-figure">
+  <img src="screenshots/lightning-detector.png" alt="Lightning detector banner with motion tracking">
+  <figcaption>Lightning banner — three-tier severity (CRITICAL/VICINITY/INFO), per-ring strike counts, closest-strike distance and bearing, and a storm-cell motion projection showing approach ETA to each ring.</figcaption>
+</figure>
+
 <h2>The three tiers</h2>
 <p>The banner color and pulse behavior matches the closest detected strike:</p>
 <table class="zebra">
@@ -1226,6 +1295,11 @@ develops anywhere in the operating area.</p>
 the worst category across that day's AM/PM/N1 periods. Click to expand a detailed
 14-period × 7-category grid plus the forecaster's synopsis. Driven by the
 <code>06-12-mar-26.pdf</code>-style outlook chart issued daily by Cairns Weather.</p>
+
+<figure class="brief-figure">
+  <img src="screenshots/7-day-outlook-taf-strip.png" alt="7-Day Outlook + KOZR TAF strip in the VFR banner">
+  <figcaption>The two compact dropdowns inside the VFR Operations banner — 7-Day Outlook (one colored dot per day, worst-of-categories rollup) and KOZR TAF 6H (next 6 hours, FAA-category-colored cells). Both expand to a detailed grid on click.</figcaption>
+</figure>
 
 <h2>KOZR TAF strip (VFR banner)</h2>
 <p>Six colored hourly cells for the next 6 hours of KOZR TAF, expandable to a
