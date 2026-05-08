@@ -1205,7 +1205,7 @@ body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
      the panel's bottom edge instead of floating just above it. */
   bottom: -6px;
   left: 0;
-  font-size: 30px;
+  font-size: 45px;       /* +50% from previous 30px */
   line-height: 1;
   /* Storm-cloud gray glow (was dark red) — less alarming color but
      still readable against any panel background. The grayscale
@@ -1240,7 +1240,52 @@ body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
   95%  { transform: translate3d(-2cqw, 0, 0)   rotate(-12deg) scaleX(1.0); opacity: 0.6; }
   100% { transform: translate3d(-5cqw, 0, 0)   rotate(-12deg) scaleX(1.0); opacity: 0; }
 }
-body.tv .wx-tornado-funnel { font-size: 38px; }
+body.tv .wx-tornado-funnel { font-size: 57px; }   /* +50% TV scale */
+
+/* TORNADO DEBRIS — chickens (🐓) and cows (🐄) periodically flung
+   outward from the lower-left zone (where the funnel typically
+   lives) with a slow tumbling rotation. Each debris item has its
+   own randomized fling vector + duration + start delay (set inline
+   via CSS custom properties from JS) so the 4 debris items per
+   panel desync naturally. The visual reads as "the tornado is
+   flinging livestock" — Wizard of Oz style. */
+.wx-tornado-debris {
+  position: absolute;
+  bottom: 4%;
+  left: 8%;
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
+  animation: wx-tornado-fling var(--debris-dur, 7s) ease-out infinite;
+  animation-delay: var(--debris-delay, 0s);
+  will-change: transform, opacity;
+}
+@keyframes wx-tornado-fling {
+  /* Cycle:
+       0–5%   — invisible at origin (waiting for delay or just respawned)
+       5–15%  — pop into view (fade-in + scale-up to full size)
+       15–95% — slow arc outward + slow rotation
+       95–100%— fade out at the apex of the fling vector
+     The X / Y / final rotation come from inline CSS custom
+     properties so each debris item flies in its own direction.
+     `scale(0.45)` at 0% gives a "starting small near the funnel"
+     feel before they get hurled outward. */
+  0%   { opacity: 0;
+         transform: translate(0, 0) rotate(0deg) scale(0.45); }
+  8%   { opacity: 0.9;
+         transform: translate(calc(var(--debris-x, 30cqw) * 0.08),
+                              calc(var(--debris-y, -40cqh) * 0.08))
+                    rotate(40deg) scale(1.0); }
+  60%  { opacity: 0.85;
+         transform: translate(calc(var(--debris-x, 30cqw) * 0.6),
+                              calc(var(--debris-y, -40cqh) * 0.6))
+                    rotate(var(--debris-mid-rot, 360deg)) scale(0.95); }
+  100% { opacity: 0;
+         transform: translate(var(--debris-x, 30cqw), var(--debris-y, -40cqh))
+                    rotate(var(--debris-end-rot, 720deg)) scale(0.7); }
+}
+body.tv .wx-tornado-debris { font-size: 26px; }
 
 /* LIGHTNING — brief radial-gradient flash from the top of the panel
    that mimics cloud-internal illumination. Two flash <i> elements
@@ -7888,7 +7933,29 @@ function wxAnimationHTML(codes) {
     // the same instant share the cycle start time). Range covers
     // the full cycle length so any panel can be at any phase.
     const tornDelay = (-Math.random() * 20).toFixed(1);
-    inner += `<div class="wx-anim wx-anim-tornado" aria-hidden="true"><span class="wx-tornado-funnel" style="animation-delay: ${tornDelay}s">🌪</span></div>`;
+    // Debris — 4 chickens / cows per panel, each flung in a
+    // randomized outward direction with its own duration + delay
+    // + total spin rotation. Vectors restricted to "outward and
+    // upward" (X positive-ish, Y always negative) so they look
+    // like they're being thrown OUT of the funnel.
+    const animals = ['🐓', '🐄'];
+    const debrisCount = 4;
+    let debrisHTML = '';
+    for (let i = 0; i < debrisCount; i++) {
+      const x = (Math.random() * 75 - 5).toFixed(0);          // -5 to 70 cqw (outward right-bias)
+      const y = -(Math.random() * 50 + 25).toFixed(0);        // -25 to -75 cqh (always upward)
+      const dur = (5 + Math.random() * 5).toFixed(1);         // 5–10 s per fling
+      const delay = (-Math.random() * 10).toFixed(1);         // negative — desync via mid-cycle starts
+      const midRot = (180 + Math.random() * 360).toFixed(0);  // 180–540 deg by midpoint
+      const endRot = (parseInt(midRot) + 180 + Math.random() * 360).toFixed(0); // keeps spinning
+      // Bias toward chickens (lighter, more get tossed) — 70/30 mix.
+      const animal = Math.random() < 0.7 ? animals[0] : animals[1];
+      debrisHTML += `<span class="wx-tornado-debris" style="--debris-x:${x}cqw;--debris-y:${y}cqh;--debris-dur:${dur}s;--debris-delay:${delay}s;--debris-mid-rot:${midRot}deg;--debris-end-rot:${endRot}deg">${animal}</span>`;
+    }
+    inner += `<div class="wx-anim wx-anim-tornado" aria-hidden="true">`
+          + `<span class="wx-tornado-funnel" style="animation-delay: ${tornDelay}s">🌪</span>`
+          + debrisHTML
+          + `</div>`;
   }
   // SUN — clear daytime. Sits in the top-right corner of the panel:
   // soft warm glow + faint slowly-rotating SVG ray cluster behind a
