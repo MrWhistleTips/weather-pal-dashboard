@@ -9795,13 +9795,17 @@ function buildTAFDetailHTML(taf) {
     // Worst-case at this hour, considering TEMPO/PROB overlays
     const { category, tempoGroup } = tafWorstCategoryAt(taf, tsSec);
     const hour = String(t.getUTCHours()).padStart(2, '0') + 'Z';
-    rows.push({ hour, cat: category, tempo: !!tempoGroup });
+    // Browser-local hour for the same instant — gives operators an
+    // at-a-glance reference without doing the +/- offset in their head.
+    const localHour = String(t.getHours()).padStart(2, '0') + 'L';
+    rows.push({ hour, localHour, cat: category, tempo: !!tempoGroup });
   }
 
   const cells = rows.map(r => `
-    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;" title="${r.tempo ? 'TEMPO/PROB overlay drives this hour\'s category' : ''}">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;" title="${r.tempo ? 'TEMPO/PROB overlay drives this hour\'s category' : ''}">
       <span style="font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; color:rgba(255,255,255,0.85);">${escapeHtml(r.hour)}</span>
-      <span class="sevenday-toggle-dot" style="width:14px; height:14px; ${tafDotInlineStyle(r.cat)}"></span>
+      <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.55); letter-spacing:0.3px;">${escapeHtml(r.localHour)}</span>
+      <span class="sevenday-toggle-dot" style="width:14px; height:14px; margin-top:1px; ${tafDotInlineStyle(r.cat)}"></span>
       <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.55); letter-spacing:0.3px;">${r.cat ? r.cat.toUpperCase() : '—'}${r.tempo ? '*' : ''}</span>
     </div>
   `).join('');
