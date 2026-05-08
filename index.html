@@ -10038,7 +10038,7 @@ async function refreshWAAS() {
     WAAS_SNAPSHOT = {
       // raw.github instead of relative — Pages was serving stale waas.png
       // for the same reason as data.json (10-min CDN cache + slow rebuild).
-      dataUrl: 'https://cdn.jsdelivr.net/gh/MrWhistleTips/weather-pal-dashboard@main/waas.png?' + Date.now(),
+      dataUrl: 'https://raw.githubusercontent.com/MrWhistleTips/weather-pal-dashboard/main/waas.png?' + Date.now(),
       snapshotTime: DATA.waasFetchedAt ? new Date(DATA.waasFetchedAt) : new Date(),
     };
     persistWAASState();
@@ -10383,16 +10383,19 @@ async function loadLightning() {
   // skip the network fetch entirely in that case.
   if (demoScenario && DEMO_SCENARIOS[demoScenario]) return;
   try {
-    // Fetch via jsDelivr's GitHub CDN. Earlier we used raw.githubusercontent.com
-    // expecting "sub-second freshness," but raw.github actually serves with
-    // cache-control: max-age=300 (5 min) AND ignores `?t=` cache-busting —
-    // observed 2026-05-08 source-age=223s for both bare and cache-busted URLs,
-    // serving an 8-min-old commit while a fresh one had already landed. With
-    // the publisher's 5-min cadence + raw.github's 5-min cache + dashboard's
-    // 5-min poll, "Published" age was reaching 12 min in the worst case.
-    // jsDelivr auto-purges on push within ~60s and serves with age:0 on the
-    // first request after a commit. Pages was even worse (10-25 min stale).
-    const res = await fetch('https://cdn.jsdelivr.net/gh/MrWhistleTips/weather-pal-dashboard@main/lightning.json?' + Date.now(), { cache: 'no-store' });
+    // Fetch via the GitHub Contents API with `Accept: application/vnd.github.raw`
+    // so we get the JSON body directly (not base64-wrapped). Provider history:
+    //   - GitHub Pages: cache-control max-age=600 + intermittent rebuilds → 10-25 min stale
+    //   - raw.githubusercontent.com: max-age=300 AND ignores `?t=` cache-bust → up to 5 min stale
+    //   - jsDelivr (@main ref): claimed auto-purge but observed `age: 542` with 12 h TTL → up to ~10 min stale
+    // The Contents API has cache-control: max-age=60 (1 min) and respects ETag.
+    // Rate limit is 60 req/hr unauthenticated per IP — current dashboard load
+    // is data.json @ 5min (12/hr) + lightning.json @ 90s (40/hr) = 52/hr, under
+    // the cap with headroom.
+    const res = await fetch(
+      'https://api.github.com/repos/MrWhistleTips/weather-pal-dashboard/contents/lightning.json?ts=' + Date.now(),
+      { headers: { 'Accept': 'application/vnd.github.raw' }, cache: 'no-store' }
+    );
     if (res.ok) {
       LIGHTNING_DATA = await res.json();
       // Re-render the whole dashboard, not just the banner. Training-panel
@@ -10441,10 +10444,12 @@ async function loadData() {
   // those required CORS proxies that kept dying. waas.png is loaded
   // same-origin from this same GitHub Pages domain.
   try {
-    // jsDelivr GitHub CDN — see comment on the lightning.json fetch
-    // above for why (raw.github has a 5-min cache that ignores cache-bust;
-    // Pages was 10-25 min stale; jsDelivr auto-purges on push <~60s).
-    const res = await fetch('https://cdn.jsdelivr.net/gh/MrWhistleTips/weather-pal-dashboard@main/data.json?' + Date.now(), { cache: 'no-store' });
+    // GitHub Contents API with raw accept header — see comment on the
+    // lightning.json fetch above for the full provider comparison.
+    const res = await fetch(
+      'https://api.github.com/repos/MrWhistleTips/weather-pal-dashboard/contents/data.json?ts=' + Date.now(),
+      { headers: { 'Accept': 'application/vnd.github.raw' }, cache: 'no-store' }
+    );
     if (res.ok) DATA = await res.json();
   } catch (e) {
     DATA = DATA || { forecasts: [], metar: null };
