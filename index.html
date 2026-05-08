@@ -1200,32 +1200,44 @@ body.tv .wx-anim-fog .wx-fog-wisp { filter: blur(6px); }
 }
 .wx-tornado-funnel {
   position: absolute;
-  bottom: 18%;
+  bottom: 6%;            /* lower in the panel — bottom-left zone */
   left: 0;
-  font-size: 36px;
+  font-size: 30px;
   line-height: 1;
-  /* Dark-red glow signals threat without hiding the emoji's color. */
-  filter: drop-shadow(0 0 5px rgba(180, 30, 30, 0.65))
-          drop-shadow(0 0 12px rgba(120, 0, 0, 0.45));
-  /* Two simultaneous animations: wobble (transform — rotation +
-     scaleX squish for "spinning funnel" feel) and drift (translate
-     across cqw width). They use different transform components in
-     a single composed transform via the keyframes so they don't
-     fight each other. */
-  animation: wx-tornado-wobble 1.6s ease-in-out infinite;
+  /* Storm-cloud gray glow (was dark red) — less alarming color but
+     still readable against any panel background. The grayscale
+     filter desaturates the 🌪 emoji slightly so it looks more like
+     a smoke-gray funnel and less like Apple's default brown/blue
+     rendering. */
+  filter: grayscale(0.55)
+          drop-shadow(0 0 5px rgba(120, 120, 130, 0.7))
+          drop-shadow(0 0 12px rgba(80, 80, 90, 0.45));
+  /* Single long animation: emerges from left, wobbles right to about
+     mid-panel, then drifts back. Confined to the bottom-left half
+     so the upper portion of the card stays clear for status text. */
+  animation: wx-tornado-wobble 20s ease-in-out infinite;
   will-change: transform, opacity;
 }
 @keyframes wx-tornado-wobble {
-  /* Combines a side-to-side body-lean wobble with a slow drift
-     across the bottom of the panel. translateX uses cqw so the
-     drift covers the full panel width. */
-  0%   { transform: translate3d(-10cqw, 0, 0) rotate(-15deg) scaleX(1.0); opacity: 0.85; }
-  25%  { transform: translate3d( 30cqw, -4px, 0) rotate( 10deg) scaleX(0.85); opacity: 1.0; }
-  50%  { transform: translate3d( 60cqw, 0, 0) rotate(-10deg) scaleX(1.0); opacity: 0.9; }
-  75%  { transform: translate3d( 85cqw, -3px, 0) rotate( 15deg) scaleX(0.85); opacity: 1.0; }
-  100% { transform: translate3d(110cqw, 0, 0) rotate(-15deg) scaleX(1.0); opacity: 0.85; }
+  /* Cycle:
+       0–5%   — fade in at far left
+       5–50%  — drift right with side-lean wobble (max ~mid-panel)
+       50–95% — drift back to far left, still wobbling
+       95–100%— fade out
+     Bottom-left bias: translateX never exceeds 50cqw (mid-panel),
+     keeping the upper-right region clear for the panel's status
+     text + landing direction. */
+  0%   { transform: translate3d(-5cqw, 0, 0)   rotate(-12deg) scaleX(1.0); opacity: 0; }
+  5%   { transform: translate3d(-2cqw, 0, 0)   rotate(-12deg) scaleX(1.0); opacity: 0.85; }
+  18%  { transform: translate3d( 12cqw, -3px, 0) rotate(  8deg) scaleX(0.88); opacity: 0.9; }
+  32%  { transform: translate3d( 26cqw, 0, 0)   rotate(-10deg) scaleX(1.0); opacity: 0.95; }
+  50%  { transform: translate3d( 48cqw, -3px, 0) rotate(  8deg) scaleX(0.88); opacity: 0.95; }
+  68%  { transform: translate3d( 28cqw, 0, 0)   rotate(-10deg) scaleX(1.0); opacity: 0.9;  }
+  82%  { transform: translate3d( 10cqw, -3px, 0) rotate(  8deg) scaleX(0.88); opacity: 0.85; }
+  95%  { transform: translate3d(-2cqw, 0, 0)   rotate(-12deg) scaleX(1.0); opacity: 0.6; }
+  100% { transform: translate3d(-5cqw, 0, 0)   rotate(-12deg) scaleX(1.0); opacity: 0; }
 }
-body.tv .wx-tornado-funnel { font-size: 48px; }
+body.tv .wx-tornado-funnel { font-size: 38px; }
 
 /* LIGHTNING — brief radial-gradient flash from the top of the panel
    that mimics cloud-internal illumination. Two flash <i> elements
