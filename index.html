@@ -7878,7 +7878,14 @@ function wxAnimationHTML(codes) {
   // bottom with a side-to-side rotation + horizontal squish so it
   // reads as a spinning funnel.
   if (codes.find(c => c && c.kind === 'tornado')) {
-    inner += `<div class="wx-anim wx-anim-tornado" aria-hidden="true"><span class="wx-tornado-funnel">🌪</span></div>`;
+    // Randomized negative animation-delay puts each panel's funnel
+    // at a different point in its 20-s cycle, so the 5 panels'
+    // tornadoes desync — without this they all march together
+    // (Cairns + Allen + Toth + Highbluff + Lucas all rendered at
+    // the same instant share the cycle start time). Range covers
+    // the full cycle length so any panel can be at any phase.
+    const tornDelay = (-Math.random() * 20).toFixed(1);
+    inner += `<div class="wx-anim wx-anim-tornado" aria-hidden="true"><span class="wx-tornado-funnel" style="animation-delay: ${tornDelay}s">🌪</span></div>`;
   }
   // SUN — clear daytime. Sits in the top-right corner of the panel:
   // soft warm glow + faint slowly-rotating SVG ray cluster behind a
