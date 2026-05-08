@@ -72,9 +72,17 @@ section + section { page-break-inside: avoid; }
 .cover h1 {
   font-size: 36pt;
   font-weight: 700;
-  margin: 0 0 8pt 0;
+  margin: 0 0 12pt 0;
   color: #3d4d33;
   letter-spacing: 1pt;
+}
+.cover .cover-icon {
+  display: block;
+  width: 160px;
+  height: auto;
+  margin: 8pt auto 14pt;
+  border-radius: 32px;
+  box-shadow: 0 4pt 16pt rgba(61, 77, 51, 0.25);
 }
 .cover .subtitle {
   font-size: 13pt;
@@ -372,6 +380,7 @@ table.zebra tr:nth-child(even) td { background: #faf9f5; }
 <div class="cover">
   <div class="pretitle">Capabilities Brief</div>
   <h1>My Weather Pal</h1>
+  <img class="cover-icon" src="weather-pal-icon.png" alt="My Weather Pal" />
   <div class="subtitle">A real-time aviation training weather dashboard for Fort Rucker</div>
 
   <div class="seal">
