@@ -13,12 +13,26 @@
 @page {
   size: letter;
   margin: 0.75in 0.75in 0.85in 0.75in;
+  /* Page number stays in the bottom-right. */
   @bottom-right {
     content: "Page " counter(page) " of " counter(pages);
     font-family: 'Helvetica Neue', sans-serif;
     font-size: 9pt;
     color: #666;
   }
+  /* The remaining @page margin boxes are explicitly emptied. Without
+     these, Chrome / Safari fill them with the default print headers
+     (URL, date, page title) when the user has "Headers and footers"
+     enabled in the print dialog — which adds an unwanted URL line at
+     the top/bottom of every page. Setting the slots to empty content
+     suppresses that on browsers that respect CSS Paged Media. (The
+     user can also uncheck "Headers and footers" in the print dialog
+     for an instant fix.) */
+  @top-left      { content: ""; }
+  @top-center    { content: ""; }
+  @top-right     { content: ""; }
+  @bottom-left   { content: ""; }
+  @bottom-center { content: ""; }
 }
 
 * { box-sizing: border-box; }
