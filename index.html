@@ -9704,6 +9704,22 @@ function tafBannerSlots(taf) {
   return out;
 }
 
+/// Returns true when the TAF's last fcst window has already ended in
+/// real-world time — i.e. the entire forecast period is in the past.
+/// KOZR is a military airfield; its TAF is supposed to refresh every 6h
+/// but the duty forecaster sometimes leaves a "LAST NO AMDS AFT HHHH
+/// NEXT DDHH" note and goes off-shift. When the NEXT issuance is late
+/// (observed 2026-05-11: Saturday's TAF still on the wire Monday after
+/// the scheduled 1110Z reissue slipped), the strip would otherwise show
+/// 12 gray cells that look like a render bug. This helper lets the
+/// renderer surface the staleness explicitly instead.
+function isTAFExpired(taf) {
+  if (!taf || !Array.isArray(taf.fcsts) || taf.fcsts.length === 0) return false;
+  const last = taf.fcsts[taf.fcsts.length - 1];
+  if (!last || typeof last.timeTo !== 'number') return false;
+  return last.timeTo < (Date.now() / 1000);
+}
+
 function renderTAF() {
   const toggle = document.getElementById('taf-toggle');
   const hoursEl = document.getElementById('taf-toggle-hours');
@@ -9731,7 +9747,15 @@ function renderTAF() {
   }
   toggle.style.display = 'inline-flex';
 
-  if (hasFcsts) {
+  const expired = isTAFExpired(TAF_OBSERVATION);
+
+  if (expired) {
+    // The TAF is structurally valid but its entire forecast window has
+    // already elapsed. Show a single amber "EXPIRED" chip instead of 12
+    // gray dots so the operator can tell at a glance that we're not
+    // hiding a render bug — the data just isn't fresh upstream.
+    hoursEl.innerHTML = `<span class="sevenday-toggle-day" style="color:#ffb84a;font-style:italic;font-weight:700;letter-spacing:1.5px;">TAF EXPIRED</span>`;
+  } else if (hasFcsts) {
     const slots = tafBannerSlots(TAF_OBSERVATION);
     hoursEl.innerHTML = slots.map(s => `
       <span class="sevenday-toggle-day" title="${s.hour}: ${s.category || 'n/a'}">
@@ -9761,12 +9785,32 @@ function tafDotInlineStyle(cat) {
 
 function buildTAFDetailHTML(taf) {
   const hasFcsts = Array.isArray(taf.fcsts) && taf.fcsts.length > 0;
+  const expired  = isTAFExpired(taf);
   const issueLabel = taf.issueTime
     ? `<span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.55);">Issued ${escapeHtml(taf.issueTime)}</span>`
     : '';
   const rawBlock = taf.rawTAF
     ? `<div style="font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.5; color:rgba(255,255,255,0.8); padding:8px 10px; margin-top:10px; background:rgba(93,112,70,0.12); border-left:2px solid var(--tan); border-radius:2px; word-break:break-word;">${escapeHtml(taf.rawTAF)}</div>`
     : '';
+
+  // Expired path — every forecast window has elapsed. Render an amber
+  // notice up top so the operator knows the data isn't fresh upstream
+  // (KOZR military TAF issuance slipped), not that the strip is broken.
+  if (expired) {
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#ffb84a;">⚠ KOZR TAF · EXPIRED</span>
+        ${issueLabel}
+      </div>
+      <div style="font-family:'Rajdhani',sans-serif; font-size:11px; color:#ffb84a; letter-spacing:0.5px; padding:8px 10px; margin-bottom:6px; background:rgba(255,184,74,0.10); border-left:2px solid #ffb84a; border-radius:2px;">
+        The forecast window has fully elapsed. KOZR's next scheduled TAF issuance has not yet appeared on the wire.
+      </div>
+      <div style="font-family:'Rajdhani',sans-serif; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.4px; font-style:italic;">
+        Last published forecast shown below for reference only — do not use for planning.
+      </div>
+      ${rawBlock}
+    `;
+  }
 
   // Raw-only fallback (publisher's tgftp text-feed path) — show the raw
   // TAF + a small note, skip the 12-hour colored strip since we can't
